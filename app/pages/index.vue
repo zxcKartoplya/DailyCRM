@@ -1,4 +1,9 @@
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+import LoginService from '~/services/login.services'
+
+const loginService = new LoginService()
+// loginService.login()
+</script>
 
 <template>
 	<div class="main-container">
