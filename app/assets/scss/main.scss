@@ -1,0 +1,14 @@
+@forward 'variables';
+@forward 'mixins';
+
+body {
+	background:
+		radial-gradient(
+			circle at 20% 20%,
+			rgba(30, 136, 229, 0.16),
+			transparent 32%
+		),
+		radial-gradient(circle at 80% 0%, rgba(255, 183, 3, 0.18), transparent 30%),
+		#0a0f16;
+	color: $text-base;
+}
