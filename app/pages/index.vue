@@ -2,7 +2,7 @@
 import LoginService from '~/services/login.services'
 
 const loginService = new LoginService()
-// loginService.login()
+loginService.login()
 </script>
 
 <template>

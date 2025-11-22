@@ -1,18 +1,43 @@
 export default defineNuxtPlugin(() => {
 	const config = useRuntimeConfig()
-	const apiBase = config.public.apiBase || process.env.API_URL || ''
+	const token = useCookie('access_token')
+	const route = useRoute()
 
-	if (!apiBase && process.dev) {
-		console.warn('[customFetch] Missing API base URL. Check .env API_URL')
-	}
+	const $customFetch = $fetch.create({
+		baseURL: config.public.apiBase,
 
-	const customFetch = $fetch.create({
-		baseURL: apiBase,
+		onRequest({ options }) {
+			options.headers = new Headers(options.headers || {})
+			options.headers.set('Accept', 'application/json')
+			options.headers.set('withCredentials', 'true')
+			options.headers.set('credentials', 'omit')
+			if (token.value) {
+				options.headers.set('Authorization', `Bearer ${token.value}`)
+			}
+		},
+
+		onResponse() {
+			// response._data = new myBusinessResponse(response._data)
+		},
+
+		onResponseError({ response }) {
+			// if (response.status === 301) {
+			// 	const newURL = response.body.url_redirect
+			// 	return navigateTo(newURL)
+			// }
+			if (
+				response.status === 401 &&
+				route.path !== '/login' &&
+				route.path !== '/register'
+			) {
+				token.value = null
+				// return navigateTo('/login')
+			}
+		},
 	})
-
 	return {
 		provide: {
-			customFetch,
+			customFetch: $customFetch,
 		},
 	}
 })
