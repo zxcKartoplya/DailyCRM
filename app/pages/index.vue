@@ -2,6 +2,7 @@
 import LoginService from '~/services/login.services'
 
 const loginService = new LoginService()
+// loginService.creatAdmin()
 loginService.login()
 </script>
 

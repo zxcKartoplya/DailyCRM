@@ -1,14 +1,104 @@
-@mixin flex-center($gap: $space-md) {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: $gap;
+@function rem($px-value) {
+	@return math.div($px-value, 16) + rem;
 }
 
-@mixin card($padding: $space-md) {
-  background: $color-surface;
-  color: $text-base;
-  border-radius: $radius-md;
-  padding: $padding;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+@mixin container {
+	max-width: calc(1200px + 16px * 2);
+	padding: 0 16px;
+	margin: 0 auto;
+}
+
+@mixin flex-center($gap: $space-md) {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: $gap;
+}
+
+@mixin flex(
+	$direction: row,
+	$justify: null,
+	$align: null,
+	$gap: null,
+	$wrap: null
+) {
+	$direction-aliases: (
+		col: column,
+		colr: column-reverse,
+		col-reverse: column-reverse,
+		rowr: row-reverse,
+		row-reverse: row-reverse,
+	);
+	$justify-aliases: (
+		justify-between: space-between,
+		j-sb: space-between,
+		j-sa: space-around,
+		justify-around: space-around,
+		j-se: space-evenly,
+		justify-evenly: space-evenly,
+		j-fs: flex-start,
+		justify-start: flex-start,
+		j-fe: flex-end,
+		justify-end: flex-end,
+		justify-center: center,
+		j-c: center,
+	);
+	$align-aliases: (
+		items-start: flex-start,
+		a-fs: flex-start,
+		a-fe: flex-end,
+		items-end: flex-end,
+		items-center: center,
+		a-c: center,
+		items-baseline: baseline,
+		a-b: baseline,
+		items-stretch: stretch,
+		a-st: stretch,
+	);
+	@if map.has-key($direction-aliases, $direction) {
+		$direction: map.get($direction-aliases, $direction);
+	}
+	@if $justify != null and map.has-key($justify-aliases, $justify) {
+		$justify: map.get($justify-aliases, $justify);
+	}
+	@if $align != null and map.has-key($align-aliases, $align) {
+		$align: map.get($align-aliases, $align);
+	}
+
+	@if $gap != null {
+		@if meta.type-of($gap) ==
+			string and
+			(string.index($gap, 'g-') or string.index($gap, 'gap-') == 1)
+		{
+			$prefix-length: if(string.index($gap, 'gap-') == 1, 4, 2);
+			$gap-value: string.slice($gap, $prefix-length + 1);
+			$has-unit: string.index($gap-value, '%') or
+				string.index($gap-value, 'px') or
+				string.index($gap-value, 'rem') or
+				string.index($gap-value, 'em') or
+				string.index($gap-value, 'vh') or
+				string.index($gap-value, 'vw');
+			@if not $has-unit {
+				$gap: #{$gap-value}px;
+			}
+			else {
+				$gap: $gap-value;
+			}
+		}
+	}
+
+	display: flex;
+	flex-direction: $direction;
+	@if $justify != null {
+		justify-content: $justify;
+	}
+	@if $align != null {
+		align-items: $align;
+	}
+	@if $gap != null {
+		gap: $gap;
+	}
+	@if $wrap != null {
+		flex-wrap: $wrap;
+	}
 }
