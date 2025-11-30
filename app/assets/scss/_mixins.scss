@@ -1,3 +1,8 @@
+@use 'sass:map';
+@use 'sass:math';
+@use 'sass:meta';
+@use 'sass:string';
+
 @function rem($px-value) {
 	@return math.div($px-value, 16) + rem;
 }
