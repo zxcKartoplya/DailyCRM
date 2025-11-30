@@ -1,9 +1,9 @@
-import type { LoginData } from '~/types/login'
+import type { APILoginResponse, LoginData } from '~/types/login'
 import Service from './services'
 
 class LoginService extends Service {
 	async login(userInfo: LoginData) {
-		return await this.post('/auth/login', userInfo)
+		return (await this.post('/auth/login', userInfo)) as APILoginResponse
 	}
 
 	async creatAdmin() {

@@ -1,10 +1,14 @@
 <script lang="ts" setup>
 import { Field, useForm } from 'vee-validate'
+import { useAlertStore } from '~/stores/alert'
 import { useLoginStore } from '~/stores/login'
+import { Alert } from '~/types/alert'
 import type { LoginData } from '~/types/login'
 import { loginSchema } from '~/utils/validation/loginSchema'
 
 const loginStore = useLoginStore()
+const alertStore = useAlertStore()
+const router = useRouter()
 
 const { handleSubmit, errors } = useForm<LoginData>({
 	validationSchema: loginSchema,
@@ -14,9 +18,20 @@ const { handleSubmit, errors } = useForm<LoginData>({
 	},
 })
 
-const login = handleSubmit(async formValues => {
-	await loginStore.login(formValues)
-})
+const login = handleSubmit(
+	async formValues => {
+		try {
+			await loginStore.login(formValues)
+			alertStore.showAlert(Alert.Authorized)
+			await router.push('/')
+		} catch (error) {
+			alertStore.showAlert(Alert.Unauthorized)
+		}
+	},
+	() => {
+		alertStore.showAlert(Alert.FormError)
+	}
+)
 </script>
 
 <template>

@@ -33,6 +33,12 @@ export default defineNuxtPlugin(() => {
 				token.value = null
 				// return navigateTo('/login')
 			}
+
+			// Прокидываем ошибку дальше, чтобы сработали try/catch в вызовах
+			const message =
+				(response._data as any)?.message ||
+				`Request failed with status ${response.status}`
+			throw new Error(message)
 		},
 	})
 	return {

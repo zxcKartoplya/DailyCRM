@@ -1,14 +1,26 @@
 import { defineStore } from 'pinia'
+import { useAuthToken } from '~/composables/useAuthToken'
 import LoginService from '~/services/login.services'
 import type { LoginData } from '~/types/login'
 
 export const useLoginStore = defineStore('login', () => {
+	const { setToken, clearToken } = useAuthToken()
+
 	const login = async (userInfo: LoginData) => {
-		console.log('userInfo', userInfo)
-		await LoginService.login(userInfo)
+		const { access_token, message } = await LoginService.login(userInfo)
+
+		if (!access_token) {
+			throw new Error(message)
+		}
+
+		setToken(access_token)
 	}
 
-	return { login }
+	const logout = () => {
+		clearToken()
+	}
+
+	return { login, logout }
 })
 
 //  {
