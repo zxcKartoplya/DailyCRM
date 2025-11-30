@@ -38,7 +38,7 @@ const login = handleSubmit(
 	<div class="login">
 		<div class="login__contener">
 			<div class="login__info">
-				<div class="login__info--text">Welcome DailyCRM</div>
+				<div class="login__info--text">Welcome DailyCRM!</div>
 			</div>
 			<div class="login__form">
 				<form @submit.prevent="login" class="login__form--contener">
@@ -99,10 +99,10 @@ const login = handleSubmit(
 		width: 50%;
 		height: 100%;
 		background-color: $white;
-		@include flex(column, center, center, rem(10));
+		@include flex(column, center, center);
 		&--contener {
 			width: rem(403);
-			@include flex(column, center, center);
+			@include flex(column, center, center, rem(10));
 		}
 	}
 	&__info {

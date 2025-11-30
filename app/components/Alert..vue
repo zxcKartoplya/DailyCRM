@@ -6,7 +6,7 @@ const alertStore = useAlertStore()
 
 <template>
 	<div class="alert">
-		<div>!</div>
+		<Icon name="mdi:alert" class="alert__icon" />
 		<div class="alert__text">{{ alertStore.alert }}</div>
 	</div>
 </template>
@@ -21,6 +21,10 @@ const alertStore = useAlertStore()
 	position: fixed;
 	z-index: 1200;
 	@include flex(row, center, center, rem(12));
+	&__icon {
+		font-size: rem(20);
+		color: $color-secondary;
+	}
 	&__text {
 		color: $bg-white;
 	}

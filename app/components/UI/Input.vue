@@ -110,7 +110,6 @@ watch(
 	<div
 		class="ui-input"
 		:class="{
-			'ui-input--focused': isFocused,
 			'ui-input--error': !!error,
 			'ui-input--disabled': disabled,
 		}"
@@ -185,7 +184,11 @@ watch(
 	display: flex;
 	flex-direction: column;
 	width: 100%;
-	gap: 6px;
+	padding-bottom: rem(12);
+	transition:
+		color 0.15s ease-in-out,
+		background-color 0.15s ease-in-out,
+		border-color 0.15s ease-in-out;
 
 	&__label {
 		display: inline-flex;
@@ -193,7 +196,7 @@ watch(
 		gap: 6px;
 		font-size: 0.95rem;
 		font-weight: 600;
-		color: $gray-light;
+		color: $text-grey;
 		letter-spacing: 0.01em;
 	}
 
@@ -205,7 +208,7 @@ watch(
 	&__shell {
 		display: flex;
 		flex-direction: column;
-		gap: 6px;
+		position: relative;
 	}
 
 	&__field {
@@ -213,22 +216,11 @@ watch(
 		display: flex;
 		align-items: center;
 		gap: 12px;
-		min-height: 52px;
+		min-height: rem(25);
 		border-radius: $radius-md;
-		background: linear-gradient(
-			135deg,
-			rgba($color-surface, 0.9),
-			rgba($color-surface, 0.82)
-		);
-		border: 1px solid rgba($gray-light, 0.24);
-		box-shadow:
-			0 12px 30px rgba(0, 0, 0, 0.28),
-			inset 0 1px 0 rgba(255, 255, 255, 0.04);
+		border: 1px solid $icons-grey-light;
+		background-color: $bg-grey;
 		padding: 10px 12px;
-		transition:
-			border-color 0.16s ease,
-			box-shadow 0.16s ease,
-			transform 0.12s ease;
 		overflow: hidden;
 
 		&::before {
@@ -237,13 +229,21 @@ watch(
 			inset: -1px;
 			pointer-events: none;
 			border-radius: inherit;
-			background: linear-gradient(
-				120deg,
-				rgba($color-primary, 0.28),
-				rgba($color-secondary, 0.24)
-			);
 			opacity: 0;
 			transition: opacity 0.18s ease;
+		}
+		&:hover {
+			border-color: $icons-grey;
+		}
+		&:focus {
+			border-color: $icons-grey;
+			background-color: $bg-white;
+		}
+		&:disabled {
+			cursor: not-allowed;
+			&:hover {
+				border-color: $icons-grey-light;
+			}
 		}
 	}
 
@@ -252,22 +252,18 @@ watch(
 		width: 100%;
 		border: none;
 		background: transparent;
-		color: $text-base;
 		font-size: 1rem;
 		line-height: 1.4;
 		font-weight: 500;
 		letter-spacing: 0.01em;
-		padding: 8px 0;
 		outline: none;
-		caret-color: $color-primary;
-
-		&::placeholder {
-			color: rgba($text-base, 0.5);
+		@include body-usual-medium;
+		::placeholder {
+			color: $text-grey-light;
 		}
 	}
 
 	&__affix {
-		color: rgba($text-base, 0.7);
 		display: inline-flex;
 		align-items: center;
 		font-size: 0.95rem;
@@ -286,82 +282,46 @@ watch(
 		outline: none;
 		padding: 6px 8px;
 		border-radius: 10px;
-		background: rgba($text-base, 0.08);
-		color: $text-base;
 		cursor: pointer;
 		font-size: 1rem;
 		line-height: 1;
 		transition: all 0.15s ease;
 
 		&:hover {
-			background: rgba($text-base, 0.14);
-			color: $color-secondary;
+			border-color: $icons-grey;
 		}
 
 		&:active {
 			transform: scale(0.98);
 		}
+		&:focus {
+			border-color: $icons-grey;
+			background-color: $bg-white;
+		}
 	}
 
 	&__message {
-		font-size: 0.85rem;
-		line-height: 1.3;
-		color: rgba($text-base, 0.65);
+		position: absolute;
+		bottom: -30px;
+		@include body-label-regular;
 
 		&--error {
 			color: lighten(#f87171, 10%);
 		}
 	}
-
-	&--focused {
-		.ui-input__field {
-			border-color: rgba($color-primary, 0.7);
-			box-shadow:
-				0 14px 36px rgba($color-primary, 0.25),
-				0 2px 12px rgba($color-primary, 0.14),
-				inset 0 1px 0 rgba(255, 255, 255, 0.08);
-			transform: translateY(-1px);
-
-			&::before {
-				opacity: 1;
-			}
-		}
-
-		.ui-input__label {
-			color: $text-base;
-		}
-	}
-
 	&--error {
 		.ui-input__field {
 			border-color: rgba(#f87171, 0.9);
-			box-shadow:
-				0 14px 34px rgba(#f87171, 0.2),
-				inset 0 1px 0 rgba(255, 255, 255, 0.04);
-
-			&::before {
-				opacity: 0.8;
-				background: linear-gradient(
-					120deg,
-					rgba(#f87171, 0.3),
-					rgba($color-surface, 0.08)
-				);
-			}
 		}
 	}
 
 	&--disabled {
-		opacity: 0.55;
 		cursor: not-allowed;
-
-		.ui-input__field {
-			box-shadow: none;
-			border-color: rgba($gray-light, 0.16);
-			background: rgba($color-surface, 0.6);
+		&:hover {
+			border-color: $icons-grey-light;
 		}
-
-		.ui-input__input {
-			color: rgba($text-base, 0.6);
+		::placeholder {
+			color: $text-grey-light;
 		}
 	}
 }
