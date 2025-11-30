@@ -1,10 +1,4 @@
-<script lang="ts" setup>
-import LoginService from '~/services/login.services'
-
-const loginService = new LoginService()
-// loginService.creatAdmin()
-loginService.login()
-</script>
+<script lang="ts" setup></script>
 
 <template>
 	<div class="main-container">

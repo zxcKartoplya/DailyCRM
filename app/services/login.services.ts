@@ -1,11 +1,9 @@
+import type { LoginData } from '~/types/login'
 import Service from './services'
 
 class LoginService extends Service {
-	async login() {
-		return await this.post('/auth/login', {
-			email: 'user@example.com',
-			password: 'Secret123',
-		})
+	async login(userInfo: LoginData) {
+		return await this.post('/auth/login', userInfo)
 	}
 
 	async creatAdmin() {
@@ -17,4 +15,5 @@ class LoginService extends Service {
 	}
 }
 
-export default LoginService
+const loginService = new LoginService()
+export default loginService

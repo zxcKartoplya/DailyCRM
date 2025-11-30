@@ -7,6 +7,70 @@
 	@return math.div($px-value, 16) + rem;
 }
 
+@mixin h1 {
+	font-size: rem(32);
+	font-weight: 500;
+	line-height: 120%;
+}
+
+@mixin h2 {
+	font-size: rem(28);
+	font-weight: 500;
+	line-height: 120%;
+}
+
+@mixin h3 {
+	font-size: rem(24);
+	font-weight: 500;
+	line-height: 120%;
+}
+
+@mixin h4 {
+	font-size: rem(20);
+	font-weight: 500;
+	line-height: 120%;
+}
+
+@mixin h5 {
+	font-size: rem(16);
+	font-weight: 500;
+	line-height: 120%;
+}
+
+@mixin body-big-regular {
+	font-size: rem(16);
+	font-weight: 400;
+	line-height: 125%;
+}
+
+@mixin body-big-medium {
+	font-size: rem(16);
+	font-weight: 500;
+	line-height: 125%;
+}
+@mixin body-usual-regular {
+	font-size: rem(14);
+	font-weight: 400;
+	line-height: 120%;
+}
+
+@mixin body-usual-medium {
+	font-size: rem(14);
+	font-weight: 500;
+	line-height: 120%;
+}
+
+@mixin body-label-regular {
+	font-size: rem(12);
+	font-weight: 400;
+	line-height: 120%;
+}
+@mixin body-label-medium {
+	font-size: rem(12);
+	font-weight: 500;
+	line-height: 120%;
+}
+
 @mixin container {
 	max-width: calc(1200px + 16px * 2);
 	padding: 0 16px;

@@ -328,7 +328,7 @@ watch(
 		}
 
 		.ui-input__label {
-			color: $gray-medium;
+			color: $text-base;
 		}
 	}
 

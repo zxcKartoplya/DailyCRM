@@ -177,13 +177,13 @@ const handleClick = (event: MouseEvent) => {
 		--btn-shadow: none;
 	}
 
-	&:hover:not(:isdisabled) {
+	&:hover:not(:disabled) {
 		background: var(--btn-bg-hover);
 		transform: translateY(-1px);
 		box-shadow: 0 14px 28px rgba($color-primary, 0.32);
 	}
 
-	&:active:not(:isdisabled) {
+	&:active:not(:disabled) {
 		background: var(--btn-bg-active);
 		transform: translateY(0);
 		box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.25);
@@ -194,7 +194,7 @@ const handleClick = (event: MouseEvent) => {
 		outline-offset: 3px;
 	}
 
-	&:isdisabled {
+	&:disabled {
 		opacity: 0.55;
 		cursor: not-allowed;
 		box-shadow: none;
