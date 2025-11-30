@@ -4,6 +4,7 @@
 .nuxt
 .nitro
 .cache
+*.lock
 dist
 
 # Node dependencies
