@@ -21,6 +21,7 @@ const alertStore = useAlertStore()
 	position: fixed;
 	z-index: 1200;
 	@include flex(row, center, center, rem(12));
+	@include shadow($shadow-color);
 	&__icon {
 		font-size: rem(20);
 		color: $color-secondary;

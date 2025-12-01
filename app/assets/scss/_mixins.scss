@@ -3,8 +3,20 @@
 @use 'sass:meta';
 @use 'sass:string';
 
+$shadow-transparency: 0.4;
+$shadow-params: 2px 2px 10px 0px;
+
 @function rem($px-value) {
 	@return math.div($px-value, 16) + rem;
+}
+
+@mixin shadow(
+	$hex-color,
+	$shadow-transparency: $shadow-transparency,
+	$shadow-params: $shadow-params
+) {
+	$rgba-color: rgba($hex-color, $shadow-transparency);
+	box-shadow: $shadow-params $rgba-color;
 }
 
 @mixin h1 {

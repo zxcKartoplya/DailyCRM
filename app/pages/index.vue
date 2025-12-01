@@ -1,4 +1,8 @@
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+import adminService from '~/services/admin.servies'
+
+const request = await adminService.fetchAdmins()
+</script>
 
 <template>
 	<div class="main-container">

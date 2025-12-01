@@ -6,6 +6,7 @@ const alertStore = useAlertStore()
 
 <template>
 	<div>
+		<NuxtLayout />
 		<NuxtRouteAnnouncer />
 		<NuxtPage />
 		<Transition name="fade">
