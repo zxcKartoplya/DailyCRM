@@ -17,3 +17,13 @@ a {
 	color: inherit;
 	text-decoration: none;
 }
+.page {
+	width: calc(100% - #{rem(20)});
+	height: 100%;
+	box-sizing: border-box;
+	margin-left: rem(20);
+	padding: rem(20);
+	background-color: $white;
+	border-radius: $radius-md;
+	@include shadow($shadow-color);
+}

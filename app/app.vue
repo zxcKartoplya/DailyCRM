@@ -6,17 +6,13 @@ const alertStore = useAlertStore()
 
 <template>
 	<div>
-		<NuxtLayout />
-		<NuxtPage class="main" />
+		<NuxtLayout>
+			<NuxtPage />
+		</NuxtLayout>
 		<Transition name="fade">
 			<Alert v-if="alertStore.isShowAlert" />
 		</Transition>
 	</div>
 </template>
 
-<style lang="scss">
-.main {
-	padding-top: rem(20);
-	padding-left: rem(270);
-}
-</style>
+<style lang="scss"></style>

@@ -41,12 +41,7 @@ const sideBarLinks = [
 
 <template>
 	<div class="sidebar">
-		<NuxtLink to="/" class="sidebar__logo">
-			<div class="sidebar__logo--svg">
-				<Logo />
-			</div>
-			DailyCRM
-		</NuxtLink>
+		<NuxtLink to="/" class="sidebar__logo"> DailyCRM </NuxtLink>
 		<div class="sidebar__line"></div>
 		<SideBarItem v-for="link in sideBarLinks" v-bind="link" />
 	</div>
@@ -60,6 +55,7 @@ const sideBarLinks = [
 	border-radius: $radius-md;
 	background-color: $white;
 	position: fixed;
+	@include shadow($shadow-color);
 	&__logo {
 		width: 100%;
 		height: rem(60);
