@@ -12,21 +12,21 @@ const sideBarLinks = [
 		icon: 'material-symbols:emoji-people-rounded',
 	},
 	{
-		name: 'Создание',
+		name: 'Добавление',
 		subLink: [
 			{
 				name: 'Работника ',
-				path: '/workers',
+				path: '/create/workers',
 				icon: 'material-symbols:emoji-people-rounded',
 			},
 			{
 				name: 'Департамента ',
-				path: '/workers',
+				path: '/create/department',
 				icon: 'material-symbols:cases-rounded',
 			},
 			{
 				name: 'Роли ',
-				path: '/workers',
+				path: '/create/role',
 				icon: 'material-symbols:domino-mask',
 			},
 		],
@@ -41,12 +41,12 @@ const sideBarLinks = [
 
 <template>
 	<div class="sidebar">
-		<div class="sidebar__logo">
+		<NuxtLink to="/" class="sidebar__logo">
 			<div class="sidebar__logo--svg">
 				<Logo />
 			</div>
 			DailyCRM
-		</div>
+		</NuxtLink>
 		<div class="sidebar__line"></div>
 		<SideBarItem v-for="link in sideBarLinks" v-bind="link" />
 	</div>
