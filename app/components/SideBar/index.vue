@@ -1,10 +1,54 @@
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+const sideBarLinks = [
+	{ name: 'Главная ', path: '/', icon: 'mdi:home' },
+	{
+		name: 'Департаменты ',
+		path: '/departments',
+		icon: 'material-symbols:cases-rounded',
+	},
+	{
+		name: 'Работники ',
+		path: '/workers',
+		icon: 'material-symbols:emoji-people-rounded',
+	},
+	{
+		name: 'Создание',
+		subLink: [
+			{
+				name: 'Работника ',
+				path: '/workers',
+				icon: 'material-symbols:emoji-people-rounded',
+			},
+			{
+				name: 'Департамента ',
+				path: '/workers',
+				icon: 'material-symbols:cases-rounded',
+			},
+			{
+				name: 'Роли ',
+				path: '/workers',
+				icon: 'material-symbols:domino-mask',
+			},
+		],
+	},
+	{
+		name: 'Настройки',
+		path: '/setttings',
+		icon: 'material-symbols:settings-outline-rounded',
+	},
+]
+</script>
 
 <template>
 	<div class="sidebar">
-		<div class="sidebar__logo">DailyCRM</div>
+		<div class="sidebar__logo">
+			<div class="sidebar__logo--svg">
+				<Logo />
+			</div>
+			DailyCRM
+		</div>
 		<div class="sidebar__line"></div>
-		<SideBarItem name="Главная" path="/login" />
+		<SideBarItem v-for="link in sideBarLinks" v-bind="link" />
 	</div>
 </template>
 
@@ -19,8 +63,21 @@
 	&__logo {
 		width: 100%;
 		height: rem(60);
-		@include flex(row, center, center);
+		@include flex(row, center, center, rem(16));
 		@include h4;
+		&--svg {
+			width: rem(28);
+			height: rem(28);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			flex-shrink: 0;
+
+			:deep(svg) {
+				width: 100%;
+				height: 100%;
+			}
+		}
 	}
 	&__line {
 		margin: 0 rem(10) rem(20) rem(10);

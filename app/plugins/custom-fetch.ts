@@ -1,10 +1,21 @@
 export default defineNuxtPlugin(() => {
 	const config = useRuntimeConfig()
-	const token = useCookie('access_token')
+	const nuxtApp = useNuxtApp()
+	const token = useCookie<string | null>('access_token')
 	const route = useRoute()
+
+	const redirectToLogin = async () => {
+		if (route.path === '/login' || route.path === '/register') {
+			return
+		}
+
+		token.value = null
+		await nuxtApp.runWithContext(() => navigateTo('/login'))
+	}
 
 	const $customFetch = $fetch.create({
 		baseURL: config.public.apiBase,
+		ignoreResponseError: true,
 
 		onRequest({ options }) {
 			options.headers = new Headers(options.headers || {})
@@ -16,29 +27,14 @@ export default defineNuxtPlugin(() => {
 			}
 		},
 
-		onResponse() {
-			// response._data = new myBusinessResponse(response._data)
+		async onResponse({ response }) {
+			if (response.status >= 400) {
+				await redirectToLogin()
+			}
 		},
 
-		onResponseError({ response }) {
-			// if (response.status === 301) {
-			// 	const newURL = response.body.url_redirect
-			// 	return navigateTo(newURL)
-			// }
-			if (
-				response.status === 401 &&
-				route.path !== '/login' &&
-				route.path !== '/register'
-			) {
-				token.value = null
-				// return navigateTo('/login')
-			}
-
-			// Прокидываем ошибку дальше, чтобы сработали try/catch в вызовах
-			const message =
-				(response._data as any)?.message ||
-				`Request failed with status ${response.status}`
-			throw new Error(message)
+		async onRequestError() {
+			await redirectToLogin()
 		},
 	})
 	return {
