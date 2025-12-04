@@ -94,8 +94,6 @@ const getRowKey = (row: Record<string, any>, index: number) => {
 
 <style lang="scss" scoped>
 .ui-table {
-	border: 1px solid $gray-light;
-	border-radius: $radius-md;
 	background: $white;
 	overflow: hidden;
 	box-shadow: 0 4px 12px rgba($shadow-color, 0.12);
@@ -136,7 +134,6 @@ const getRowKey = (row: Record<string, any>, index: number) => {
 		white-space: nowrap;
 		&--head {
 			font-size: 0.98rem;
-			text-transform: uppercase;
 			letter-spacing: 0.02em;
 		}
 		&--left {
