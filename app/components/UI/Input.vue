@@ -193,7 +193,7 @@ watch(
 	&__label {
 		display: inline-flex;
 		align-items: center;
-		gap: 6px;
+		padding-bottom: rem(6);
 		font-size: 0.95rem;
 		font-weight: 600;
 		color: $text-grey;

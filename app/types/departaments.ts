@@ -8,3 +8,6 @@ export type Departament = {
 
 export type APIAddedDepartament = Departament
 export type APIFetchDepartament = Departament[]
+export type APIUpdateDepartament = {
+	name: string
+}

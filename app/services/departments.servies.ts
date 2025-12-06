@@ -1,6 +1,7 @@
 import type {
 	APIAddedDepartament,
 	APIFetchDepartament,
+	APIUpdateDepartament,
 	Departament,
 } from '~/types/departaments'
 import Service from './services'
@@ -20,6 +21,10 @@ class DepartamentsService extends Service {
 
 	async fetchDepartament(id: string) {
 		return (await this.get(`departments/${id}`)) as Departament
+	}
+
+	async putDepartament(id: string, data: APIUpdateDepartament) {
+		return await this.put(`departments/${id}`, data)
 	}
 }
 
