@@ -1,7 +1,8 @@
 <script setup>
+import { Icon } from '@iconify/vue'
 import { vOnClickOutside } from '@vueuse/components'
 import { ref } from 'vue'
-// import IconDots from '../icons/IconDots.vue'
+import { IconColors } from '~/types/icon'
 
 defineProps({
 	items: Array,
@@ -25,9 +26,14 @@ const toggleDropdown = async event => {
 
 <template>
 	<div class="table-popover">
-		<button class="table-popover__button" @click="toggleDropdown">
-			<IconDots />
-		</button>
+		<div class="table-popover__button" @click="toggleDropdown">
+			<Icon
+				icon="material-symbols:settings-ethernet"
+				width="16"
+				height="16"
+				:color="IconColors.GRAY_DEFAULT"
+			/>
+		</div>
 		<Teleport to="body">
 			<Transition name="fade">
 				<UIDropdown
@@ -54,7 +60,6 @@ const toggleDropdown = async event => {
 	align-items: center;
 	justify-content: center;
 	padding: rem(6);
-	border: none;
 	background: transparent;
 	border-radius: rem(8);
 	transition: background-color 0.15s ease;

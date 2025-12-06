@@ -4,6 +4,7 @@ import type { Departament } from '~/types/departaments'
 
 export const useDepartamentsStore = defineStore('departaments', () => {
 	const departaments = ref<Departament[]>()
+	const departament = ref<Departament>()
 
 	const fetchDepartaments = async () => {
 		departaments.value = await departamentsService.fetchDepartaments()
@@ -17,5 +18,21 @@ export const useDepartamentsStore = defineStore('departaments', () => {
 		return created
 	}
 
-	return { departaments, fetchDepartaments, addDepartament }
+	const delDepartament = async (id: number) => {
+		await departamentsService.delDepartament(id)
+		fetchDepartaments()
+	}
+
+	const fetchDepartament = async (id: string) => {
+		departament.value = await departamentsService.fetchDepartament(id)
+	}
+
+	return {
+		departaments,
+		fetchDepartaments,
+		addDepartament,
+		delDepartament,
+		fetchDepartament,
+		departament,
+	}
 })
