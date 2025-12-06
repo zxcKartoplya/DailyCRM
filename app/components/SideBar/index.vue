@@ -12,6 +12,11 @@ const sideBarLinks = [
 		icon: 'material-symbols:emoji-people-rounded',
 	},
 	{
+		name: 'Роли ',
+		path: '/role',
+		icon: 'material-symbols:domino-mask',
+	},
+	{
 		name: 'Добавление',
 		subLink: [
 			{
