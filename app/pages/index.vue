@@ -1,7 +1,8 @@
 <script lang="ts" setup>
 import adminService from '~/services/admin.servies'
 
-const request = await adminService.fetchAdmins()
+await adminService.fetchAdmins()
+// await adminService.addAdmin()
 </script>
 
 <template>
@@ -13,7 +14,7 @@ const request = await adminService.fetchAdmins()
 <style lang="scss" scoped>
 .main-container {
 	width: 100%;
-	height: 100vh;
+	height: 100%;
 	color: $color-secondary;
 	@include flex-center(10px);
 }

@@ -10,10 +10,11 @@ const table = {
 		{ title: 'Название департамента', sortId: null },
 		{ title: 'Количество работников', sortId: 'segment_type' },
 		{ title: 'Руководитель', sortId: 'users_count' },
+		{ title: 'Роли', sortId: 'users_count' },
 		{ title: '', sortId: null },
 	],
 	gridColumns:
-		'120px minmax(300px, 495px) minmax(260px, 180px) minmax(210px, 430px) 60px',
+		'120px minmax(300px, 495px) minmax(260px, 180px) minmax(110px, 330px) 100px 60px',
 }
 
 const goDepartmemts = (id: number) => {
@@ -52,6 +53,11 @@ onMounted(() => {
 					/>
 					<UITableColumn :text="departament.employees_count" isEllipsis />
 					<UITableColumn :text="departament.admin_name" isLink />
+					<UITableColumn
+						:text="departament.jobs_count"
+						isLink
+						@click="goDepartmemts(departament.id)"
+					/>
 					<UITableColumn>
 						<UITableRowPopover
 							:items="[

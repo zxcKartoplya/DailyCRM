@@ -4,6 +4,7 @@ export type Departament = {
 	name: string
 	admin_name: string
 	employees_count: number
+	jobs_count: number
 }
 
 export type APIAddedDepartament = Departament

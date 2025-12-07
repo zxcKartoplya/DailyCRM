@@ -1,12 +1,12 @@
 <script lang="ts" setup>
 import { Field, useForm } from 'vee-validate'
 import { useJobStore } from '~/stores/role'
-import { RoleCreateSchema } from '~/utils/validation/RoleCreateSchema'
+import { JobCreateSchema } from '~/utils/validation/JobCreateSchema'
 
 const jobStore = useJobStore()
 
 const { handleSubmit, errors, values } = useForm({
-	validationSchema: RoleCreateSchema,
+	validationSchema: JobCreateSchema,
 	initialValues: {
 		name: '',
 	},

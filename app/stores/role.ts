@@ -1,13 +1,15 @@
 import { defineStore } from 'pinia'
-import roleService from '~/services/role.servies'
+import jobService from '~/services/job.servies'
 
 export const useJobStore = defineStore('job', () => {
+	const jobs = ref([])
+
 	const fetchJobs = async () => {
-		await roleService.fetchJobs()
+		jobs.value = await jobService.fetchJobs()
 	}
 
 	const addJob = async (data: any) => {
-		const created = await roleService.addJob(data)
+		const created = await jobService.addJob(data)
 		if (!created) {
 			throw new Error('Failed to add department')
 		}
@@ -15,20 +17,21 @@ export const useJobStore = defineStore('job', () => {
 	}
 
 	const delJob = async (id: number) => {
-		await roleService.delJob(id)
+		await jobService.delJob(id)
 		fetchJobs()
 	}
 
 	const fetchJob = async (id: string) => {
-		await roleService.fetchJob(id)
+		await jobService.fetchJob(id)
 	}
 
 	// const putDepartament = async (id: string, data: any) => {
-	// 	await roleService.(id, data)
+	// 	await  jobService.(id, data)
 	// }
 
 	return {
 		fetchJobs,
+		jobs,
 		addJob,
 		delJob,
 		fetchJob,

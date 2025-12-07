@@ -12,10 +12,16 @@ const sideBarLinks = [
 		icon: 'material-symbols:emoji-people-rounded',
 	},
 	{
+		name: 'Обозреватели ',
+		path: '/reviewer',
+		icon: 'material-symbols:face-retouching-natural-outline-rounded',
+	},
+	{
 		name: 'Роли ',
 		path: '/role',
 		icon: 'material-symbols:domino-mask',
 	},
+
 	{
 		name: 'Добавление',
 		subLink: [
@@ -28,6 +34,11 @@ const sideBarLinks = [
 				name: 'Департамента ',
 				path: '/create/department',
 				icon: 'material-symbols:cases-rounded',
+			},
+			{
+				name: 'Обозревателя ',
+				path: '/create/reviewer',
+				icon: 'material-symbols:face-retouching-natural-outline-rounded',
 			},
 			{
 				name: 'Роли ',
