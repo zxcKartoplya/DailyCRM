@@ -10,6 +10,11 @@ const reviewersStore = useReviewersStore()
 const alertStore = useAlertStore()
 const router = useRouter()
 
+const assignedDepartment = ref('')
+const scoringModel = ref('')
+const maxWorkers = ref<number | null>(null)
+const metricsFocus = ref('')
+
 const { handleSubmit } = useForm<APIReviewerPayload>({
 	validationSchema: reviewerSchema,
 	initialValues: {
@@ -33,15 +38,15 @@ const add = handleSubmit(async formValues => {
 
 <template>
 	<form class="page" @submit.prevent="add">
-		<div class="page__text">Создать обозревателя</div>
+		<div class="page__text">Создание оценщика</div>
 		<div class="page__fields">
 			<Field
 				v-slot="{ field, errorMessage, handleChange, handleBlur }"
 				name="name"
 			>
 				<UIInput
-					label="Название обозревателя"
-					placeholder="Введите название обозревателя"
+					label="Роль оценщика"
+					placeholder="Например: Тимлид, Старший менеджер"
 					required
 					:modelValue="field.value"
 					:error="errorMessage"
@@ -55,8 +60,8 @@ const add = handleSubmit(async formValues => {
 				name="description"
 			>
 				<UIInput
-					label="Описание"
-					placeholder="Введите описание"
+					label="Краткое описание роли"
+					placeholder="Что именно оценивает данный тип оценщика"
 					required
 					:modelValue="field.value"
 					:error="errorMessage"
@@ -64,6 +69,36 @@ const add = handleSubmit(async formValues => {
 					@update:model-value="handleChange"
 				/>
 			</Field>
+
+			<UIInput
+				label="Закрепленный департамент"
+				placeholder="Например: Операционный анализ"
+				:modelValue="assignedDepartment"
+				@update:model-value="assignedDepartment = $event"
+			/>
+
+			<UIInput
+				label="Модель скоринга"
+				placeholder="Например: A/B/C, 5-балльная шкала"
+				:modelValue="scoringModel"
+				@update:model-value="scoringModel = $event"
+			/>
+
+			<UIInput
+				label="Максимум работников в сопровождении"
+				type="number"
+				placeholder="Например: 12"
+				:modelValue="maxWorkers"
+				@update:model-value="maxWorkers = $event as number"
+			/>
+
+			<div class="page__textarea">
+				<div class="page__label">Метрики, которые отслеживает оценщик</div>
+				<UITextArea
+					v-model="metricsFocus"
+					placeholder="Например: полнота дейлика, качество формулировок, наличие блокеров"
+				/>
+			</div>
 		</div>
 
 		<UIButton type="submit" class="page__button">Создать</UIButton>
@@ -81,6 +116,16 @@ const add = handleSubmit(async formValues => {
 
 	&__fields {
 		@include flex(column, null, null, rem(12));
+	}
+
+	&__textarea {
+		@include flex(column, null, null, rem(8));
+	}
+
+	&__label {
+		font-size: rem(14);
+		font-weight: 600;
+		color: $text-grey;
 	}
 
 	&__button {
