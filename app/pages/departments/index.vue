@@ -14,7 +14,7 @@ const table = {
 		{ title: '', sortId: null },
 	],
 	gridColumns:
-		'120px minmax(300px, 495px) minmax(260px, 180px) minmax(110px, 330px) 100px 60px',
+		'120px minmax(300px, 495px) minmax(260px, 180px) minmax(110px, 330px) minmax(100px, 250px) 60px',
 }
 
 const goDepartmemts = (id: number) => {
