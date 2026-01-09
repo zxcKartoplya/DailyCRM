@@ -99,9 +99,11 @@ const login = handleSubmit(
 		width: 50%;
 		height: 100%;
 		background-color: $white;
+		padding: rem(10);
 		@include flex(column, center, center);
 		&--contener {
-			width: rem(403);
+			max-width: rem(403);
+			width: 100%;
 			@include flex(column, center, center, rem(10));
 		}
 	}

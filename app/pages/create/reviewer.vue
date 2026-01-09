@@ -11,8 +11,6 @@ const alertStore = useAlertStore()
 const router = useRouter()
 
 const assignedDepartment = ref('')
-const scoringModel = ref('')
-const maxWorkers = ref<number | null>(null)
 const metricsFocus = ref('')
 
 const { handleSubmit } = useForm<APIReviewerPayload>({
@@ -74,26 +72,15 @@ const add = handleSubmit(async formValues => {
 				label="Закрепленный департамент"
 				placeholder="Например: Операционный анализ"
 				:modelValue="assignedDepartment"
-				@update:model-value="assignedDepartment = $event"
-			/>
-
-			<UIInput
-				label="Модель скоринга"
-				placeholder="Например: A/B/C, 5-балльная шкала"
-				:modelValue="scoringModel"
-				@update:model-value="scoringModel = $event"
-			/>
-
-			<UIInput
-				label="Максимум работников в сопровождении"
-				type="number"
-				placeholder="Например: 12"
-				:modelValue="maxWorkers"
-				@update:model-value="maxWorkers = $event as number"
 			/>
 
 			<div class="page__textarea">
-				<div class="page__label">Метрики, которые отслеживает оценщик</div>
+				<div class="page__row">
+					<div class="page__label">Метрики, которые отслеживает оценщик</div>
+					<UIButton variant="secondary">{{
+						metricsFocus ? 'Обновить' : 'Заполнить'
+					}}</UIButton>
+				</div>
 				<UITextArea
 					v-model="metricsFocus"
 					placeholder="Например: полнота дейлика, качество формулировок, наличие блокеров"
@@ -120,6 +107,10 @@ const add = handleSubmit(async formValues => {
 
 	&__textarea {
 		@include flex(column, null, null, rem(8));
+	}
+
+	&__row {
+		@include flex(row, space-between, center);
 	}
 
 	&__label {

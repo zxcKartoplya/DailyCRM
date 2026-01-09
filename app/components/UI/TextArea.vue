@@ -9,8 +9,10 @@ const model = defineModel<string>()
 <template>
 	<textarea
 		v-model="model"
+		name="description"
 		:placeholder="placeholder"
 		class="custom-textarea"
+		type="text"
 	></textarea>
 </template>
 
