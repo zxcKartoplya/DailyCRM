@@ -3,7 +3,7 @@ import { Field, useForm } from 'vee-validate'
 import { useAlertStore } from '~/stores/alert'
 import { useReviewersStore } from '~/stores/reviewers'
 import { Alert } from '~/types/alert'
-import type { APIReviewerPayload } from '~/types/reviewers'
+import type { APIReviewerPayload, Metric } from '~/types/reviewers'
 import { reviewerSchema } from '~/utils/validation/reviewerSchema'
 
 const reviewersStore = useReviewersStore()
@@ -11,9 +11,9 @@ const alertStore = useAlertStore()
 const router = useRouter()
 
 const assignedDepartment = ref('')
-const metricsFocus = ref('')
+const metrics = ref<Metric[]>([])
 
-const { handleSubmit } = useForm<APIReviewerPayload>({
+const { handleSubmit, values } = useForm<APIReviewerPayload>({
 	validationSchema: reviewerSchema,
 	initialValues: {
 		name: '',
@@ -32,6 +32,21 @@ const add = handleSubmit(async formValues => {
 		alertStore.showAlert(Alert.AddedError)
 	}
 })
+
+const getDescription = async () => {
+	const responce = await reviewersStore.fetchDescription(
+		values.name,
+		values.description,
+	)
+
+	metrics.value = responce
+}
+
+const deleteMetric = (display_name: string) => {
+	metrics.value = metrics.value.filter(
+		metric => metric.display_name !== display_name,
+	)
+}
 </script>
 
 <template>
@@ -77,14 +92,22 @@ const add = handleSubmit(async formValues => {
 			<div class="page__textarea">
 				<div class="page__row">
 					<div class="page__label">Метрики, которые отслеживает оценщик</div>
-					<UIButton variant="secondary">{{
-						metricsFocus ? 'Обновить' : 'Заполнить'
-					}}</UIButton>
+					<UIButton
+						@click="getDescription"
+						variant="secondary"
+						:is-disabled="values.name === '' || values.description === ''"
+						>{{ metrics.length ? 'Обновить' : 'Заполнить' }}</UIButton
+					>
 				</div>
-				<UITextArea
-					v-model="metricsFocus"
-					placeholder="Например: полнота дейлика, качество формулировок, наличие блокеров"
+				<MetricItem
+					v-for="(metric, index) in metrics"
+					:key="index"
+					:display_name="metric.display_name"
+					:value="metric.value"
+					:description="metric.description"
+					@close="deleteMetric(metric.display_name)"
 				/>
+				<UIButton color="grey"><IconAdd /></UIButton>
 			</div>
 		</div>
 

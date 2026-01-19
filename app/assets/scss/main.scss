@@ -19,11 +19,42 @@ a {
 }
 .page {
 	width: calc(100% - #{rem(20)});
-	height: 100%;
+	height: calc(100vh - 2.5rem);
+	overflow-y: auto;
+	scrollbar-gutter: stable;
+
 	box-sizing: border-box;
 	margin-left: rem(20);
 	padding: rem(20);
 	background-color: $white;
 	border-radius: $radius-md;
 	@include shadow($shadow-color);
+}
+
+/* =========================
+   Global scrollbar styling
+   ========================= */
+
+/* 1) Firefox */
+html {
+	scrollbar-color: rgba($bg-grey-medium, 0.55) transparent;
+}
+
+/* 2) WebKit (Chrome/Edge/Safari) */
+::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	background: rgba($bg-grey-medium, 0.45);
+	border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: rgba($bg-grey-medium, 0.7);
 }

@@ -3,11 +3,13 @@ import { computed } from 'vue'
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'outline'
 type Size = 'sm' | 'md' | 'lg'
+type Color = 'blue' | 'green' | 'orange' | 'red' | 'grey'
 
 const props = withDefaults(
 	defineProps<{
 		variant?: Variant
 		size?: Size
+		color?: Color
 		isBlock?: boolean
 		isLoading?: boolean
 		isDisabled?: boolean
@@ -20,7 +22,7 @@ const props = withDefaults(
 		isLoading: false,
 		isDisabled: false,
 		type: 'button',
-	}
+	},
 )
 
 const emit = defineEmits<{
@@ -31,6 +33,7 @@ const classes = computed(() => ({
 	'ui-button': true,
 	[`ui-button--${props.variant}`]: true,
 	[`ui-button--${props.size}`]: true,
+	[`ui-button--color-${props.color}`]: Boolean(props.color),
 	'ui-button--isBlock': props.isBlock,
 	'ui-button--isLoading': props.isLoading,
 }))
@@ -177,10 +180,111 @@ const handleClick = (event: MouseEvent) => {
 		--btn-shadow: none;
 	}
 
+	&--color-blue {
+		$c: $blue;
+		--btn-bg: linear-gradient(135deg, $c, lighten($c, 8%));
+		--btn-bg-hover: linear-gradient(135deg, lighten($c, 5%), lighten($c, 12%));
+		--btn-bg-active: darken($c, 6%);
+		--btn-border: rgba($c, 0.85);
+		--btn-shadow: 0 12px 26px rgba($c, 0.35);
+		--btn-color: $text-base;
+
+		&.ui-button--outline,
+		&.ui-button--ghost {
+			--btn-bg: transparent;
+			--btn-bg-hover: rgba($c, 0.08);
+			--btn-bg-active: rgba($c, 0.14);
+			--btn-border: rgba($c, 0.75);
+			--btn-shadow: none;
+			--btn-color: $c;
+		}
+	}
+
+	&--color-green {
+		$c: #22c55e;
+		--btn-bg: linear-gradient(135deg, $c, lighten($c, 8%));
+		--btn-bg-hover: linear-gradient(135deg, lighten($c, 5%), lighten($c, 12%));
+		--btn-bg-active: darken($c, 6%);
+		--btn-border: rgba($c, 0.85);
+		--btn-shadow: 0 12px 26px rgba($c, 0.35);
+		--btn-color: $text-base;
+
+		&.ui-button--outline,
+		&.ui-button--ghost {
+			--btn-bg: transparent;
+			--btn-bg-hover: rgba($c, 0.08);
+			--btn-bg-active: rgba($c, 0.14);
+			--btn-border: rgba($c, 0.75);
+			--btn-shadow: none;
+			--btn-color: $c;
+		}
+	}
+
+	&--color-orange {
+		$c: #f97316;
+		--btn-bg: linear-gradient(135deg, $c, lighten($c, 8%));
+		--btn-bg-hover: linear-gradient(135deg, lighten($c, 5%), lighten($c, 12%));
+		--btn-bg-active: darken($c, 6%);
+		--btn-border: rgba($c, 0.85);
+		--btn-shadow: 0 12px 26px rgba($c, 0.35);
+		--btn-color: #0b0f14;
+
+		&.ui-button--outline,
+		&.ui-button--ghost {
+			--btn-bg: transparent;
+			--btn-bg-hover: rgba($c, 0.08);
+			--btn-bg-active: rgba($c, 0.14);
+			--btn-border: rgba($c, 0.75);
+			--btn-shadow: none;
+			--btn-color: $c;
+		}
+	}
+
+	&--color-red {
+		$c: #ef4444;
+		--btn-bg: linear-gradient(135deg, $c, lighten($c, 8%));
+		--btn-bg-hover: linear-gradient(135deg, lighten($c, 5%), lighten($c, 12%));
+		--btn-bg-active: darken($c, 6%);
+		--btn-border: rgba($c, 0.85);
+		--btn-shadow: 0 12px 26px rgba($c, 0.35);
+		--btn-color: $text-base;
+
+		&.ui-button--outline,
+		&.ui-button--ghost {
+			--btn-bg: transparent;
+			--btn-bg-hover: rgba($c, 0.08);
+			--btn-bg-active: rgba($c, 0.14);
+			--btn-border: rgba($c, 0.75);
+			--btn-shadow: none;
+			--btn-color: $c;
+		}
+	}
+
+	&--color-grey {
+		$c: #f5f5f5;
+		--btn-bg: linear-gradient(135deg, $c, lighten($c, 8%));
+		--btn-bg-hover: linear-gradient(135deg, lighten($c, 5%), lighten($c, 12%));
+		--btn-bg-active: darken($c, 6%);
+		--btn-border: rgba($c, 0.85);
+		--btn-shadow: 0 12px 26px rgba($c, 0.35);
+		--btn-shadow-hover: 0 14px 28px rgba($c, 0.32);
+		--btn-color: $text-base;
+
+		&.ui-button--outline,
+		&.ui-button--ghost {
+			--btn-bg: transparent;
+			--btn-bg-hover: rgba($c, 0.08);
+			--btn-bg-active: rgba($c, 0.14);
+			--btn-border: rgba($c, 0.75);
+			--btn-shadow: none;
+			--btn-color: $gray-medium;
+		}
+	}
+
 	&:hover:not(:disabled) {
 		background: var(--btn-bg-hover);
 		transform: translateY(-1px);
-		box-shadow: 0 14px 28px rgba($color-primary, 0.32);
+		box-shadow: var(--btn-shadow-hover);
 	}
 
 	&:active:not(:disabled) {
