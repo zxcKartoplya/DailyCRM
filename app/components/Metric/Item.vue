@@ -15,12 +15,13 @@ const isMouse = ref(false)
 		class="metric"
 		@mouseenter="isMouse = true"
 		@mouseleave="isMouse = false"
+		@click="$emit('open')"
 	>
 		<IconClose
 			v-if="isMouse"
 			class="metric-icon"
 			size="18"
-			@click="$emit('close')"
+			@click.stop="$emit('close')"
 		/>
 
 		<div class="metric-wrapper">
@@ -40,6 +41,7 @@ const isMouse = ref(false)
 .metric {
 	background-color: $bg-grey;
 	position: relative;
+	cursor: pointer;
 	padding: rem(20);
 	border-radius: 12px;
 	@include flex(row, space-between, center);

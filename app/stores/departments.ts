@@ -1,4 +1,3 @@
-import { defineStore } from 'pinia'
 import departamentsService from '~/services/departments.servies'
 import type { Departament } from '~/types/departaments'
 

@@ -12,11 +12,13 @@ body {
 		$cool-gray-light 35%,
 		$cool-gray-light 100%
 	);
+	overflow: hidden;
 }
 a {
 	color: inherit;
 	text-decoration: none;
 }
+
 .page {
 	width: calc(100% - #{rem(20)});
 	height: calc(100vh - 2.5rem);
@@ -31,16 +33,10 @@ a {
 	@include shadow($shadow-color);
 }
 
-/* =========================
-   Global scrollbar styling
-   ========================= */
-
-/* 1) Firefox */
 html {
 	scrollbar-color: rgba($bg-grey-medium, 0.55) transparent;
 }
 
-/* 2) WebKit (Chrome/Edge/Safari) */
 ::-webkit-scrollbar {
 	width: 8px;
 	height: 8px;

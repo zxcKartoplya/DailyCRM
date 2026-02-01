@@ -1,6 +1,4 @@
 <script lang="ts" setup>
-import { computed } from 'vue'
-
 type Variant = 'primary' | 'secondary' | 'ghost' | 'outline'
 type Size = 'sm' | 'md' | 'lg'
 type Color = 'blue' | 'green' | 'orange' | 'red' | 'grey'
