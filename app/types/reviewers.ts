@@ -13,6 +13,7 @@ export type APIReviewerPayload = {
 	name: string
 	description: string
 	department_id: number
+	metrics: Metric[]
 }
 
 export type Metric = {

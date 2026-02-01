@@ -40,7 +40,10 @@ const { handleSubmit, values } = useForm<APIReviewerPayload>({
 
 const add = handleSubmit(async formValues => {
 	try {
-		const created = await reviewersStore.addReviewer(formValues)
+		const created = await reviewersStore.addReviewer({
+			...formValues,
+			metrics: metrics.value,
+		})
 		if (created) {
 			router.push('/reviewers')
 			alertStore.showAlert(Alert.Added)
