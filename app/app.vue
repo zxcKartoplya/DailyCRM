@@ -6,6 +6,7 @@ const alertStore = useAlertStore()
 
 <template>
 	<div>
+		<NuxtLoadingIndicator />
 		<NuxtLayout>
 			<NuxtPage />
 		</NuxtLayout>

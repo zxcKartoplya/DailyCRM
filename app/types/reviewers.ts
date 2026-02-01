@@ -2,6 +2,7 @@ export type Reviewer = {
 	id: number
 	name: string
 	description: string
+	department_id: number
 }
 
 export type APIFetchReviewers = Reviewer[]
@@ -11,6 +12,7 @@ export type APICreatedReviewer = Reviewer
 export type APIReviewerPayload = {
 	name: string
 	description: string
+	department_id: number
 }
 
 export type Metric = {

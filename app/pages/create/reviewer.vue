@@ -8,37 +8,23 @@ import type { APIReviewerPayload, Metric } from '~/types/reviewers'
 import { reviewerSchema } from '~/utils/validation/reviewerSchema'
 
 const reviewersStore = useReviewersStore()
+
+const { loading } = toRefs(reviewersStore)
+
 const departamentsStore = useDepartamentsStore()
 const alertStore = useAlertStore()
 const router = useRouter()
 
-const assignedDepartment = ref('')
-const metrics = ref<Metric[]>([
-	{
-		value: 9,
-		json_name: 'productivity',
-		display_name: 'Продуктивность разработки',
-		description: 'Скорость выполнения задач и достижение целей в срок',
-	},
-	{
-		value: 8,
-		json_name: 'teamwork',
-		display_name: 'Командная работа',
-		description: 'Умение эффективно взаимодействовать с командой и коллегами',
-	},
-	{
-		value: 7,
-		json_name: 'code_quality',
-		display_name: 'Качество кода',
-		description: 'Соответствие стандартам написания кода и отсутствие багов',
-	},
-	{
-		value: 6,
-		json_name: 'technical_skills',
-		display_name: 'Технические навыки',
-		description: 'Уровень владения инструментами и технологиями разработки',
-	},
-])
+const metrics = ref<Metric[]>([])
+const departamentsOptions = computed(() => {
+	if (departamentsStore.departaments?.length) {
+		return departamentsStore.departaments.map(dept => ({
+			name: dept.name,
+			value: dept.id,
+		}))
+	}
+	return []
+})
 
 const isMetricModalOpen = ref(false)
 const curretnMetric = ref<Metric | null>(null)
@@ -48,6 +34,7 @@ const { handleSubmit, values } = useForm<APIReviewerPayload>({
 	initialValues: {
 		name: '',
 		description: '',
+		department_id: 0,
 	},
 })
 
@@ -105,6 +92,10 @@ const createMetric = (metric: Metric) => {
 	metrics.value.push(metric)
 	closeMetricModal()
 }
+
+onMounted(() => {
+	departamentsStore.fetchDepartaments()
+})
 </script>
 
 <template>
@@ -141,11 +132,18 @@ const createMetric = (metric: Metric) => {
 				/>
 			</Field>
 
-			<UIInput
-				label="Закрепленный департамент"
-				placeholder="Например: Операционный анализ"
-				:modelValue="assignedDepartment"
-			/>
+			<Field
+				v-slot="{ field, handleChange, errorMessage }"
+				name="department_id"
+			>
+				<UISelect
+					label="Закрепленный департамент"
+					placeholder="Выберите департамент"
+					:options="departamentsOptions"
+					:modelValue="field.value"
+					@update:model-value="handleChange"
+				/>
+			</Field>
 
 			<div class="page__textarea">
 				<div class="page__row">
@@ -157,18 +155,23 @@ const createMetric = (metric: Metric) => {
 						>{{ metrics.length ? 'Обновить' : 'Заполнить' }}</UIButton
 					>
 				</div>
-				<MetricItem
-					v-for="(metric, index) in metrics"
-					:key="index"
-					:display_name="metric.display_name"
-					:value="metric.value"
-					:description="metric.description"
-					@open="openMetric(metric)"
-					@close="deleteMetric(metric.display_name)"
-				/>
-				<UIButton color="grey" @click="openMetricModal">
-					<IconAdd />
-				</UIButton>
+				<div v-if="!loading" class="page__metrics">
+					<MetricItem
+						v-for="(metric, index) in metrics"
+						:key="index"
+						:display_name="metric.display_name"
+						:value="metric.value"
+						:description="metric.description"
+						@open="openMetric(metric)"
+						@close="deleteMetric(metric.display_name)"
+					/>
+					<UIButton size="full" color="grey" @click="openMetricModal">
+						<IconAdd />
+					</UIButton>
+				</div>
+				<div v-else class="page__metrics-loading">
+					<UILoading size="lg" />
+				</div>
 			</div>
 		</div>
 
@@ -197,8 +200,13 @@ const createMetric = (metric: Metric) => {
 		@include flex(column, null, null, rem(12));
 	}
 
-	&__textarea {
+	&__metrics {
 		@include flex(column, null, null, rem(8));
+
+		&-loading {
+			@include flex(column, center, center);
+			height: rem(100);
+		}
 	}
 
 	&__row {

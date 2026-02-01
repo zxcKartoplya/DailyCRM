@@ -6,7 +6,8 @@ export const reviewerSchema = toTypedSchema(
 	zod.object({
 		name: zod.string().nonempty({ message: commonMessages.required }),
 		description: zod.string().nonempty({ message: commonMessages.required }),
-	})
+		department_id: zod.number().positive({ message: commonMessages.required }),
+	}),
 )
 
 export default reviewerSchema

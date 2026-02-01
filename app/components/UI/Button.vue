@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 type Variant = 'primary' | 'secondary' | 'ghost' | 'outline'
-type Size = 'sm' | 'md' | 'lg'
+type Size = 'sm' | 'md' | 'lg' | 'full'
 type Color = 'blue' | 'green' | 'orange' | 'red' | 'grey'
 
 const props = withDefaults(
@@ -127,6 +127,10 @@ const handleClick = (event: MouseEvent) => {
 	&--lg {
 		padding: 14px 22px;
 		font-size: 1.05rem;
+	}
+
+	&--full {
+		width: 100%;
 	}
 
 	&--primary {
