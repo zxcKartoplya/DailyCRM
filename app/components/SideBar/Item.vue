@@ -9,10 +9,19 @@ type Props = {
 	subLink?: Props[]
 }
 
-const { subLink } = defineProps<Props>()
+const { name, path, icon, subLink } = defineProps<Props>()
+const router = useRouter()
 
 const isOpen = ref(false)
 const hasSubLinks = computed(() => Array.isArray(subLink) && subLink.length > 0)
+const isActive = computed(() => {
+	if (path && path !== '/') {
+		return router.currentRoute.value.path.includes(path)
+	} else if (path === '/') {
+		return router.currentRoute.value.path === '/'
+	}
+	return false
+})
 
 const toggle = () => {
 	if (!hasSubLinks.value) return
@@ -28,9 +37,11 @@ const toggle = () => {
 				:icon="icon"
 				width="24"
 				height="24"
-				:color="IconColors.GRAY_DEFAULT"
+				:color="isActive ? IconColors.BLACK : IconColors.GRAY_DEFAULT"
 			/>
-			<div class="item__text">{{ name }}</div>
+			<div class="item__text" :class="{ 'item__text--active': isActive }">
+				{{ name }}
+			</div>
 		</NuxtLink>
 
 		<button
@@ -46,7 +57,9 @@ const toggle = () => {
 				height="20"
 				:color="IconColors.GRAY_DEFAULT"
 			/>
-			<div class="item__text">{{ name }}</div>
+			<div class="item__text" :class="{ 'item__text--active': isActive }">
+				{{ name }}
+			</div>
 			<Icon
 				icon="mdi:chevron-down"
 				class="item__chevron"
@@ -56,7 +69,6 @@ const toggle = () => {
 				height="20"
 			/>
 		</button>
-
 		<Transition name="sublink">
 			<div class="item__sublink" v-if="hasSubLinks && isOpen">
 				<SideBarItem
@@ -76,6 +88,7 @@ const toggle = () => {
 	border-radius: $radius-md;
 	background-color: $white;
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
 	&--open {
 		background-color: $bg-blue;
 	}
@@ -96,6 +109,10 @@ const toggle = () => {
 		color: $cool-gray-medium;
 		flex: 1;
 		text-align: left;
+
+		&--active {
+			color: $text-black;
+		}
 	}
 	&__chevron {
 		transition: transform 0.2s ease;

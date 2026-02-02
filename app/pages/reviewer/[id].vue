@@ -1,14 +1,10 @@
 <script lang="ts" setup>
-const route = useRoute()
-const reviewerId = route.params.id as string
+import { useReviewersStore } from '~/stores/reviewers'
 
-const reviewer = {
-	id: reviewerId,
-	role: 'Тимлид',
-	department: 'Операционный анализ',
-	description:
-		'Старший программист, оценивает сложность реализации задач и качество ежедневных отчетов.',
-}
+const route = useRoute()
+const reviewersStore = useReviewersStore()
+const { reviewer } = storeToRefs(reviewersStore)
+const reviewerId = route.params.id as string
 
 const metrics = [
 	'Полнота дейлика',
@@ -55,38 +51,46 @@ const workers = [
 		delta: '+2%',
 	},
 ]
+
+onMounted(() => {
+	reviewersStore.fetchReviewer(reviewerId)
+})
 </script>
 
 <template>
 	<section class="page">
 		<div class="header">
 			<div class="header__title">Профиль оценщика</div>
-			<div class="header__name">{{ reviewer.role }}</div>
+			<div class="header__name">{{ reviewer?.name }}</div>
 			<div class="header__meta">
-				<span>ID: {{ reviewer.id }}</span>
-				<span>Департамент: {{ reviewer.department }}</span>
+				<span>ID: {{ reviewer?.id }}</span>
+				<span>Департамент: {{ reviewer?.department }}</span>
 			</div>
 		</div>
-
 		<div class="grid">
 			<div class="card">
 				<div class="card__title">Краткое описание</div>
-				<div class="card__text">{{ reviewer.description }}</div>
+				<div class="card__text">{{ reviewer?.description }}</div>
 			</div>
 
 			<div class="card">
 				<div class="card__title">Метрики оценщика</div>
 				<div class="metric-list">
-					<div class="metric" v-for="metric in metrics" :key="metric">
-						{{ metric }}
+					<div
+						class="metric"
+						v-for="metric in reviewer?.metrics"
+						:key="metric.json_name"
+					>
+						{{ metric.display_name }}
 					</div>
 				</div>
 			</div>
 
-			<div class="card">
+			<!-- TODO доразбираться с логикой привязки оценщика -->
+			<!-- <div class="card">
 				<div class="card__title">Закрепленный департамент</div>
-				<div class="department">{{ reviewer.department }}</div>
-			</div>
+				<div class="department">{{ reviewer?.department }}</div>
+			</div> -->
 
 			<div class="card card--wide">
 				<div class="card__title">Сотрудники и динамика рейтинга</div>

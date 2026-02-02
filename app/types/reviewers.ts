@@ -2,7 +2,8 @@ export type Reviewer = {
 	id: number
 	name: string
 	description: string
-	department_id: number
+	department: string
+	metrics: Metric[]
 }
 
 export type APIFetchReviewers = Reviewer[]

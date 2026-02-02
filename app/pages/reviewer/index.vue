@@ -1,48 +1,27 @@
 <script lang="ts" setup>
+import { useReviewersStore } from '~/stores/reviewers'
+
 const router = useRouter()
+const reviewersStore = useReviewersStore()
+const { reviewers } = storeToRefs(reviewersStore)
 
-	const table = {
-		heads: [
-			{ title: 'ID', sortId: 'id' },
-			{ title: 'Роль оценщика', sortId: 'role' },
-			{ title: 'Закреплено работников', sortId: 'workers_count' },
-			{ title: '', sortId: null },
-		],
-		gridColumns:
-			'90px minmax(260px, 1fr) minmax(220px, 1fr) 60px',
-	}
-
-	const reviewers = [
-		{
-			id: 21,
-			role: 'Тимлид',
-			workers_count: 12,
-		},
-		{
-			id: 22,
-			role: 'Старший менеджер',
-			workers_count: 9,
-		},
-		{
-			id: 23,
-			role: 'Руководитель направления',
-			workers_count: 15,
-		},
-		{
-			id: 24,
-			role: 'Старший аналитик',
-			workers_count: 7,
-		},
-		{
-			id: 25,
-			role: 'HR бизнес-партнер',
-			workers_count: 10,
-		},
-	]
+const table = {
+	heads: [
+		{ title: 'ID', sortId: 'id' },
+		{ title: 'Название роли', sortId: 'role' },
+		{ title: 'Описание роли', sortId: 'description' },
+		{ title: '', sortId: null },
+	],
+	gridColumns: '90px minmax(260px, 1fr) minmax(220px, 1fr) 60px',
+}
 
 const goReviewer = (id: number) => {
 	router.push(`/reviewer/${id}`)
 }
+
+onMounted(async () => {
+	await reviewersStore.fetchReviewers()
+})
 </script>
 
 <template>
@@ -65,12 +44,12 @@ const goReviewer = (id: number) => {
 						@click="goReviewer(reviewer.id)"
 					/>
 					<UITableColumn
-						:text="reviewer.role"
+						:text="reviewer.name"
 						isLink
 						isEllipsis
 						@click="goReviewer(reviewer.id)"
 					/>
-					<UITableColumn :text="reviewer.workers_count" isEllipsis />
+					<UITableColumn :text="reviewer.description" isEllipsis />
 					<UITableColumn>
 						<UITableRowPopover
 							:items="[
@@ -78,6 +57,12 @@ const goReviewer = (id: number) => {
 									title: 'Открыть профиль',
 									func: () => {
 										goReviewer(reviewer.id)
+									},
+								},
+								{
+									title: 'Удалить',
+									func: () => {
+										reviewersStore.delReviewer(reviewer.id)
 									},
 								},
 							]"
