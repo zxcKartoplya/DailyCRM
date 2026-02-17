@@ -12,7 +12,7 @@ const sideBarLinks = [
 		icon: 'material-symbols:emoji-people-rounded',
 	},
 	{
-		name: 'Обозреватели ',
+		name: 'Оценщики ',
 		path: '/reviewer',
 		icon: 'material-symbols:face-retouching-natural-outline-rounded',
 	},
@@ -36,7 +36,7 @@ const sideBarLinks = [
 				icon: 'material-symbols:cases-rounded',
 			},
 			{
-				name: 'Обозревателя ',
+				name: 'Оценщика ',
 				path: '/create/reviewer',
 				icon: 'material-symbols:face-retouching-natural-outline-rounded',
 			},
