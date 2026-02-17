@@ -3,6 +3,7 @@ import type { Role } from '~/types/role'
 
 export const useJobStore = defineStore('job', () => {
 	const jobs = ref<Role[]>()
+	const isLoading = ref(true)
 	const job = ref<Role>()
 
 	const fetchJobs = async () => {
@@ -23,15 +24,19 @@ export const useJobStore = defineStore('job', () => {
 	}
 
 	const fetchJob = async (id: string) => {
+		isLoading.value = true
 		job.value = await jobService.fetchJob(id)
+		isLoading.value = false
 	}
 
-	// const putDepartament = async (id: string, data: any) => {
-	// 	await  jobService.(id, data)
-	// }
+	const putJob = async (id: string, values: any) => {
+		await jobService.putJob(id, values)
+	}
 
 	return {
 		fetchJobs,
+		putJob,
+		isLoading,
 		jobs,
 		job,
 		addJob,

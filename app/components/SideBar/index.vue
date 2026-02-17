@@ -23,26 +23,26 @@ const sideBarLinks = [
 	},
 
 	{
-		name: 'Добавление',
+		name: 'Редактирование',
 		subLink: [
 			{
 				name: 'Работника ',
-				path: '/create/workers',
+				path: '/edit/workers',
 				icon: 'material-symbols:emoji-people-rounded',
 			},
 			{
 				name: 'Департамента ',
-				path: '/create/department',
+				path: '/edit/department',
 				icon: 'material-symbols:cases-rounded',
 			},
 			{
 				name: 'Оценщика ',
-				path: '/create/reviewer',
+				path: '/edit/reviewer',
 				icon: 'material-symbols:face-retouching-natural-outline-rounded',
 			},
 			{
 				name: 'Роли ',
-				path: '/create/role',
+				path: '/edit/role',
 				icon: 'material-symbols:domino-mask',
 			},
 		],

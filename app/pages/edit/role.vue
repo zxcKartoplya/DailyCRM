@@ -6,14 +6,25 @@ import { useJobStore } from '~/stores/role'
 import { mapForSelect } from '~/utils/mappers/select'
 import { JobCreateSchema } from '~/utils/validation/JobCreateSchema'
 
-const jobStore = useJobStore()
 const reviewersStore = useReviewersStore()
 const departamentsStore = useDepartamentsStore()
+const jobStore = useJobStore()
+const { job } = storeToRefs(jobStore)
+const route = useRoute()
+const router = useRouter()
+const jobId = route.query.id as string
+
+if (jobId) {
+	await jobStore.fetchJob(jobId)
+}
 
 const { handleSubmit, values } = useForm({
 	validationSchema: JobCreateSchema,
 	initialValues: {
-		name: '',
+		name: job.value?.name,
+		reviewer_id: job.value?.reviewer_id,
+		department_id: job.value?.department_id,
+		description: job.value?.description,
 	},
 })
 
@@ -25,7 +36,12 @@ const reviewersOptions = computed(() => {
 })
 
 const add = handleSubmit(() => {
-	jobStore.addJob(values)
+	if (jobId) {
+		jobStore.putJob(jobId, values)
+	} else {
+		jobStore.addJob(values)
+	}
+	router.push('/role')
 })
 
 onMounted(() => {
@@ -36,7 +52,9 @@ onMounted(() => {
 
 <template>
 	<form class="page" @submit.prevent="add">
-		<div class="page__text">Добавление новой роли работника</div>
+		<div class="page__text">
+			{{ jobId ? 'Редактирование' : 'Добавление новой' }} роли работника
+		</div>
 		<div class="page__field">
 			<Field
 				v-slot="{ field, errorMessage, handleChange, handleBlur }"
@@ -54,7 +72,7 @@ onMounted(() => {
 			<div class="page__field-row">
 				<Field
 					v-slot="{ field, errorMessage, handleChange, handleBlur }"
-					name="department_id"
+					name="reviewer_id"
 				>
 					<UISelect
 						label="Оценщик"
@@ -67,7 +85,7 @@ onMounted(() => {
 				</Field>
 				<Field
 					v-slot="{ field, errorMessage, handleChange, handleBlur }"
-					name="reviewer_id"
+					name="department_id"
 				>
 					<UISelect
 						label="Закрепленный департамент"
@@ -93,7 +111,9 @@ onMounted(() => {
 				/>
 			</Field>
 		</div>
-		<UIButton class="page__button" type="submit">Добавить</UIButton>
+		<UIButton class="page__button" type="submit">{{
+			jobId ? 'Сохранить' : 'Добавить'
+		}}</UIButton>
 	</form>
 </template>
 

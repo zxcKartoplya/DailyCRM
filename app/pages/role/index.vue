@@ -18,6 +18,10 @@ const goRole = (id: number) => {
 	router.push(`/role/${id}`)
 }
 
+const editRole = (id: number) => {
+	router.push(`/edit/role?id=${id}`)
+}
+
 onMounted(() => {
 	jobStore.fetchJobs()
 })
@@ -52,6 +56,12 @@ onMounted(() => {
 									title: 'Открыть роль',
 									func: () => {
 										goRole(role.id)
+									},
+								},
+								{
+									title: 'Изменить роль',
+									func: () => {
+										editRole(role.id)
 									},
 								},
 								{

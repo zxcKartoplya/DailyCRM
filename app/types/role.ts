@@ -4,4 +4,6 @@ export type Role = {
 	department_id: number
 	reviewer_id: number
 	reviewer_name: string
+	department_name: string
+	description: string
 }

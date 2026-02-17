@@ -3,18 +3,10 @@ import { useJobStore } from '~/stores/role'
 
 const route = useRoute()
 const jobStore = useJobStore()
-const { job } = storeToRefs(jobStore)
+const { job, isLoading } = storeToRefs(jobStore)
 
 const roleId = route.params.id as string
-
-const role = {
-	id: roleId,
-	name: 'Аналитик дейликов',
-	reviewer: 'Тимлид',
-	department: 'Операционный анализ',
-	description:
-		'Отвечает за анализ ежедневных отчетов, выявляет риски и формирует рекомендации.',
-}
+const loadError = ref<string | null>(null)
 
 const responsibilities = [
 	'Проверка полноты и структуры дейликов',
@@ -36,45 +28,64 @@ onMounted(() => {
 </script>
 
 <template>
-	<section v-if="job" class="page">
-		<div class="header">
-			<div class="header__title">Профиль роли</div>
-			<div class="header__name">{{ job.name }}</div>
-			<div class="header__meta">
-				<span>ID: {{ job.id }}</span>
-				<span>Оценщик: {{ job.reviewer_name }}</span>
-				<span>Департамент: {{ role.department }}</span>
-			</div>
-		</div>
+	<div class="page-stage">
+		<Transition name="fade">
+			<SkeletonPage v-if="isLoading" />
 
-		<div class="grid">
-			<div class="card">
-				<div class="card__title">Описание роли</div>
-				<div class="card__text">{{ role.description }}</div>
-			</div>
-
-			<div class="card">
-				<div class="card__title">Ключевые обязанности</div>
-				<div class="list">
-					<div class="list__item" v-for="item in responsibilities" :key="item">
-						{{ item }}
+			<section v-else-if="job" key="content" class="page page-stage__layer">
+				<div class="header">
+					<div class="header__title">Профиль роли</div>
+					<div class="header__name">{{ job.name }}</div>
+					<div class="header__meta">
+						<span>ID: {{ job.id }}</span>
+						<span>Оценщик: {{ job.reviewer_name }}</span>
+						<span>Департамент: {{ job.department_name }}</span>
 					</div>
 				</div>
-			</div>
 
-			<div class="card card--wide">
-				<div class="card__title">Сотрудники с этой ролью</div>
-				<div class="worker" v-for="worker in linkedWorkers" :key="worker.id">
-					<div class="worker__id">#{{ worker.id }}</div>
-					<div class="worker__name">{{ worker.name }}</div>
-					<div class="worker__rating">{{ worker.rating }}</div>
+				<div class="grid">
+					<div class="card">
+						<div class="card__title">Описание роли</div>
+						<div class="card__text">{{ job.description }}</div>
+					</div>
+
+					<div class="card">
+						<div class="card__title">Ключевые обязанности</div>
+						<div class="list">
+							<div
+								class="list__item"
+								v-for="item in responsibilities"
+								:key="item"
+							>
+								{{ item }}
+							</div>
+						</div>
+					</div>
+
+					<div class="card card--wide">
+						<div class="card__title">Сотрудники с этой ролью</div>
+						<div
+							class="worker"
+							v-for="worker in linkedWorkers"
+							:key="worker.id"
+						>
+							<div class="worker__id">#{{ worker.id }}</div>
+							<div class="worker__name">{{ worker.name }}</div>
+							<div class="worker__rating">{{ worker.rating }}</div>
+						</div>
+					</div>
 				</div>
-			</div>
-		</div>
-	</section>
+			</section>
+		</Transition>
+	</div>
 </template>
 
 <style lang="scss" scoped>
+.page-stage {
+	position: relative;
+	min-height: rem(420);
+}
+
 .page {
 	padding: rem(20);
 	@include flex(column, null, null, rem(20));
@@ -200,6 +211,34 @@ onMounted(() => {
 .worker__rating {
 	font-weight: 700;
 	color: #111827;
+}
+
+.state {
+	padding: rem(24);
+	border-radius: rem(16);
+	background: #ffffff;
+	box-shadow: 0 rem(10) rem(30) rgba(15, 23, 42, 0.08);
+	@include flex(column, center, center, rem(12));
+
+	&__text {
+		color: #374151;
+		font-size: rem(14);
+	}
+}
+
+.fade-enter-active,
+.fade-leave-active {
+	transition: opacity 0.2s ease;
+}
+
+.fade-leave-active {
+	position: absolute;
+	inset: 0;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+	opacity: 0;
 }
 
 @media (max-width: 900px) {

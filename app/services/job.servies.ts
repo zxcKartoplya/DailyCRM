@@ -15,6 +15,10 @@ class JobService extends Service {
 		return await this.get(`jobs/${id}`)
 	}
 
+	async putJob(id: string, values) {
+		return await this.put(`jobs/${id}`, values)
+	}
+
 	// async putJob(id: string, data: ) {
 	// 	return await this.put(`jobs/${id}`, data)
 	// }
