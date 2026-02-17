@@ -1,54 +1,26 @@
 <script lang="ts" setup>
+import { useJobStore } from '~/stores/role'
+
 const router = useRouter()
+const jobStore = useJobStore()
 
 const table = {
 	heads: [
 		{ title: 'ID', sortId: 'id' },
-		{ title: 'Название роли', sortId: 'name' },
-		{ title: 'Оценщик', sortId: 'reviewer' },
-		{ title: 'Департамент', sortId: 'department' },
+		{ title: 'Название роли', sortId: 'role' },
+		{ title: 'Описание роли', sortId: 'description' },
 		{ title: '', sortId: null },
 	],
-	gridColumns:
-		'90px minmax(240px, 1fr) minmax(200px, 1fr) minmax(200px, 1fr) 60px',
+	gridColumns: '90px minmax(260px, 1fr) minmax(220px, 1fr) 60px',
 }
-
-const roles = [
-	{
-		id: 31,
-		name: 'Аналитик дейликов',
-		reviewer: 'Тимлид',
-		department: 'Операционный анализ',
-	},
-	{
-		id: 32,
-		name: 'Координатор задач',
-		reviewer: 'Старший менеджер',
-		department: 'Клиентский успех',
-	},
-	{
-		id: 33,
-		name: 'Специалист качества',
-		reviewer: 'Руководитель направления',
-		department: 'Служба контроля',
-	},
-	{
-		id: 34,
-		name: 'Менеджер прогресса',
-		reviewer: 'Старший аналитик',
-		department: 'Продукт и метрики',
-	},
-	{
-		id: 35,
-		name: 'HR-аналитик',
-		reviewer: 'HR бизнес-партнер',
-		department: 'Люди и культура',
-	},
-]
 
 const goRole = (id: number) => {
 	router.push(`/role/${id}`)
 }
+
+onMounted(() => {
+	jobStore.fetchJobs()
+})
 </script>
 
 <template>
@@ -57,7 +29,7 @@ const goRole = (id: number) => {
 			<div class="page__title">Роли</div>
 			<UITableBase :headList="table.heads" :columnTemplates="table.gridColumns">
 				<UITableRow
-					v-for="(role, index) in roles"
+					v-for="(role, index) in jobStore.jobs"
 					:key="role.id"
 					:columnTemplates="table.gridColumns"
 					class="border-none"
@@ -72,15 +44,21 @@ const goRole = (id: number) => {
 						isEllipsis
 						@click="goRole(role.id)"
 					/>
-					<UITableColumn :text="role.reviewer" isEllipsis />
-					<UITableColumn :text="role.department" isEllipsis />
+					<UITableColumn :text="role.reviewer_name" isEllipsis />
 					<UITableColumn>
 						<UITableRowPopover
 							:items="[
 								{
-									title: 'Открыть профиль',
+									title: 'Открыть роль',
 									func: () => {
 										goRole(role.id)
+									},
+								},
+								{
+									title: 'Удалить',
+									red: true,
+									func: () => {
+										jobStore.delJob(role.id)
 									},
 								},
 							]"

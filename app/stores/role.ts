@@ -1,8 +1,9 @@
-import { defineStore } from 'pinia'
 import jobService from '~/services/job.servies'
+import type { Role } from '~/types/role'
 
 export const useJobStore = defineStore('job', () => {
-	const jobs = ref([])
+	const jobs = ref<Role[]>()
+	const job = ref<Role>()
 
 	const fetchJobs = async () => {
 		jobs.value = await jobService.fetchJobs()
@@ -22,7 +23,7 @@ export const useJobStore = defineStore('job', () => {
 	}
 
 	const fetchJob = async (id: string) => {
-		await jobService.fetchJob(id)
+		job.value = await jobService.fetchJob(id)
 	}
 
 	// const putDepartament = async (id: string, data: any) => {
@@ -32,6 +33,7 @@ export const useJobStore = defineStore('job', () => {
 	return {
 		fetchJobs,
 		jobs,
+		job,
 		addJob,
 		delJob,
 		fetchJob,

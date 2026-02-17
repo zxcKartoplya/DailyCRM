@@ -1,5 +1,10 @@
 <script lang="ts" setup>
+import { useJobStore } from '~/stores/role'
+
 const route = useRoute()
+const jobStore = useJobStore()
+const { job } = storeToRefs(jobStore)
+
 const roleId = route.params.id as string
 
 const role = {
@@ -19,28 +24,25 @@ const responsibilities = [
 	'Подготовка еженедельного отчета',
 ]
 
-const metrics = [
-	{ title: 'Средний рейтинг', value: '4.2' },
-	{ title: 'Стабильность прогресса', value: '84%' },
-	{ title: 'Скорость закрытия', value: '79%' },
-	{ title: 'Качество описаний', value: '88%' },
-]
-
 const linkedWorkers = [
 	{ id: 101, name: 'Анна Маркова', rating: 'A' },
 	{ id: 102, name: 'Дмитрий Соловьев', rating: 'B+' },
 	{ id: 103, name: 'Екатерина Горина', rating: 'A-' },
 ]
+
+onMounted(() => {
+	jobStore.fetchJob(roleId)
+})
 </script>
 
 <template>
-	<section class="page">
+	<section v-if="job" class="page">
 		<div class="header">
 			<div class="header__title">Профиль роли</div>
-			<div class="header__name">{{ role.name }}</div>
+			<div class="header__name">{{ job.name }}</div>
 			<div class="header__meta">
-				<span>ID: {{ role.id }}</span>
-				<span>Оценщик: {{ role.reviewer }}</span>
+				<span>ID: {{ job.id }}</span>
+				<span>Оценщик: {{ job.reviewer_name }}</span>
 				<span>Департамент: {{ role.department }}</span>
 			</div>
 		</div>
@@ -56,16 +58,6 @@ const linkedWorkers = [
 				<div class="list">
 					<div class="list__item" v-for="item in responsibilities" :key="item">
 						{{ item }}
-					</div>
-				</div>
-			</div>
-
-			<div class="card">
-				<div class="card__title">Метрики роли</div>
-				<div class="metric-list">
-					<div class="metric" v-for="metric in metrics" :key="metric.title">
-						<div class="metric__title">{{ metric.title }}</div>
-						<div class="metric__value">{{ metric.value }}</div>
 					</div>
 				</div>
 			</div>

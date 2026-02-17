@@ -9,7 +9,7 @@ export default defineNuxtPlugin(() => {
 			return
 		}
 
-		token.value = null
+		// token.value = null
 		await nuxtApp.runWithContext(() => navigateTo('/login'))
 	}
 
