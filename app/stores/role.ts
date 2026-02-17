@@ -1,11 +1,15 @@
-import { defineStore } from 'pinia'
 import jobService from '~/services/job.servies'
+import type { Role } from '~/types/role'
+import type { ApiResponse } from '~/types/api/api'
+import { mapRolePublicData } from '~/utils/mappers/api/jobs'
+import { mapArrayResponse } from '~/utils/mappers/api/mapBase'
 
 export const useJobStore = defineStore('job', () => {
-	const jobs = ref([])
+	const jobs = ref<Role[]>()
 
 	const fetchJobs = async () => {
-		jobs.value = await jobService.fetchJobs()
+		let data = await jobService.fetchJobs()
+		jobs.value = mapArrayResponse(data as Role[], mapRolePublicData)
 	}
 
 	const addJob = async (data: any) => {

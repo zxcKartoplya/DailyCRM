@@ -12,9 +12,10 @@ type Props = {
 	required?: boolean
 	placeholder?: string
 	options?: Option[]
+	error?: string
 }
 
-const { modelValue, label, required, placeholder, options } =
+const { modelValue, label, required, placeholder, options, error } =
 	defineProps<Props>()
 
 const resolvedModelValue = computed(() =>
@@ -53,7 +54,10 @@ const handleChange = (event: Event) => {
 
 		<select
 			class="ui-select__select"
-			:class="{ 'ui-select__select--empty': resolvedModelValue === '' }"
+			:class="{
+				'ui-select__select--empty': resolvedModelValue === '',
+				'ui-select__select--error': !!error,
+			}"
 			:value="resolvedModelValue"
 			@change="handleChange"
 		>
@@ -69,6 +73,10 @@ const handleChange = (event: Event) => {
 				{{ option.name }}
 			</option>
 		</select>
+
+		<p v-if="error" class="ui-select__message ui-select__message--error">
+			{{ error }}
+		</p>
 	</div>
 </template>
 
@@ -110,6 +118,19 @@ const handleChange = (event: Event) => {
 
 		&--empty {
 			color: $text-grey;
+		}
+
+		&--error {
+			border-color: #ff5b5b;
+		}
+	}
+
+	&__message {
+		margin-top: rem(6);
+		font-size: rem(12);
+
+		&--error {
+			color: #ff5b5b;
 		}
 	}
 }

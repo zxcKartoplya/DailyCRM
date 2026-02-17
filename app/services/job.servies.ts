@@ -1,8 +1,10 @@
+import type { ApiResponse } from '~/types/api/api'
+import type { Role } from '~/types/role'
 import Service from './services'
 
 class JobService extends Service {
 	async fetchJobs() {
-		return await this.get('jobs')
+		return (await this.get('jobs')) as ApiResponse<Role>
 	}
 	async addJob(data: any) {
 		return await this.post('jobs', data)
