@@ -1,9 +1,12 @@
+import type { Job } from './job'
+
 export type Reviewer = {
 	id: number
 	name: string
 	description: string
 	department: string
 	metrics: Metric[]
+	jobs: Job[]
 }
 
 export type APIFetchReviewers = Reviewer[]

@@ -6,7 +6,6 @@ const jobStore = useJobStore()
 const { job, isLoading } = storeToRefs(jobStore)
 
 const roleId = route.params.id as string
-const loadError = ref<string | null>(null)
 
 const responsibilities = [
 	'Проверка полноты и структуры дейликов',

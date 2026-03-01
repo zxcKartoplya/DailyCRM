@@ -3,16 +3,9 @@ import { useReviewersStore } from '~/stores/reviewers'
 
 const route = useRoute()
 const reviewersStore = useReviewersStore()
-const { reviewer } = storeToRefs(reviewersStore)
+const { reviewer, isLoading } = storeToRefs(reviewersStore)
+const { pluralize } = usePluralize()
 const reviewerId = route.params.id as string
-
-const metrics = [
-	'Полнота дейлика',
-	'Качество формулировок',
-	'Скорость закрытия задач',
-	'Стабильность прогресса',
-	'Наличие блокеров',
-]
 
 const workers = [
 	{
@@ -58,62 +51,81 @@ onMounted(() => {
 </script>
 
 <template>
-	<section class="page">
-		<div class="header">
-			<div class="header__title">Профиль оценщика</div>
-			<div class="header__name">{{ reviewer?.name }}</div>
-			<div class="header__meta">
-				<span>ID: {{ reviewer?.id }}</span>
-				<span>Департамент: {{ reviewer?.department }}</span>
-			</div>
-		</div>
-		<div class="grid">
-			<div class="card">
-				<div class="card__title">Краткое описание</div>
-				<div class="card__text">{{ reviewer?.description }}</div>
-			</div>
-
-			<div class="card">
-				<div class="card__title">Метрики оценщика</div>
-				<div class="metric-list">
-					<div
-						class="metric"
-						v-for="metric in reviewer?.metrics"
-						:key="metric.json_name"
-					>
-						{{ metric.display_name }}
+	<div class="page-stage">
+		<Transition name="fade">
+			<SkeletonPage v-if="isLoading" />
+			<section v-else-if="reviewer" class="page">
+				<div class="header">
+					<div class="header__title">Профиль оценщика</div>
+					<div class="header__name">{{ reviewer?.name }}</div>
+					<div class="header__meta">
+						<span>ID: {{ reviewer?.id }}</span>
+						<span
+							>Закреплен оценщиком за {{ reviewer?.jobs?.length }}
+							{{
+								pluralize(reviewer.jobs.length, [
+									'работой',
+									'работами',
+									'работами',
+								])
+							}}</span
+						>
 					</div>
 				</div>
-			</div>
+				<div class="grid">
+					<div class="card">
+						<div class="card__title">Краткое описание</div>
+						<div class="card__text">{{ reviewer?.description }}</div>
+					</div>
 
-			<!-- TODO доразбираться с логикой привязки оценщика -->
-			<!-- <div class="card">
+					<div class="card">
+						<div class="card__title">Метрики оценщика</div>
+						<div class="metric-list">
+							<div
+								class="metric"
+								v-for="metric in reviewer?.metrics"
+								:key="metric.json_name"
+							>
+								{{ metric.display_name }}
+							</div>
+						</div>
+					</div>
+
+					<!-- TODO доразбираться с логикой привязки оценщика -->
+					<!-- <div class="card">
 				<div class="card__title">Закрепленный департамент</div>
 				<div class="department">{{ reviewer?.department }}</div>
 			</div> -->
 
-			<div class="card card--wide">
-				<div class="card__title">Сотрудники и динамика рейтинга</div>
-				<div class="worker" v-for="worker in workers" :key="worker.id">
-					<div class="worker__id">#{{ worker.id }}</div>
-					<div class="worker__name">{{ worker.name }}</div>
-					<div class="worker__rating">{{ worker.rating }}</div>
-					<div class="worker__trend" :class="worker.trend">
-						<span>{{ worker.trend === 'up' ? 'Рост' : 'Падение' }}</span>
-						<span class="worker__delta">
-							{{ worker.trend === 'up' ? '▲' : '▼' }} {{ worker.delta }}
-						</span>
+					<div class="card card--wide">
+						<div class="card__title">Сотрудники и динамика рейтинга</div>
+						<div class="worker" v-for="worker in workers" :key="worker.id">
+							<div class="worker__id">#{{ worker.id }}</div>
+							<div class="worker__name">{{ worker.name }}</div>
+							<div class="worker__rating">{{ worker.rating }}</div>
+							<div class="worker__trend" :class="worker.trend">
+								<span>{{ worker.trend === 'up' ? 'Рост' : 'Падение' }}</span>
+								<span class="worker__delta">
+									{{ worker.trend === 'up' ? '▲' : '▼' }} {{ worker.delta }}
+								</span>
+							</div>
+						</div>
 					</div>
 				</div>
-			</div>
-		</div>
-	</section>
+			</section>
+		</Transition>
+	</div>
 </template>
 
 <style lang="scss" scoped>
 .page {
 	padding: rem(20);
 	@include flex(column, null, null, rem(20));
+
+	&-stage {
+		position: relative;
+		min-height: rem(420);
+	}
 }
 
 .header {

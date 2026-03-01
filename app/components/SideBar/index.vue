@@ -57,7 +57,9 @@ const sideBarLinks = [
 
 <template>
 	<div class="sidebar">
-		<NuxtLink to="/" class="sidebar__logo"> DailyCRM </NuxtLink>
+		<NuxtLink to="/" class="sidebar__logo"
+			><div class="sidebar__logo--wrapper"><IconLogo /> DailyCRM</div>
+		</NuxtLink>
 		<div class="sidebar__line"></div>
 		<SideBarItem v-for="link in sideBarLinks" v-bind="link" />
 	</div>
@@ -77,18 +79,9 @@ const sideBarLinks = [
 		height: rem(60);
 		@include flex(row, center, center, rem(16));
 		@include h4;
-		&--svg {
-			width: rem(28);
-			height: rem(28);
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			flex-shrink: 0;
 
-			:deep(svg) {
-				width: 100%;
-				height: 100%;
-			}
+		&--wrapper {
+			@include flex(row, center, center, rem(8));
 		}
 	}
 	&__line {

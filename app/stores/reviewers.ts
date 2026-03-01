@@ -4,7 +4,7 @@ import type { APIReviewerPayload, Reviewer } from '~/types/reviewers'
 export const useReviewersStore = defineStore('reviewers', () => {
 	const reviewers = ref<Reviewer[]>()
 	const reviewer = ref<Reviewer>()
-	const loading = ref(false)
+	const isLoading = ref(false)
 
 	const fetchReviewers = async () => {
 		reviewers.value = await reviewersService.fetchReviewers()
@@ -24,7 +24,9 @@ export const useReviewersStore = defineStore('reviewers', () => {
 	}
 
 	const fetchReviewer = async (id: string) => {
+		isLoading.value = true
 		reviewer.value = await reviewersService.fetchReviewer(id)
+		isLoading.value = false
 	}
 
 	const putReviewer = async (id: string, data: APIReviewerPayload) => {
@@ -32,15 +34,15 @@ export const useReviewersStore = defineStore('reviewers', () => {
 	}
 
 	const fetchDescription = async (name: string, description: string) => {
-		loading.value = true
+		isLoading.value = true
 		const responce = await reviewersService.fetchDescription(name, description)
-		loading.value = false
+		isLoading.value = false
 		return responce.gigachat_response.metrics
 	}
 
 	return {
 		reviewers,
-		loading,
+		isLoading,
 		fetchDescription,
 		reviewer,
 		fetchReviewers,

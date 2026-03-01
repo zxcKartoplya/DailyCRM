@@ -30,8 +30,12 @@ const login = handleSubmit(
 	},
 	() => {
 		alertStore.showAlert(Alert.FormError)
-	}
+	},
 )
+
+useSeoMeta({
+	title: 'Авторизация',
+})
 </script>
 
 <template>

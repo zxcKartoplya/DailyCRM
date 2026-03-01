@@ -3,6 +3,14 @@
 export default defineNuxtConfig({
 	compatibilityDate: '2025-07-15',
 	devtools: { enabled: true },
+	app: {
+		head: {
+			link: [
+				{ rel: 'icon', type: 'image/svg+xml', href: '/logo.svg?v=1' },
+				{ rel: 'shortcut icon', href: '/logo.svg?v=1' },
+			],
+		},
+	},
 	modules: [
 		'@nuxt/content',
 		'@nuxt/fonts',
@@ -20,7 +28,6 @@ export default defineNuxtConfig({
 		css: {
 			preprocessorOptions: {
 				scss: {
-					// make variables and mixins available in every <style lang="scss">
 					additionalData:
 						'@use \"@/assets/scss/_variables.scss\" as *; @use \"@/assets/scss/_mixins.scss\" as *;',
 				},

@@ -40,6 +40,10 @@ const alerts = [
 		note: 'Снижение двусмысленных задач на 8%',
 	},
 ]
+
+useSeoMeta({
+	title: 'Главная страница - DailyCRM',
+})
 </script>
 
 <template>
