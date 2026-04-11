@@ -1,9 +1,4 @@
 <script lang="ts" setup>
-import adminService from '~/services/admin.servies'
-
-await adminService.fetchAdmins()
-// await adminService.addAdmin()
-
 const kpis = [
 	{ title: 'Активные сотрудники', value: '128', delta: '+6%' },
 	{ title: 'Средний рейтинг', value: '4.3', delta: '+0.2' },

@@ -22,6 +22,9 @@ export default defineNuxtConfig({
 	runtimeConfig: {
 		public: {
 			apiBase: process.env.API_URL || '',
+			authApiBase:
+				process.env.AUTH_API_URL ||
+				(process.env.API_URL || '').replace(/\/admin\/?$/, ''),
 		},
 	},
 	vite: {
