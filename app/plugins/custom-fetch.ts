@@ -28,13 +28,13 @@ export default defineNuxtPlugin(() => {
 		},
 
 		async onResponse({ response }) {
-			if (response.status >= 400) {
+			if (response.status === 401) {
 				await redirectToLogin()
 			}
 		},
 
 		async onRequestError() {
-			await redirectToLogin()
+			// await redirectToLogin()
 		},
 	})
 	return {

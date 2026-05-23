@@ -1,40 +1,27 @@
 <script lang="ts" setup>
 import { Field, useForm } from 'vee-validate'
 import { useAlertStore } from '~/stores/alert'
-import { useDepartamentsStore } from '~/stores/departments'
 import { useReviewersStore } from '~/stores/reviewers'
 import { Alert } from '~/types/alert'
 import type { APIReviewerPayload, Metric } from '~/types/reviewers'
 import { reviewerSchema } from '~/utils/validation/reviewerSchema'
 
 const reviewersStore = useReviewersStore()
+const { isLoading } = storeToRefs(reviewersStore)
 
-const { loading } = toRefs(reviewersStore)
-
-const departamentsStore = useDepartamentsStore()
 const alertStore = useAlertStore()
 const router = useRouter()
 
 const metrics = ref<Metric[]>([])
-const departamentsOptions = computed(() => {
-	if (departamentsStore.departaments?.length) {
-		return departamentsStore.departaments.map(dept => ({
-			name: dept.name,
-			value: dept.id,
-		}))
-	}
-	return []
-})
 
 const isMetricModalOpen = ref(false)
-const curretnMetric = ref<Metric | null>(null)
+const currentMetric = ref<Metric | null>(null)
 
 const { handleSubmit, values } = useForm<APIReviewerPayload>({
 	validationSchema: reviewerSchema,
 	initialValues: {
 		name: '',
 		description: '',
-		department_id: 0,
 	},
 })
 
@@ -45,7 +32,7 @@ const add = handleSubmit(async formValues => {
 			metrics: metrics.value,
 		})
 		if (created) {
-			router.push('/reviewers')
+			router.push('/reviewer')
 			alertStore.showAlert(Alert.Added)
 		}
 	} catch (error) {
@@ -54,18 +41,12 @@ const add = handleSubmit(async formValues => {
 })
 
 const getDescription = async () => {
-	const responce = await reviewersStore.fetchDescription(
-		values.name,
-		values.description,
-	)
-
-	metrics.value = responce
+	const response = await reviewersStore.fetchDescription(values.name, values.description)
+	metrics.value = response
 }
 
 const deleteMetric = (display_name: string) => {
-	metrics.value = metrics.value.filter(
-		metric => metric.display_name !== display_name,
-	)
+	metrics.value = metrics.value.filter(metric => metric.display_name !== display_name)
 }
 
 const openMetricModal = () => {
@@ -73,32 +54,27 @@ const openMetricModal = () => {
 }
 
 const openMetric = (metric: Metric) => {
-	curretnMetric.value = metric
+	currentMetric.value = metric
 	isMetricModalOpen.value = true
 }
 
 const closeMetricModal = () => {
 	isMetricModalOpen.value = false
-	curretnMetric.value = null
+	currentMetric.value = null
 }
 
 const createMetric = (metric: Metric) => {
-	if (curretnMetric.value) {
+	if (currentMetric.value) {
 		const index = metrics.value.findIndex(
-			m => m.display_name === curretnMetric.value?.display_name,
+			m => m.display_name === currentMetric.value?.display_name,
 		)
 		metrics.value[index] = metric
 		closeMetricModal()
 		return
 	}
-
 	metrics.value.push(metric)
 	closeMetricModal()
 }
-
-onMounted(() => {
-	departamentsStore.fetchDepartaments()
-})
 </script>
 
 <template>
@@ -135,19 +111,6 @@ onMounted(() => {
 				/>
 			</Field>
 
-			<Field
-				v-slot="{ field, handleChange, errorMessage }"
-				name="department_id"
-			>
-				<UISelect
-					label="Закрепленный департамент"
-					placeholder="Выберите департамент"
-					:options="departamentsOptions"
-					:modelValue="field.value"
-					@update:model-value="handleChange"
-				/>
-			</Field>
-
 			<div class="page__textarea">
 				<div class="page__row">
 					<div class="page__label">Метрики, которые отслеживает оценщик</div>
@@ -158,7 +121,7 @@ onMounted(() => {
 						>{{ metrics.length ? 'Обновить' : 'Заполнить' }}</UIButton
 					>
 				</div>
-				<div v-if="!loading" class="page__metrics">
+				<div v-if="!isLoading" class="page__metrics">
 					<MetricItem
 						v-for="(metric, index) in metrics"
 						:key="index"
@@ -182,7 +145,7 @@ onMounted(() => {
 		<Transition name="fade">
 			<ModalMetric
 				v-if="isMetricModalOpen"
-				:metric="curretnMetric ?? undefined"
+				:metric="currentMetric ?? undefined"
 				@close="closeMetricModal"
 				@create="createMetric"
 			/>

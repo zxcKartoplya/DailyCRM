@@ -16,12 +16,16 @@ const isOpen = ref(false)
 const hasSubLinks = computed(() => Array.isArray(subLink) && subLink.length > 0)
 const isActive = computed(() => {
 	if (path && path !== '/') {
-		return router.currentRoute.value.path.includes(path)
+		return checkPath(path, router.currentRoute.value.path)
 	} else if (path === '/') {
 		return router.currentRoute.value.path === '/'
 	}
 	return false
 })
+
+const checkPath = (path: string, currentPath: string): boolean => {
+	return path === currentPath
+}
 
 const toggle = () => {
 	if (!hasSubLinks.value) return

@@ -8,10 +8,11 @@ const table = {
 	heads: [
 		{ title: 'ID', sortId: 'id' },
 		{ title: 'Название роли', sortId: 'role' },
-		{ title: 'Описание роли', sortId: 'description' },
+		{ title: 'Оценщик', sortId: 'reviewer_name' },
+		{ title: 'Департамент', sortId: 'department_name' },
 		{ title: '', sortId: null },
 	],
-	gridColumns: '90px minmax(260px, 1fr) minmax(220px, 1fr) 60px',
+	gridColumns: '90px minmax(220px, 1fr) minmax(180px, 1fr) minmax(180px, 1fr) 60px',
 }
 
 const goRole = (id: number) => {
@@ -49,6 +50,7 @@ onMounted(() => {
 						@click="goRole(role.id)"
 					/>
 					<UITableColumn :text="role.reviewer_name" isEllipsis />
+					<UITableColumn :text="role.department_name" isEllipsis />
 					<UITableColumn>
 						<UITableRowPopover
 							:items="[

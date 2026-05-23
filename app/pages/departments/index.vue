@@ -1,60 +1,32 @@
 <script lang="ts" setup>
+import { useDepartamentsStore } from '~/stores/departments'
+
 const router = useRouter()
+const departamentsStore = useDepartamentsStore()
 
 const table = {
 	heads: [
 		{ title: 'ID', sortId: 'id' },
 		{ title: 'Название департамента', sortId: 'name' },
-		{ title: 'Количество сотрудников', sortId: 'employees_count' },
-		{ title: 'Оценщик', sortId: 'admin_name' },
+		{ title: 'Сотрудников', sortId: 'employees_count' },
 		{ title: 'Ролей', sortId: 'jobs_count' },
 		{ title: '', sortId: null },
 	],
 	gridColumns:
-		'90px minmax(280px, 1fr) minmax(200px, 1fr) minmax(200px, 1fr) minmax(120px, 180px) 60px',
+		'90px minmax(280px, 1fr) minmax(160px, 1fr) minmax(120px, 180px) 60px',
 }
-
-const departaments = [
-	{
-		id: 1,
-		name: 'Операционный анализ',
-		employees_count: 32,
-		admin_name: 'Тимлид',
-		jobs_count: 8,
-	},
-	{
-		id: 2,
-		name: 'Продукт и метрики',
-		employees_count: 24,
-		admin_name: 'Старший аналитик',
-		jobs_count: 6,
-	},
-	{
-		id: 3,
-		name: 'Клиентский успех',
-		employees_count: 21,
-		admin_name: 'Старший менеджер',
-		jobs_count: 5,
-	},
-	{
-		id: 4,
-		name: 'Служба контроля',
-		employees_count: 18,
-		admin_name: 'Руководитель направления',
-		jobs_count: 4,
-	},
-	{
-		id: 5,
-		name: 'Люди и культура',
-		employees_count: 15,
-		admin_name: 'HR бизнес-партнер',
-		jobs_count: 3,
-	},
-]
 
 const goDepartmemts = (id: number) => {
 	router.push(`/departments/${id}`)
 }
+
+const editDepartament = (id: number) => {
+	router.push(`/edit/department?id=${id}`)
+}
+
+onMounted(() => {
+	departamentsStore.fetchDepartaments()
+})
 </script>
 
 <template>
@@ -63,7 +35,7 @@ const goDepartmemts = (id: number) => {
 			<div class="page__title">Департаменты</div>
 			<UITableBase :headList="table.heads" :columnTemplates="table.gridColumns">
 				<UITableRow
-					v-for="(departament, index) in departaments"
+					v-for="(departament, index) in departamentsStore.departaments"
 					:key="departament.id"
 					:columnTemplates="table.gridColumns"
 					class="border-none"
@@ -83,7 +55,6 @@ const goDepartmemts = (id: number) => {
 						@click="goDepartmemts(departament.id)"
 					/>
 					<UITableColumn :text="departament.employees_count" isEllipsis />
-					<UITableColumn :text="departament.admin_name" isEllipsis />
 					<UITableColumn
 						:text="departament.jobs_count"
 						isEllipsis
@@ -94,14 +65,16 @@ const goDepartmemts = (id: number) => {
 							:items="[
 								{
 									title: 'Открыть департамент',
-									func: () => {
-										goDepartmemts(departament.id)
-									},
+									func: () => goDepartmemts(departament.id),
+								},
+								{
+									title: 'Изменить',
+									func: () => editDepartament(departament.id),
 								},
 								{
 									title: 'Удалить',
 									red: true,
-									func: () => {},
+									func: () => departamentsStore.delDepartament(departament.id),
 								},
 							]"
 						/>

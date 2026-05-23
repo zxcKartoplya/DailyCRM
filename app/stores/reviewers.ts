@@ -35,9 +35,9 @@ export const useReviewersStore = defineStore('reviewers', () => {
 
 	const fetchDescription = async (name: string, description: string) => {
 		isLoading.value = true
-		const responce = await reviewersService.fetchDescription(name, description)
+		const response = await reviewersService.fetchDescription(name, description)
 		isLoading.value = false
-		return responce.gigachat_response.metrics
+		return response.metrics
 	}
 
 	return {

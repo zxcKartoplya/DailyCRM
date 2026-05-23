@@ -4,9 +4,8 @@ export type Reviewer = {
 	id: number
 	name: string
 	description: string
-	department: string
 	metrics: Metric[]
-	jobs: Job[]
+	jobs?: Job[]
 }
 
 export type APIFetchReviewers = Reviewer[]
@@ -16,8 +15,7 @@ export type APICreatedReviewer = Reviewer
 export type APIReviewerPayload = {
 	name: string
 	description: string
-	department_id: number
-	metrics: Metric[]
+	metrics?: Metric[]
 }
 
 export type Metric = {
@@ -27,13 +25,9 @@ export type Metric = {
 	description: string
 }
 
-export type Gigachatresponce = {
+export type AIReviewerResponse = {
 	name: string
 	summary: string
-	what_is_eveluated: [string]
-	metrics: [Metric]
-}
-
-export type APIReviewerDescription = {
-	gigachat_response: Gigachatresponce
+	what_is_evaluated: string[]
+	metrics: Metric[]
 }

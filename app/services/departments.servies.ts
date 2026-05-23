@@ -11,18 +11,14 @@ class DepartamentsService extends Service {
 		return (await this.get('departments')) as APIFetchDepartament
 	}
 	async addDepartament(name: string) {
-		return (await this.post('departments', {
-			name: name,
-		})) as APIAddedDepartament
+		return (await this.post('departments', { name })) as APIAddedDepartament
 	}
 	async delDepartament(id: number) {
 		return await this.delete(`departments/${id}`)
 	}
-
 	async fetchDepartament(id: string) {
 		return (await this.get(`departments/${id}`)) as Departament
 	}
-
 	async putDepartament(id: string, data: APIUpdateDepartament) {
 		return await this.put(`departments/${id}`, data)
 	}

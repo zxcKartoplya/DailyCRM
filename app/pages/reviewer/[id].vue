@@ -61,9 +61,9 @@ onMounted(() => {
 					<div class="header__meta">
 						<span>ID: {{ reviewer?.id }}</span>
 						<span
-							>Закреплен оценщиком за {{ reviewer?.jobs?.length }}
+							>Закреплен оценщиком за {{ reviewer?.jobs?.length ?? 0 }}
 							{{
-								pluralize(reviewer.jobs.length, [
+								pluralize(reviewer.jobs?.length ?? 0, [
 									'работой',
 									'работами',
 									'работами',

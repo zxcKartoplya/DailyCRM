@@ -47,11 +47,11 @@ const sideBarLinks = [
 			},
 		],
 	},
-	{
-		name: 'Настройки',
-		path: '/setttings',
-		icon: 'material-symbols:settings-outline-rounded',
-	},
+	// {
+	// 	name: 'Настройки',
+	// 	path: '/setttings',
+	// 	icon: 'material-symbols:settings-outline-rounded',
+	// },
 ]
 </script>
 

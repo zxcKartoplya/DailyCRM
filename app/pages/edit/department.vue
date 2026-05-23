@@ -20,7 +20,7 @@ const add = handleSubmit(async formValues => {
 		const created = await departamentsStore.addDepartament(formValues.name)
 		if (created) {
 			router.push('/departments')
-			alertStore.showAlert(Alert.AddedError)
+			alertStore.showAlert(Alert.Added)
 		}
 	} catch (error) {
 		alertStore.showAlert(Alert.AddedError)

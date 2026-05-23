@@ -1,5 +1,8 @@
 <script lang="ts" setup>
+import { useWorkerStore } from '~/stores/workers'
+
 const router = useRouter()
+const workersStore = useWorkerStore()
 
 const table = {
 	heads: [
@@ -7,54 +10,24 @@ const table = {
 		{ title: 'Имя', sortId: 'name' },
 		{ title: 'Роль', sortId: 'role' },
 		{ title: 'Департамент', sortId: 'department' },
-		{ title: 'Оценщик', sortId: 'reviewer' },
+		{ title: 'Статус', sortId: 'status' },
 		{ title: '', sortId: null },
 	],
 	gridColumns:
-		'90px minmax(200px, 320px) minmax(180px, 240px) minmax(180px, 240px) minmax(180px, 260px) 60px',
+		'90px minmax(200px, 320px) minmax(180px, 240px) minmax(180px, 240px) minmax(120px, 160px) 60px',
 }
-
-const workers = [
-	{
-		id: 101,
-		name: 'Анна Маркова',
-		role: 'Аналитик задач',
-		department: 'Операционный анализ',
-		reviewer: 'Тимлид',
-	},
-	{
-		id: 102,
-		name: 'Дмитрий Соловьев',
-		role: 'Менеджер процессов',
-		department: 'Клиентский успех',
-		reviewer: 'Старший менеджер',
-	},
-	{
-		id: 103,
-		name: 'Екатерина Горина',
-		role: 'Координатор дейликов',
-		department: 'Продукт и метрики',
-		reviewer: 'Руководитель направления',
-	},
-	{
-		id: 104,
-		name: 'Кирилл Романов',
-		role: 'Специалист по качеству',
-		department: 'Служба контроля',
-		reviewer: 'Старший аналитик',
-	},
-	{
-		id: 105,
-		name: 'Ольга Сафонова',
-		role: 'HR-аналитик',
-		department: 'Люди и культура',
-		reviewer: 'HR бизнес-партнер',
-	},
-]
 
 const goWorker = (id: number) => {
 	router.push(`/workers/${id}`)
 }
+
+const editWorker = (id: number) => {
+	router.push(`/edit/workers?id=${id}`)
+}
+
+onMounted(() => {
+	workersStore.getWorkers()
+})
 </script>
 
 <template>
@@ -63,7 +36,7 @@ const goWorker = (id: number) => {
 			<div class="page__title">Сотрудники</div>
 			<UITableBase :headList="table.heads" :columnTemplates="table.gridColumns">
 				<UITableRow
-					v-for="(worker, index) in workers"
+					v-for="(worker, index) in workersStore.workers"
 					:key="worker.id"
 					:columnTemplates="table.gridColumns"
 					class="border-none"
@@ -82,17 +55,24 @@ const goWorker = (id: number) => {
 						isEllipsis
 						@click="goWorker(worker.id)"
 					/>
-					<UITableColumn :text="worker.role" isEllipsis />
-					<UITableColumn :text="worker.department" isEllipsis />
-					<UITableColumn :text="worker.reviewer" isEllipsis />
+					<UITableColumn :text="worker.job_name" isEllipsis />
+					<UITableColumn :text="worker.department_name" isEllipsis />
+					<UITableColumn :text="worker.status" isEllipsis />
 					<UITableColumn>
 						<UITableRowPopover
 							:items="[
 								{
 									title: 'Открыть профиль',
-									func: () => {
-										goWorker(worker.id)
-									},
+									func: () => goWorker(worker.id),
+								},
+								{
+									title: 'Изменить',
+									func: () => editWorker(worker.id),
+								},
+								{
+									title: 'Удалить',
+									red: true,
+									func: () => workersStore.deleteWorker(worker.id),
 								},
 							]"
 						/>

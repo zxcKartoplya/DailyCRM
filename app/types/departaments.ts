@@ -1,10 +1,8 @@
 export type Departament = {
 	id: number
-	admin_id: number
 	name: string
-	admin_name: string
-	employees_count: number
-	jobs_count: number
+	employees_count?: number
+	jobs_count?: number
 }
 
 export type APIAddedDepartament = Departament
