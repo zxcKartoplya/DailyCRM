@@ -40,7 +40,7 @@ pipeline {
         }
 
         stage('Deploy') {
-            when { branch 'main' }
+            when { branch 'master' }
             steps {
                 sh """
                     cd ${DEPLOY_DIR} && \
