@@ -17,6 +17,13 @@ class WorkersService extends Service {
 	async deleteWorker(id: number) {
 		return await this.delete(`workers/${id}`)
 	}
+	async getAiFeedback(id: string) {
+		return (await this.post(`workers/${id}/ai-feedback`, {})) as {
+			worker_id: number
+			worker_name: string
+			feedback: string
+		}
+	}
 }
 
 const workersService = new WorkersService()
