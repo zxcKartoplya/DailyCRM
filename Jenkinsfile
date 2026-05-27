@@ -11,6 +11,8 @@ pipeline {
         timestamps()
         buildDiscarder(logRotator(numToKeepStr: '10'))
         disableConcurrentBuilds()
+        lock(resource: 'daily-compose-deploy')
+        timeout(time: 30, unit: 'MINUTES')
     }
 
     stages {
@@ -37,15 +39,27 @@ pipeline {
                     docker push ${REGISTRY}/${IMAGE_NAME}:latest
                 """
             }
+            post {
+                failure {
+                    sh """
+                        docker rmi ${REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER} || true
+                        docker rmi ${REGISTRY}/${IMAGE_NAME}:latest || true
+                    """
+                }
+            }
         }
 
         stage('Deploy') {
             when { branch 'master' }
             steps {
                 sh """
-                    cd ${DEPLOY_DIR} && \
-                    FRONTEND_CRM_IMAGE=${REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER} \
+                    cd ${DEPLOY_DIR}
+
+                    sed -i 's|^FRONTEND_CRM_IMAGE=.*|FRONTEND_CRM_IMAGE=${REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}|' .env
+
                     docker compose up -d --no-deps --force-recreate frontend-crm
+
+                    docker compose ps frontend-crm
                 """
             }
         }
