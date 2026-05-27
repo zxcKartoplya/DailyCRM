@@ -41,12 +41,17 @@ const add = handleSubmit(async formValues => {
 })
 
 const getDescription = async () => {
-	const response = await reviewersStore.fetchDescription(values.name, values.description)
+	const response = await reviewersStore.fetchDescription(
+		values.name,
+		values.description,
+	)
 	metrics.value = response
 }
 
 const deleteMetric = (display_name: string) => {
-	metrics.value = metrics.value.filter(metric => metric.display_name !== display_name)
+	metrics.value = metrics.value.filter(
+		metric => metric.display_name !== display_name,
+	)
 }
 
 const openMetricModal = () => {
@@ -118,7 +123,7 @@ const createMetric = (metric: Metric) => {
 						@click="getDescription"
 						variant="secondary"
 						:is-disabled="values.name === '' || values.description === ''"
-						>{{ metrics.length ? 'Обновить' : 'Заполнить' }}</UIButton
+						>{{ metrics?.length ? 'Обновить' : 'Заполнить' }}</UIButton
 					>
 				</div>
 				<div v-if="!isLoading" class="page__metrics">

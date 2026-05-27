@@ -37,7 +37,7 @@ export const useReviewersStore = defineStore('reviewers', () => {
 		isLoading.value = true
 		const response = await reviewersService.fetchDescription(name, description)
 		isLoading.value = false
-		return response.metrics
+		return response.gigachat_response.metrics
 	}
 
 	return {
