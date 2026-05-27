@@ -25,9 +25,11 @@ export type Metric = {
 	description: string
 }
 
-export type AIReviewerResponse = {
+export type GigachatResponce = {
 	name: string
 	summary: string
 	what_is_evaluated: string[]
 	metrics: Metric[]
 }
+
+export type AIReviewerResponse = { gigachat_response: GigachatResponce }
