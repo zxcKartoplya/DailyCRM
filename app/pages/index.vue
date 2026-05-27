@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 const kpis = [
 	{ title: 'Активные сотрудники', value: '128', delta: '+6%' },
-	{ title: 'Средний рейтинг', value: '4.3', delta: '+0.2' },
-	{ title: 'Дейлики за сутки', value: '412', delta: '+9%' },
-	{ title: 'Найдено блокеров', value: '24', delta: '-4%' },
+	// { title: 'Средний рейтинг', value: '4.3', delta: '+0.2' },
+	// { title: 'Дейлики за сутки', value: '412', delta: '+9%' },
+	// { title: 'Найдено блокеров', value: '24', delta: '-4%' },
 ]
 
 const weeklyTrend = [
