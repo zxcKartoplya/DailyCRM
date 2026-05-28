@@ -1,40 +1,100 @@
 <script lang="ts" setup>
-const kpis = [
-	{ title: 'Активные сотрудники', value: '128', delta: '+6%' },
-	// { title: 'Средний рейтинг', value: '4.3', delta: '+0.2' },
-	// { title: 'Дейлики за сутки', value: '412', delta: '+9%' },
-	// { title: 'Найдено блокеров', value: '24', delta: '-4%' },
-]
+import workersService from '~/services/workers.servies'
+import departamentsService from '~/services/departments.servies'
+import reviewersService from '~/services/reviewers.servies'
+import { Statuses } from '~/types/users'
+import type { User } from '~/types/users'
+import type { Departament } from '~/types/departaments'
+import type { Reviewer } from '~/types/reviewers'
 
-const weeklyTrend = [
-	{ day: 'Пн', score: 68 },
-	{ day: 'Вт', score: 72 },
-	{ day: 'Ср', score: 75 },
-	{ day: 'Чт', score: 81 },
-	{ day: 'Пт', score: 86 },
-]
+const isLoading = ref(true)
+const workers = ref<User[]>([])
+const departments = ref<Departament[]>([])
+const reviewers = ref<Reviewer[]>([])
 
-const departments = [
-	{ name: 'Операционный анализ', value: 32 },
-	{ name: 'Продукт и метрики', value: 24 },
-	{ name: 'Клиентский успех', value: 21 },
-	{ name: 'Служба контроля', value: 18 },
-]
+const activeWorkers = computed(() =>
+	workers.value.filter(w => w.status === Statuses.ACTIVE),
+)
 
-const alerts = [
+const kpis = computed(() => [
 	{
-		title: 'Падение стабильности дейликов',
-		note: 'Команда поддержки: 3 дня подряд ниже нормы',
+		title: 'Активные сотрудники',
+		value: activeWorkers.value.length,
+		delta: workers.value.length
+			? `${Math.round((activeWorkers.value.length / workers.value.length) * 100)}% от общего`
+			: '—',
+		negative: false,
 	},
 	{
-		title: 'Рост нагрузки на оценщиков',
-		note: 'Среднее число работников на оценщика +12%',
+		title: 'Всего сотрудников',
+		value: workers.value.length,
+		delta: null,
+		negative: false,
 	},
 	{
-		title: 'Улучшение качества формулировок',
-		note: 'Снижение двусмысленных задач на 8%',
+		title: 'Департаментов',
+		value: departments.value.length,
+		delta: null,
+		negative: false,
 	},
-]
+	{
+		title: 'Оценщиков',
+		value: reviewers.value.length,
+		delta: null,
+		negative: false,
+	},
+])
+
+const topDepartments = computed(() =>
+	[...departments.value]
+		.sort((a, b) => (b.employees_count ?? 0) - (a.employees_count ?? 0))
+		.slice(0, 5),
+)
+
+const maxEmployees = computed(() =>
+	Math.max(...topDepartments.value.map(d => d.employees_count ?? 0), 1),
+)
+
+const recentWorkers = computed(() =>
+	[...workers.value]
+		.sort(
+			(a, b) =>
+				new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+		)
+		.slice(0, 3),
+)
+
+const statusLabel = (status: Statuses) => {
+	const map: Record<Statuses, string> = {
+		[Statuses.ACTIVE]: 'Активен',
+		[Statuses.INACTIVE]: 'Неактивен',
+		[Statuses.INVITED]: 'Приглашён',
+	}
+	return map[status] ?? status
+}
+
+const statusClass = (status: Statuses) => {
+	return {
+		active: status === Statuses.ACTIVE,
+		inactive: status === Statuses.INACTIVE,
+		invited: status === Statuses.INVITED,
+	}
+}
+
+onMounted(async () => {
+	try {
+		const [w, d, r] = await Promise.all([
+			workersService.fetchWorkers(),
+			departamentsService.fetchDepartaments(),
+			reviewersService.fetchReviewers(),
+		])
+		workers.value = w
+		departments.value = d
+		reviewers.value = r
+	} finally {
+		isLoading.value = false
+	}
+})
 
 useSeoMeta({
 	title: 'Главная страница - DailyCRM',
@@ -50,59 +110,103 @@ useSeoMeta({
 					Аналитика качества задач и прогресса команд
 				</div>
 			</div>
-			<div class="dashboard__period">Последние 7 дней</div>
+			<div class="dashboard__period">Актуальные данные</div>
 		</div>
 
-		<div class="dashboard__grid">
-			<div class="card card--wide">
-				<div class="card__title">Ключевые показатели</div>
-				<div class="kpi-list">
-					<div class="kpi" v-for="kpi in kpis" :key="kpi.title">
-						<div class="kpi__title">{{ kpi.title }}</div>
-						<div class="kpi__value">{{ kpi.value }}</div>
+		<template v-if="isLoading">
+			<div class="dashboard__grid">
+				<div class="card card--wide">
+					<div class="card__title">Ключевые показатели</div>
+					<div class="kpi-list">
+						<div class="kpi kpi--skeleton" v-for="i in 4" :key="i" />
+					</div>
+				</div>
+				<div class="card skeleton-block" />
+				<div class="card skeleton-block" />
+				<div class="card card--wide skeleton-block" />
+			</div>
+		</template>
+
+		<template v-else>
+			<div class="dashboard__grid">
+				<div class="card card--wide">
+					<div class="card__title">Ключевые показатели</div>
+					<div class="kpi-list">
+						<div class="kpi" v-for="kpi in kpis" :key="kpi.title">
+							<div class="kpi__title">{{ kpi.title }}</div>
+							<div class="kpi__value">{{ kpi.value }}</div>
+							<div v-if="kpi.delta" class="kpi__delta">{{ kpi.delta }}</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="card">
+					<div class="card__title">Распределение по департаментам</div>
+					<div class="trend">
 						<div
-							class="kpi__delta"
-							:class="{ negative: kpi.delta.includes('-') }"
+							class="trend__row"
+							v-for="dept in topDepartments"
+							:key="dept.id"
 						>
-							{{ kpi.delta }}
+							<div class="trend__day" :title="dept.name">{{ dept.name }}</div>
+							<div class="trend__bar">
+								<div
+									class="trend__fill"
+									:style="{
+										width: `${((dept.employees_count ?? 0) / maxEmployees) * 100}%`,
+									}"
+								/>
+							</div>
+							<div class="trend__value">{{ dept.employees_count ?? 0 }}</div>
+						</div>
+						<div v-if="topDepartments.length === 0" class="empty">
+							Нет данных
+						</div>
+					</div>
+				</div>
+
+				<div class="card">
+					<div class="card__title">Топ департаментов</div>
+					<div class="dept-list">
+						<div
+							class="dept"
+							v-for="dept in topDepartments"
+							:key="dept.id"
+						>
+							<div class="dept__name">{{ dept.name }}</div>
+							<div class="dept__value">{{ dept.employees_count ?? 0 }} чел.</div>
+						</div>
+						<div v-if="topDepartments.length === 0" class="empty">
+							Нет данных
+						</div>
+					</div>
+				</div>
+
+				<div class="card card--wide">
+					<div class="card__title">Последние сотрудники</div>
+					<div class="recent">
+						<div
+							class="recent__item"
+							v-for="worker in recentWorkers"
+							:key="worker.id"
+						>
+							<div class="recent__info">
+								<div class="recent__name">{{ worker.name }}</div>
+								<div class="recent__meta">
+									{{ worker.job_name ?? '—' }} · {{ worker.department_name ?? '—' }}
+								</div>
+							</div>
+							<div class="recent__badge" :class="statusClass(worker.status)">
+								{{ statusLabel(worker.status) }}
+							</div>
+						</div>
+						<div v-if="recentWorkers.length === 0" class="empty">
+							Нет данных
 						</div>
 					</div>
 				</div>
 			</div>
-
-			<div class="card">
-				<div class="card__title">Индекс эффективности</div>
-				<div class="trend">
-					<div class="trend__row" v-for="item in weeklyTrend" :key="item.day">
-						<div class="trend__day">{{ item.day }}</div>
-						<div class="trend__bar">
-							<div class="trend__fill" :style="{ width: `${item.score}%` }" />
-						</div>
-						<div class="trend__value">{{ item.score }}</div>
-					</div>
-				</div>
-			</div>
-
-			<div class="card">
-				<div class="card__title">Топ департаментов</div>
-				<div class="dept-list">
-					<div class="dept" v-for="dept in departments" :key="dept.name">
-						<div class="dept__name">{{ dept.name }}</div>
-						<div class="dept__value">{{ dept.value }}</div>
-					</div>
-				</div>
-			</div>
-
-			<div class="card card--wide">
-				<div class="card__title">Сигналы аналитики</div>
-				<div class="alerts">
-					<div class="alert" v-for="alert in alerts" :key="alert.title">
-						<div class="alert__title">{{ alert.title }}</div>
-						<div class="alert__note">{{ alert.note }}</div>
-					</div>
-				</div>
-			</div>
-		</div>
+		</template>
 	</section>
 </template>
 
@@ -161,6 +265,18 @@ useSeoMeta({
 	}
 }
 
+.skeleton-block {
+	min-height: rem(160);
+	background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+	background-size: 200% 100%;
+	animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+	0% { background-position: 200% 0; }
+	100% { background-position: -200% 0; }
+}
+
 .kpi-list {
 	display: grid;
 	grid-template-columns: repeat(4, minmax(160px, 1fr));
@@ -174,6 +290,13 @@ useSeoMeta({
 	border: rem(1) solid #eef2f7;
 	display: grid;
 	gap: rem(6);
+
+	&--skeleton {
+		min-height: rem(80);
+		background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+		background-size: 200% 100%;
+		animation: shimmer 1.5s infinite;
+	}
 
 	&__title {
 		color: #6b7280;
@@ -189,9 +312,6 @@ useSeoMeta({
 		font-size: rem(13);
 		color: #059669;
 		font-weight: 600;
-		&.negative {
-			color: #dc2626;
-		}
 	}
 }
 
@@ -201,14 +321,17 @@ useSeoMeta({
 
 	&__row {
 		display: grid;
-		grid-template-columns: 40px 1fr 40px;
+		grid-template-columns: 1fr 1fr 48px;
 		align-items: center;
 		gap: rem(10);
 	}
 
 	&__day {
 		color: #6b7280;
-		font-size: rem(14);
+		font-size: rem(13);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	&__bar {
@@ -222,11 +345,13 @@ useSeoMeta({
 		height: 100%;
 		border-radius: inherit;
 		background: linear-gradient(90deg, #6366f1 0%, #38bdf8 100%);
+		transition: width 0.4s ease;
 	}
 
 	&__value {
 		font-weight: 600;
 		color: #111827;
+		text-align: right;
 	}
 }
 
@@ -253,28 +378,63 @@ useSeoMeta({
 	}
 }
 
-.alerts {
+.recent {
 	display: grid;
 	grid-template-columns: repeat(3, minmax(200px, 1fr));
 	gap: rem(14);
-}
 
-.alert {
-	padding: rem(14);
-	border-radius: rem(12);
-	background: #f3f4f6;
-	display: grid;
-	gap: rem(6);
+	&__item {
+		padding: rem(14);
+		border-radius: rem(12);
+		background: #f9fafb;
+		border: rem(1) solid #eef2f7;
+		display: flex;
+		flex-direction: column;
+		gap: rem(10);
+		justify-content: space-between;
+	}
 
-	&__title {
+	&__name {
 		font-weight: 600;
 		font-size: rem(14);
+		color: #111827;
 	}
 
-	&__note {
-		color: #374151;
-		font-size: rem(13);
+	&__meta {
+		font-size: rem(12);
+		color: #6b7280;
+		margin-top: rem(4);
 	}
+
+	&__badge {
+		display: inline-block;
+		padding: rem(3) rem(10);
+		border-radius: rem(999);
+		font-size: rem(12);
+		font-weight: 600;
+		width: fit-content;
+
+		&.active {
+			background: #d1fae5;
+			color: #059669;
+		}
+
+		&.inactive {
+			background: #fee2e2;
+			color: #dc2626;
+		}
+
+		&.invited {
+			background: #e0f2fe;
+			color: #0284c7;
+		}
+	}
+}
+
+.empty {
+	color: #9ca3af;
+	font-size: rem(14);
+	padding: rem(8) 0;
 }
 
 @media (max-width: 1100px) {
@@ -287,7 +447,7 @@ useSeoMeta({
 	.kpi-list {
 		grid-template-columns: repeat(2, minmax(160px, 1fr));
 	}
-	.alerts {
+	.recent {
 		grid-template-columns: 1fr;
 	}
 }
