@@ -8,7 +8,7 @@ const table = {
 	heads: [
 		{ title: 'ID', sortId: 'id' },
 		{ title: 'Имя', sortId: 'name' },
-		{ title: 'Роль', sortId: 'role' },
+		// { title: 'Роль', sortId: 'role' },
 		{ title: 'Департамент', sortId: 'department' },
 		{ title: 'Статус', sortId: 'status' },
 		{ title: '', sortId: null },
@@ -55,7 +55,7 @@ onMounted(() => {
 						isEllipsis
 						@click="goWorker(worker.id)"
 					/>
-					<UITableColumn :text="worker.job_name" isEllipsis />
+					<!-- <UITableColumn :text="worker.job_name" isEllipsis /> -->
 					<UITableColumn :text="worker.department_name" isEllipsis />
 					<UITableColumn :text="worker.status" isEllipsis />
 					<UITableColumn>
