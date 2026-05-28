@@ -96,7 +96,7 @@ onMounted(() => {
 				<div class="card__title">Закрепленный департамент</div>
 				<div class="department">{{ reviewer?.department }}</div>
 			</div> -->
-
+					<!-- 
 					<div class="card card--wide">
 						<div class="card__title">Сотрудники и динамика рейтинга</div>
 						<div class="worker" v-for="worker in workers" :key="worker.id">
@@ -110,7 +110,7 @@ onMounted(() => {
 								</span>
 							</div>
 						</div>
-					</div>
+					</div> -->
 				</div>
 			</section>
 		</Transition>
