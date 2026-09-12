@@ -3,6 +3,7 @@ import { useWorkerStore } from '~/stores/workers'
 import workersService from '~/services/workers.servies'
 
 const route = useRoute()
+const router = useRouter()
 const workerId = route.params.id as string
 const workersStore = useWorkerStore()
 const { worker, isLoading } = storeToRefs(workersStore)
@@ -39,47 +40,64 @@ async function fetchAiFeedback() {
 		<Transition name="fade">
 			<SkeletonPage v-if="isLoading" />
 			<section v-else-if="worker" class="page">
-				<div class="header">
-					<div class="header__main">
-						<div class="header__title">Профиль сотрудника</div>
-						<div class="header__name">{{ worker.name }}</div>
-						<div class="header__meta">
-							<span>ID: {{ worker.id }}</span>
-							<span v-if="worker.department_name">Департамент: {{ worker.department_name }}</span>
-						</div>
+				<header class="page__head">
+					<div>
+						<h1 class="page__title">{{ worker.name }}</h1>
+						<p class="page__lede">
+							<UIStatus :status="worker.status" />
+						</p>
 					</div>
-					<div class="header__aside">
-						<div class="badge">
-							<div class="badge__label">Статус</div>
-							<div class="badge__value">{{ worker.status }}</div>
-						</div>
-						<div class="badge">
-							<div class="badge__label">Email</div>
-							<div class="badge__value">{{ worker.email }}</div>
-						</div>
-					</div>
-				</div>
-
-				<div class="ai-section">
 					<UIButton
-						variant="outline"
-						color="blue"
-						size="sm"
-						:isLoading="isLoadingFeedback"
-						@click="fetchAiFeedback"
+						variant="secondary"
+						@click="router.push(`/edit/workers?id=${worker.id}`)"
 					>
-						{{ isLoadingFeedback ? 'Загрузка...' : 'AI-оценка' }}
+						Редактировать
 					</UIButton>
+				</header>
 
-					<div v-if="aiFeedback" class="ai-feedback">
-						<div class="ai-feedback__label">AI-оценка сотрудника</div>
-						<div class="ai-feedback__text">{{ aiFeedback }}</div>
+				<dl class="facts">
+					<div class="facts__item">
+						<dt class="facts__label">ID</dt>
+						<dd class="facts__value facts__value--numeric">{{ worker.id }}</dd>
+					</div>
+					<div class="facts__item">
+						<dt class="facts__label">Почта</dt>
+						<dd class="facts__value">{{ worker.email }}</dd>
+					</div>
+					<div class="facts__item">
+						<dt class="facts__label">Департамент</dt>
+						<dd class="facts__value">{{ worker.department_name || '—' }}</dd>
+					</div>
+					<div class="facts__item">
+						<dt class="facts__label">Должность</dt>
+						<dd class="facts__value">{{ worker.job_name || '—' }}</dd>
+					</div>
+				</dl>
+
+				<section class="assessment">
+					<div class="assessment__head">
+						<h2 class="assessment__title">Оценка</h2>
+						<UIButton
+							variant="secondary"
+							size="sm"
+							:is-loading="isLoadingFeedback"
+							@click="fetchAiFeedback"
+						>
+							Запросить оценку
+						</UIButton>
 					</div>
 
-					<div v-if="aiFeedbackError" class="ai-feedback ai-feedback--error">
-						<div class="ai-feedback__text">{{ aiFeedbackError }}</div>
-					</div>
-				</div>
+					<p v-if="!aiFeedback && !aiFeedbackError" class="assessment__hint">
+						Оценка собирается по метрикам должности и формулируется моделью.
+						Это черновик — читайте его как мнение, а не как вердикт.
+					</p>
+
+					<p v-if="aiFeedback" class="assessment__text">{{ aiFeedback }}</p>
+
+					<p v-if="aiFeedbackError" class="assessment__error">
+						{{ aiFeedbackError }}
+					</p>
+				</section>
 			</section>
 		</Transition>
 	</div>
@@ -88,107 +106,92 @@ async function fetchAiFeedback() {
 <style lang="scss" scoped>
 .page-stage {
 	position: relative;
-	min-height: rem(420);
+	min-height: 26rem;
 }
 
-.page {
-	padding: rem(20);
-	@include flex(column, null, null, rem(20));
-}
+.facts {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+	gap: 1px;
+	margin: 0;
+	border: 1px solid var(--border);
+	border-radius: var(--r-lg);
+	background-color: var(--border);
+	overflow: hidden;
 
-.header {
-	padding: rem(20);
-	border-radius: rem(16);
-	background: linear-gradient(120deg, #f7f8fc 0%, #eef1f8 100%);
-	@include flex(row, space-between, flex-start, rem(24));
-
-	&__title {
-		font-size: rem(14);
-		color: #6b7280;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
+	&__item {
+		padding: var(--s-4);
+		background-color: var(--surface);
 	}
-
-	&__name {
-		margin-top: rem(6);
-		font-size: rem(28);
-		font-weight: 700;
-	}
-
-	&__meta {
-		margin-top: rem(10);
-		display: grid;
-		grid-template-columns: repeat(2, minmax(200px, 1fr));
-		gap: rem(8);
-		color: #374151;
-	}
-
-	&__aside {
-		@include flex(column, null, null, rem(12));
-	}
-}
-
-.badge {
-	padding: rem(12) rem(14);
-	border-radius: rem(12);
-	background: #ffffff;
-	box-shadow: 0 rem(6) rem(20) rgba(15, 23, 42, 0.08);
 
 	&__label {
-		font-size: rem(12);
-		color: #6b7280;
+		@include label;
 	}
 
 	&__value {
-		margin-top: rem(6);
-		font-size: rem(16);
-		font-weight: 600;
-		color: #111827;
+		margin: var(--s-2) 0 0;
+		font-size: var(--t-lg);
+		font-weight: 500;
+		word-break: break-word;
+
+		&--numeric {
+			@include numeric;
+		}
+	}
+}
+
+.assessment {
+	margin-top: var(--s-6);
+	padding-top: var(--s-5);
+	border-top: 1px solid var(--border);
+
+	&__head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--s-4);
+		margin-bottom: var(--s-4);
+	}
+
+	&__title {
+		@include h4;
+	}
+
+	&__hint {
+		max-width: 60ch;
+		color: var(--text-3);
+	}
+
+	&__text {
+		max-width: 68ch;
+		padding: var(--s-4);
+		border: 1px solid var(--border);
+		border-radius: var(--r-lg);
+		background-color: var(--surface);
+		line-height: var(--lh-base);
+	}
+
+	&__error {
+		padding: var(--s-3) var(--s-4);
+		border: 1px solid var(--err);
+		border-radius: var(--r-md);
+		background-color: var(--err-weak);
+		color: var(--err);
 	}
 }
 
 .fade-enter-active,
 .fade-leave-active {
-	transition: opacity 0.2s ease;
+	transition: opacity var(--dur-slow) var(--ease);
 }
+
 .fade-leave-active {
 	position: absolute;
 	inset: 0;
 }
+
 .fade-enter-from,
 .fade-leave-to {
 	opacity: 0;
-}
-
-.ai-section {
-	@include flex(column, null, flex-start, rem(12));
-}
-
-.ai-feedback {
-	padding: rem(16) rem(18);
-	border-radius: rem(12);
-	background: #ffffff;
-	box-shadow: 0 rem(6) rem(20) rgba(15, 23, 42, 0.08);
-
-	&__label {
-		font-size: rem(12);
-		color: #6b7280;
-		margin-bottom: rem(8);
-	}
-
-	&__text {
-		font-size: rem(15);
-		line-height: 1.6;
-		color: #111827;
-	}
-
-	&--error {
-		background: rgba(#ef4444, 0.06);
-		box-shadow: 0 rem(4) rem(14) rgba(#ef4444, 0.12);
-
-		.ai-feedback__text {
-			color: #b91c1c;
-		}
-	}
 }
 </style>

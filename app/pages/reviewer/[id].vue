@@ -2,48 +2,13 @@
 import { useReviewersStore } from '~/stores/reviewers'
 
 const route = useRoute()
+const router = useRouter()
 const reviewersStore = useReviewersStore()
 const { reviewer, isLoading } = storeToRefs(reviewersStore)
 const { pluralize } = usePluralize()
 const reviewerId = route.params.id as string
 
-const workers = [
-	{
-		id: 101,
-		name: 'Анна Маркова',
-		rating: 'A',
-		trend: 'up',
-		delta: '+4%',
-	},
-	{
-		id: 102,
-		name: 'Дмитрий Соловьев',
-		rating: 'B+',
-		trend: 'down',
-		delta: '-2%',
-	},
-	{
-		id: 103,
-		name: 'Екатерина Горина',
-		rating: 'A-',
-		trend: 'up',
-		delta: '+1%',
-	},
-	{
-		id: 104,
-		name: 'Кирилл Романов',
-		rating: 'B',
-		trend: 'down',
-		delta: '-3%',
-	},
-	{
-		id: 105,
-		name: 'Ольга Сафонова',
-		rating: 'A-',
-		trend: 'up',
-		delta: '+2%',
-	},
-]
+const jobsCount = computed(() => reviewer.value?.jobs?.length ?? 0)
 
 onMounted(() => {
 	reviewersStore.fetchReviewer(reviewerId)
@@ -55,223 +20,134 @@ onMounted(() => {
 		<Transition name="fade">
 			<SkeletonPage v-if="isLoading" />
 			<section v-else-if="reviewer" class="page">
-				<div class="header">
-					<div class="header__title">Профиль оценщика</div>
-					<div class="header__name">{{ reviewer?.name }}</div>
-					<div class="header__meta">
-						<span>ID: {{ reviewer?.id }}</span>
-						<span
-							>Закреплен оценщиком за {{ reviewer?.jobs?.length ?? 0 }}
-							{{
-								pluralize(reviewer.jobs?.length ?? 0, [
-									'работой',
-									'работами',
-									'работами',
-								])
-							}}</span
+				<header class="page__head">
+					<div>
+						<h1 class="page__title">{{ reviewer.name }}</h1>
+						<p class="page__lede">
+							Закреплён за {{ jobsCount }}
+							{{ pluralize(jobsCount, ['ролью', 'ролями', 'ролями']) }}
+						</p>
+					</div>
+					<UIButton
+						variant="secondary"
+						@click="router.push(`/edit/reviewer?id=${reviewer.id}`)"
+					>
+						Редактировать
+					</UIButton>
+				</header>
+
+				<section class="section">
+					<h2 class="section__title">Что оценивает</h2>
+					<p v-if="reviewer.description" class="section__text">
+						{{ reviewer.description }}
+					</p>
+					<p v-else class="section__empty">Описание не заполнено.</p>
+				</section>
+
+				<section class="section">
+					<h2 class="section__title">Метрики</h2>
+					<ul v-if="reviewer.metrics?.length" class="metrics">
+						<li
+							v-for="metric in reviewer.metrics"
+							:key="metric.json_name"
+							class="metrics__item"
 						>
-					</div>
-				</div>
-				<div class="grid">
-					<div class="card">
-						<div class="card__title">Краткое описание</div>
-						<div class="card__text">{{ reviewer?.description }}</div>
-					</div>
-
-					<div class="card">
-						<div class="card__title">Метрики оценщика</div>
-						<div class="metric-list">
-							<div
-								class="metric"
-								v-for="metric in reviewer?.metrics"
-								:key="metric.json_name"
-							>
-								{{ metric.display_name }}
-							</div>
-						</div>
-					</div>
-
-					<!-- TODO доразбираться с логикой привязки оценщика -->
-					<!-- <div class="card">
-				<div class="card__title">Закрепленный департамент</div>
-				<div class="department">{{ reviewer?.department }}</div>
-			</div> -->
-					<!-- 
-					<div class="card card--wide">
-						<div class="card__title">Сотрудники и динамика рейтинга</div>
-						<div class="worker" v-for="worker in workers" :key="worker.id">
-							<div class="worker__id">#{{ worker.id }}</div>
-							<div class="worker__name">{{ worker.name }}</div>
-							<div class="worker__rating">{{ worker.rating }}</div>
-							<div class="worker__trend" :class="worker.trend">
-								<span>{{ worker.trend === 'up' ? 'Рост' : 'Падение' }}</span>
-								<span class="worker__delta">
-									{{ worker.trend === 'up' ? '▲' : '▼' }} {{ worker.delta }}
-								</span>
-							</div>
-						</div>
-					</div> -->
-				</div>
+							<div class="metrics__name">{{ metric.display_name }}</div>
+							<p v-if="metric.description" class="metrics__description">
+								{{ metric.description }}
+							</p>
+							<div class="metrics__weight">{{ metric.value }}</div>
+						</li>
+					</ul>
+					<p v-else class="section__empty">
+						У оценщика пока нет метрик. Без них он ничего не измеряет.
+					</p>
+				</section>
 			</section>
 		</Transition>
 	</div>
 </template>
 
 <style lang="scss" scoped>
-.page {
-	padding: rem(20);
-	@include flex(column, null, null, rem(20));
+.page-stage {
+	position: relative;
+	min-height: 26rem;
+}
 
-	&-stage {
-		position: relative;
-		min-height: rem(420);
+.section {
+	margin-bottom: var(--s-6);
+
+	&__title {
+		@include h4;
+		margin-bottom: var(--s-3);
+	}
+
+	&__text {
+		max-width: 70ch;
+		line-height: var(--lh-base);
+	}
+
+	&__empty {
+		color: var(--text-3);
 	}
 }
 
-.header {
-	padding: rem(20);
-	border-radius: rem(16);
-	background: linear-gradient(120deg, #f8fafc 0%, #eef2ff 100%);
-	@include flex(column, null, null, rem(8));
+.metrics {
+	display: grid;
+	gap: 1px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	border: 1px solid var(--border);
+	border-radius: var(--r-lg);
+	background-color: var(--border);
+	overflow: hidden;
 
-	&__title {
-		font-size: rem(14);
-		color: #6b7280;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
+	&__item {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-items: start;
+		gap: var(--s-1) var(--s-4);
+		padding: var(--s-4);
+		background-color: var(--surface);
 	}
 
 	&__name {
-		margin-top: rem(6);
-		font-size: rem(28);
-		font-weight: 700;
+		font-weight: 500;
 	}
 
-	&__meta {
-		margin-top: rem(10);
-		display: grid;
-		grid-template-columns: repeat(2, minmax(200px, 1fr));
-		gap: rem(8);
-		color: #374151;
-	}
-}
-
-.grid {
-	display: grid;
-	grid-template-columns: repeat(2, minmax(240px, 1fr));
-	gap: rem(20);
-}
-
-.card {
-	padding: rem(18);
-	background: #ffffff;
-	border-radius: rem(16);
-	box-shadow: 0 rem(10) rem(30) rgba(15, 23, 42, 0.08);
-
-	&__title {
-		margin-bottom: rem(16);
-		font-size: rem(16);
-		font-weight: 600;
+	&__description {
+		grid-column: 1;
+		max-width: 70ch;
+		color: var(--text-2);
+		font-size: var(--t-sm);
 	}
 
-	&--wide {
-		grid-column: span 2;
+	&__weight {
+		grid-row: 1 / span 2;
+		grid-column: 2;
+		align-self: center;
+		padding: var(--s-1) var(--s-2);
+		border-radius: var(--r-sm);
+		background-color: var(--accent-weak);
+		color: var(--accent-text);
+		@include numeric;
+		font-size: var(--t-sm);
 	}
 }
 
-.card__text {
-	color: #374151;
-	font-size: rem(14);
-	line-height: 1.6;
+.fade-enter-active,
+.fade-leave-active {
+	transition: opacity var(--dur-slow) var(--ease);
 }
 
-.metric-list {
-	display: grid;
-	gap: rem(10);
+.fade-leave-active {
+	position: absolute;
+	inset: 0;
 }
 
-.metric {
-	padding: rem(10) rem(12);
-	border-radius: rem(10);
-	background: #f3f4f6;
-	font-size: rem(14);
-	color: #111827;
-}
-
-.department {
-	padding: rem(14);
-	border-radius: rem(12);
-	background: #eef2ff;
-	font-weight: 600;
-	color: #111827;
-}
-
-.worker {
-	display: grid;
-	grid-template-columns: 80px 1fr 80px 160px;
-	gap: rem(12);
-	align-items: center;
-	padding: rem(12) 0;
-	border-bottom: rem(1) solid #eef2f7;
-
-	&:last-child {
-		border-bottom: none;
-	}
-}
-
-.worker__id {
-	color: #6b7280;
-	font-size: rem(13);
-}
-
-.worker__name {
-	font-weight: 600;
-	color: #111827;
-}
-
-.worker__rating {
-	font-weight: 700;
-	color: #111827;
-}
-
-.worker__trend {
-	display: flex;
-	flex-direction: column;
-	gap: rem(4);
-	font-size: rem(12);
-	text-transform: uppercase;
-	letter-spacing: 0.04em;
-
-	&.up {
-		color: #059669;
-	}
-
-	&.down {
-		color: #dc2626;
-	}
-}
-
-.worker__delta {
-	font-weight: 600;
-	letter-spacing: 0;
-}
-
-@media (max-width: 900px) {
-	.header {
-		align-items: flex-start;
-	}
-	.header__meta {
-		grid-template-columns: 1fr;
-	}
-	.grid {
-		grid-template-columns: 1fr;
-	}
-	.card--wide {
-		grid-column: span 1;
-	}
-	.worker {
-		grid-template-columns: 1fr;
-		align-items: flex-start;
-	}
+.fade-enter-from,
+.fade-leave-to {
+	opacity: 0;
 }
 </style>
