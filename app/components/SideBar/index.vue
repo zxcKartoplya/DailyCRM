@@ -47,7 +47,6 @@ const { toggle } = useTheme()
 			<button
 				class="sidebar__theme"
 				type="button"
-				aria-label="Переключить тему"
 				title="Переключить тему"
 				@click="toggle"
 			>
