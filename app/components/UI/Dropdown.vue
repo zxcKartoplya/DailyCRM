@@ -23,35 +23,43 @@ const props = defineProps({
 .dropdown {
 	display: flex;
 	flex-direction: column;
-	border-radius: $radius-md;
+	min-width: 11rem;
+	padding: var(--s-1);
+	border: 1px solid var(--border-strong);
+	border-radius: var(--r-lg);
+	background-color: var(--surface);
 	overflow: hidden;
-	background-color: $white;
-	@include shadow($shadow-color);
 }
 
 .dropdown__item {
 	display: flex;
 	align-items: center;
-	gap: rem(8);
-	padding: rem(12) rem(16);
-	white-space: nowrap;
-	color: $color-surface;
-	background-color: transparent;
+	gap: var(--s-2);
+	height: var(--control-h);
+	padding: 0 var(--s-3);
 	border: none;
+	border-radius: var(--r-sm);
+	background-color: transparent;
+	color: var(--text-1);
+	font-size: var(--t-md);
+	white-space: nowrap;
 	cursor: pointer;
-	@include body-usual-regular;
-	transition: background-color 0.15s ease;
+	transition: background-color var(--dur-fast) var(--ease);
 
 	&:hover {
-		background-color: $cool-gray-light;
+		background-color: var(--surface-hover);
 	}
 
 	&:active {
-		background-color: $gray-light;
+		background-color: var(--surface-active);
 	}
 }
 
 .red {
-	color: #e11d48;
+	color: var(--err);
+
+	&:hover {
+		background-color: var(--err-weak);
+	}
 }
 </style>

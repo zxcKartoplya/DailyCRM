@@ -2,7 +2,6 @@
 import { Icon } from '@iconify/vue'
 import { vOnClickOutside } from '@vueuse/components'
 import { ref } from 'vue'
-import { IconColors } from '~/types/icon'
 
 defineProps({
 	items: Array,
@@ -31,7 +30,7 @@ const toggleDropdown = async event => {
 				icon="material-symbols:settings-ethernet"
 				width="16"
 				height="16"
-				:color="IconColors.GRAY_DEFAULT"
+				
 			/>
 		</div>
 		<Teleport to="body">
@@ -59,22 +58,40 @@ const toggleDropdown = async event => {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	padding: rem(6);
+	width: var(--control-h-sm);
+	height: var(--control-h-sm);
+	border-radius: var(--r-sm);
 	background: transparent;
-	border-radius: rem(8);
-	transition: background-color 0.15s ease;
+	color: var(--text-3);
 	cursor: pointer;
+	transition:
+		background-color var(--dur-fast) var(--ease),
+		color var(--dur-fast) var(--ease);
 
 	&:hover {
-		background-color: rgba($gray-medium, 0.18);
+		background-color: var(--surface-active);
+		color: var(--text-1);
 	}
 }
 
 .dropdown {
 	position: absolute;
 	left: v-bind('dropdownPosition.left');
-	transform: translate(calc(-100% - 5px), 10px);
 	top: v-bind('dropdownPosition.top');
+	transform: translate(calc(-100% - 5px), 10px);
 	z-index: 100;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+	transition:
+		opacity var(--dur-fast) var(--ease),
+		transform var(--dur-fast) var(--ease);
+}
+
+.fade-enter-from,
+.fade-leave-to {
+	opacity: 0;
+	transform: translate(calc(-100% - 5px), 4px);
 }
 </style>

@@ -19,8 +19,8 @@ const {
 	preserveAspectRatio = 'xMinYMid slice',
 	animate = true,
 	speed = 2,
-	primaryColor = '#f9f9f9',
-	secondaryColor = '#ecebeb',
+	primaryColor = 'var(--skeleton-base)',
+	secondaryColor = 'var(--skeleton-shine)',
 	primaryOpacity = 1,
 	secondaryOpacity = 1,
 } = defineProps<Props>()

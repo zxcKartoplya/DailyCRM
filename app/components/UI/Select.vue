@@ -85,52 +85,74 @@ const handleChange = (event: Event) => {
 	display: flex;
 	flex-direction: column;
 	width: 100%;
-	padding-bottom: rem(12);
 
 	&__label {
 		display: inline-flex;
 		align-items: center;
-		padding-bottom: rem(6);
-		font-size: 0.95rem;
-		font-weight: 600;
-		color: $text-grey;
-		letter-spacing: 0.01em;
+		gap: var(--s-1);
+		padding-bottom: var(--s-2);
+		font-size: var(--t-sm);
+		font-weight: 500;
+		color: var(--text-2);
 	}
 
 	&__required {
-		color: $color-secondary;
-		font-size: 1rem;
+		color: var(--err);
 	}
 
 	&__select {
 		width: 100%;
-		height: rem(47);
-		padding: rem(12) rem(14);
-		border-radius: 10px;
-		border: 1px solid transparent;
-		background-color: $bg-grey;
-		font-weight: 500;
-		box-sizing: border-box;
+		height: var(--control-h);
+		padding: 0 var(--s-7) 0 var(--s-3);
+		border: 1px solid var(--border-strong);
+		border-radius: var(--r-md);
+		background-color: var(--surface);
+		background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+			linear-gradient(135deg, currentColor 50%, transparent 50%);
+		background-position:
+			right calc(var(--s-4) + 4px) center,
+			right var(--s-4) center;
+		background-size:
+			5px 5px,
+			5px 5px;
+		background-repeat: no-repeat;
+		font-size: var(--t-md);
+		color: var(--text-1);
 		outline: none;
 		appearance: none;
+		cursor: pointer;
+		transition:
+			border-color var(--dur-fast) var(--ease),
+			box-shadow var(--dur-fast) var(--ease);
 
-		color: $text-black;
+		&:hover {
+			border-color: var(--text-3);
+		}
+
+		&:focus {
+			border-color: var(--accent);
+			box-shadow: 0 0 0 3px var(--accent-weak);
+		}
 
 		&--empty {
-			color: $text-grey;
+			color: var(--text-3);
 		}
 
 		&--error {
-			border-color: #ff5b5b;
+			border-color: var(--err);
+
+			&:focus {
+				box-shadow: 0 0 0 3px var(--err-weak);
+			}
 		}
 	}
 
 	&__message {
-		margin-top: rem(6);
-		font-size: rem(12);
+		padding-top: var(--s-2);
+		font-size: var(--t-xs);
 
 		&--error {
-			color: #ff5b5b;
+			color: var(--err);
 		}
 	}
 }

@@ -35,7 +35,7 @@ const spinnerStyle = computed(() => ({
 	color: color || undefined,
 }))
 
-const ariaLabel = computed(() => label || 'Loading')
+const ariaLabel = computed(() => label || 'Загрузка')
 </script>
 
 <template>
@@ -60,7 +60,7 @@ const ariaLabel = computed(() => label || 'Loading')
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
-	color: $text-grey;
+	color: var(--text-3);
 
 	&--centered {
 		justify-content: center;
@@ -71,7 +71,7 @@ const ariaLabel = computed(() => label || 'Loading')
 		width: var(--ui-loading-size);
 		height: var(--ui-loading-size);
 		border-radius: 50%;
-		border: var(--ui-loading-border) solid rgba($text-base, 0.25);
+		border: var(--ui-loading-border) solid var(--border-strong);
 		border-top-color: currentColor;
 		animation: ui-loading-spin 0.8s linear infinite;
 	}

@@ -80,262 +80,145 @@ const handleClick = (event: MouseEvent) => {
 
 <style lang="scss" scoped>
 .ui-button {
-	--btn-bg: $color-primary;
-	--btn-bg-hover: lighten($color-primary, 4%);
-	--btn-bg-active: darken($color-primary, 4%);
-	--btn-color: $text-base;
-	--btn-border: transparent;
-	--btn-shadow: 0 12px 24px rgba($color-primary, 0.3);
+	--btn-tone: var(--accent);
+	--btn-tone-hover: var(--accent-hover);
+	--btn-tone-active: var(--accent-active);
+	--btn-tone-weak: var(--accent-weak);
+	--btn-tone-text: var(--accent-text);
 
-	position: relative;
+	--btn-bg: var(--btn-tone);
+	--btn-bg-hover: var(--btn-tone-hover);
+	--btn-bg-active: var(--btn-tone-active);
+	--btn-color: var(--text-on-accent);
+	--btn-border: transparent;
+
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	gap: 10px;
+	gap: var(--s-2);
+	height: var(--control-h);
+	padding: 0 var(--s-4);
 	border: 1px solid var(--btn-border);
-	border-radius: $radius-md;
-	background: var(--btn-bg);
+	border-radius: var(--r-md);
+	background-color: var(--btn-bg);
 	color: var(--btn-color);
-	font-weight: 700;
-	letter-spacing: 0.01em;
-	text-transform: none;
+	font-size: var(--t-md);
+	font-weight: 500;
+	white-space: nowrap;
 	cursor: pointer;
-	transition:
-		transform 0.12s ease,
-		box-shadow 0.18s ease,
-		background-color 0.18s ease,
-		border-color 0.18s ease,
-		opacity 0.18s ease;
-	box-shadow: var(--btn-shadow);
 	user-select: none;
-	isolation: isolate;
+	transition:
+		background-color var(--dur-fast) var(--ease),
+		border-color var(--dur-fast) var(--ease),
+		color var(--dur-fast) var(--ease);
 
-	&--isBlock {
-		width: 100%;
-	}
-
-	&--sm {
-		padding: 9px 14px;
-		font-size: 0.95rem;
-	}
-
-	&--md {
-		padding: 12px 18px;
-		font-size: 1rem;
-	}
-
-	&--lg {
-		padding: 14px 22px;
-		font-size: 1.05rem;
-	}
-
+	&--isBlock,
 	&--full {
 		width: 100%;
 	}
 
-	&--primary {
-		--btn-bg: linear-gradient(
-			135deg,
-			$color-primary,
-			lighten($color-primary, 8%)
-		);
-		--btn-bg-hover: linear-gradient(
-			135deg,
-			lighten($color-primary, 5%),
-			lighten($color-primary, 12%)
-		);
-		--btn-bg-active: darken($color-primary, 4%);
-		--btn-border: rgba($color-primary, 0.8);
-		--btn-shadow: 0 12px 26px rgba($color-primary, 0.35);
+	&--sm {
+		height: var(--control-h-sm);
+		padding: 0 var(--s-3);
+		font-size: var(--t-sm);
+	}
+
+	&--lg {
+		height: 2.5rem;
+		padding: 0 var(--s-5);
 	}
 
 	&--secondary {
-		--btn-bg: linear-gradient(
-			135deg,
-			$color-secondary,
-			lighten($color-secondary, 10%)
-		);
-		--btn-bg-hover: linear-gradient(
-			135deg,
-			lighten($color-secondary, 6%),
-			lighten($color-secondary, 14%)
-		);
-		--btn-bg-active: darken($color-secondary, 6%);
-		--btn-border: rgba($color-secondary, 0.85);
-		--btn-shadow: 0 12px 26px rgba($color-secondary, 0.35);
-		color: #0b0f14;
+		--btn-bg: var(--surface);
+		--btn-bg-hover: var(--surface-hover);
+		--btn-bg-active: var(--surface-active);
+		--btn-color: var(--text-1);
+		--btn-border: var(--border-strong);
 	}
 
 	&--outline {
 		--btn-bg: transparent;
-		--btn-bg-hover: rgba($color-primary, 0.08);
-		--btn-bg-active: rgba($color-primary, 0.12);
-		--btn-border: rgba($color-primary, 0.8);
-		--btn-shadow: none;
+		--btn-bg-hover: var(--btn-tone-weak);
+		--btn-bg-active: var(--btn-tone-weak);
+		--btn-color: var(--btn-tone-text);
+		--btn-border: var(--border-strong);
 	}
 
 	&--ghost {
-		--btn-bg: rgba($text-base, 0.06);
-		--btn-bg-hover: rgba($text-base, 0.1);
-		--btn-bg-active: rgba($text-base, 0.16);
-		--btn-border: rgba($text-base, 0.18);
-		--btn-shadow: none;
-	}
-
-	&--color-blue {
-		$c: $blue;
-		--btn-bg: linear-gradient(135deg, $c, lighten($c, 8%));
-		--btn-bg-hover: linear-gradient(135deg, lighten($c, 5%), lighten($c, 12%));
-		--btn-bg-active: darken($c, 6%);
-		--btn-border: rgba($c, 0.85);
-		--btn-shadow: 0 12px 26px rgba($c, 0.35);
-		--btn-color: $text-base;
-
-		&.ui-button--outline,
-		&.ui-button--ghost {
-			--btn-bg: transparent;
-			--btn-bg-hover: rgba($c, 0.08);
-			--btn-bg-active: rgba($c, 0.14);
-			--btn-border: rgba($c, 0.75);
-			--btn-shadow: none;
-			--btn-color: $c;
-		}
+		--btn-bg: transparent;
+		--btn-bg-hover: var(--surface-hover);
+		--btn-bg-active: var(--surface-active);
+		--btn-color: var(--text-2);
+		--btn-border: transparent;
 	}
 
 	&--color-green {
-		$c: #22c55e;
-		--btn-bg: linear-gradient(135deg, $c, lighten($c, 8%));
-		--btn-bg-hover: linear-gradient(135deg, lighten($c, 5%), lighten($c, 12%));
-		--btn-bg-active: darken($c, 6%);
-		--btn-border: rgba($c, 0.85);
-		--btn-shadow: 0 12px 26px rgba($c, 0.35);
-		--btn-color: $text-base;
-
-		&.ui-button--outline,
-		&.ui-button--ghost {
-			--btn-bg: transparent;
-			--btn-bg-hover: rgba($c, 0.08);
-			--btn-bg-active: rgba($c, 0.14);
-			--btn-border: rgba($c, 0.75);
-			--btn-shadow: none;
-			--btn-color: $c;
-		}
+		--btn-tone: var(--ok);
+		--btn-tone-hover: var(--ok);
+		--btn-tone-active: var(--ok);
+		--btn-tone-weak: var(--ok-weak);
+		--btn-tone-text: var(--ok);
 	}
 
 	&--color-orange {
-		$c: #f97316;
-		--btn-bg: linear-gradient(135deg, $c, lighten($c, 8%));
-		--btn-bg-hover: linear-gradient(135deg, lighten($c, 5%), lighten($c, 12%));
-		--btn-bg-active: darken($c, 6%);
-		--btn-border: rgba($c, 0.85);
-		--btn-shadow: 0 12px 26px rgba($c, 0.35);
-		--btn-color: #0b0f14;
-
-		&.ui-button--outline,
-		&.ui-button--ghost {
-			--btn-bg: transparent;
-			--btn-bg-hover: rgba($c, 0.08);
-			--btn-bg-active: rgba($c, 0.14);
-			--btn-border: rgba($c, 0.75);
-			--btn-shadow: none;
-			--btn-color: $c;
-		}
+		--btn-tone: var(--warn);
+		--btn-tone-hover: var(--warn);
+		--btn-tone-active: var(--warn);
+		--btn-tone-weak: var(--warn-weak);
+		--btn-tone-text: var(--warn);
 	}
 
 	&--color-red {
-		$c: #ef4444;
-		--btn-bg: linear-gradient(135deg, $c, lighten($c, 8%));
-		--btn-bg-hover: linear-gradient(135deg, lighten($c, 5%), lighten($c, 12%));
-		--btn-bg-active: darken($c, 6%);
-		--btn-border: rgba($c, 0.85);
-		--btn-shadow: 0 12px 26px rgba($c, 0.35);
-		--btn-color: $text-base;
-
-		&.ui-button--outline,
-		&.ui-button--ghost {
-			--btn-bg: transparent;
-			--btn-bg-hover: rgba($c, 0.08);
-			--btn-bg-active: rgba($c, 0.14);
-			--btn-border: rgba($c, 0.75);
-			--btn-shadow: none;
-			--btn-color: $c;
-		}
+		--btn-tone: var(--err);
+		--btn-tone-hover: var(--err-hover);
+		--btn-tone-active: var(--err-hover);
+		--btn-tone-weak: var(--err-weak);
+		--btn-tone-text: var(--err);
 	}
 
 	&--color-grey {
-		$c: #f5f5f5;
-		--btn-bg: linear-gradient(135deg, $c, lighten($c, 8%));
-		--btn-bg-hover: linear-gradient(135deg, lighten($c, 5%), lighten($c, 12%));
-		--btn-bg-active: darken($c, 6%);
-		--btn-border: rgba($c, 0.85);
-		--btn-shadow: 0 12px 26px rgba($c, 0.35);
-		--btn-shadow-hover: 0 14px 28px rgba($c, 0.32);
-		--btn-color: $text-base;
-
-		&.ui-button--outline,
-		&.ui-button--ghost {
-			--btn-bg: transparent;
-			--btn-bg-hover: rgba($c, 0.08);
-			--btn-bg-active: rgba($c, 0.14);
-			--btn-border: rgba($c, 0.75);
-			--btn-shadow: none;
-			--btn-color: $gray-medium;
-		}
+		--btn-tone: var(--surface-sunken);
+		--btn-tone-hover: var(--surface-hover);
+		--btn-tone-active: var(--surface-active);
+		--btn-tone-weak: var(--surface-hover);
+		--btn-tone-text: var(--text-2);
+		--btn-color: var(--text-1);
 	}
 
 	&:hover:not(:disabled) {
-		background: var(--btn-bg-hover);
-		transform: translateY(-1px);
-		box-shadow: var(--btn-shadow-hover);
+		background-color: var(--btn-bg-hover);
 	}
 
 	&:active:not(:disabled) {
-		background: var(--btn-bg-active);
-		transform: translateY(0);
-		box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.25);
-	}
-
-	&:focus-visible {
-		outline: 2px solid rgba($color-secondary, 0.8);
-		outline-offset: 3px;
+		background-color: var(--btn-bg-active);
 	}
 
 	&:disabled {
-		opacity: 0.55;
+		opacity: 0.5;
 		cursor: not-allowed;
-		box-shadow: none;
 	}
 
 	&__label {
 		display: inline-flex;
 		align-items: center;
-		gap: 8px;
+		gap: var(--s-2);
 	}
 
 	&__icon {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		font-size: 1.1em;
+		font-size: 1.15em;
 	}
 
 	&__spinner {
-		width: 18px;
-		height: 18px;
+		width: 0.875rem;
+		height: 0.875rem;
 		border-radius: 50%;
-		border: 2px solid rgba($text-base, 0.3);
-		border-top-color: currentColor;
-		animation: spin 0.8s linear infinite;
-	}
-
-	&--sm &__spinner {
-		width: 16px;
-		height: 16px;
-	}
-
-	&--lg &__spinner {
-		width: 20px;
-		height: 20px;
+		border: 2px solid currentColor;
+		border-top-color: transparent;
+		opacity: 0.7;
+		animation: ui-button-spin 0.7s linear infinite;
 	}
 
 	&--isLoading {
@@ -343,12 +226,15 @@ const handleClick = (event: MouseEvent) => {
 	}
 }
 
-@keyframes spin {
-	from {
-		transform: rotate(0deg);
-	}
+@keyframes ui-button-spin {
 	to {
 		transform: rotate(360deg);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ui-button__spinner {
+		animation-duration: 2s;
 	}
 }
 </style>

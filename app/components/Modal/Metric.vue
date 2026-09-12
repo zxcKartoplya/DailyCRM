@@ -80,8 +80,10 @@ const create = handleSubmit(values => {
 				/>
 			</Field>
 			<div class="form-buttons">
-				<UIButton is-block color="grey" type="submit">Сохранить</UIButton>
-				<UIButton is-block @click="emit('close')">Отмена</UIButton>
+				<UIButton is-block type="submit">Сохранить</UIButton>
+				<UIButton is-block variant="secondary" @click="emit('close')">
+					Отмена
+				</UIButton>
 			</div>
 		</form>
 	</Modal>
@@ -89,11 +91,14 @@ const create = handleSubmit(values => {
 
 <style lang="scss" scoped>
 .form {
-	min-width: rem(350);
-	padding-top: rem(8);
-	@include flex(column, null, null, rem(8));
+	display: flex;
+	flex-direction: column;
+	gap: var(--s-4);
+
 	&-buttons {
-		@include flex(row, space-between, null, rem(8));
+		display: flex;
+		gap: var(--s-3);
+		margin-top: var(--s-2);
 	}
 }
 </style>

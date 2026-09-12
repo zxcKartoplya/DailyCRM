@@ -1,12 +1,10 @@
 <script lang="ts" setup>
-import { IconColors } from '~/types/icon'
-
 type Props = {
 	size?: string
-	color?: IconColors
+	color?: string
 }
 
-const { size = '24', color = IconColors.BLACK } = defineProps<Props>()
+const { size = '24', color = 'currentColor' } = defineProps<Props>()
 </script>
 
 <template>

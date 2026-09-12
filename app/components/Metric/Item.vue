@@ -39,34 +39,63 @@ const isMouse = ref(false)
 
 <style lang="scss" scoped>
 .metric {
-	background-color: $bg-grey;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--s-4);
 	position: relative;
+	padding: var(--s-4);
+	border: 1px solid var(--border);
+	border-radius: var(--r-md);
+	background-color: var(--surface);
 	cursor: pointer;
-	padding: rem(20);
-	border-radius: 12px;
-	@include flex(row, space-between, center);
+	transition:
+		border-color var(--dur-fast) var(--ease),
+		background-color var(--dur-fast) var(--ease);
+
+	&:hover {
+		border-color: var(--border-strong);
+		background-color: var(--surface-hover);
+	}
 
 	&-icon {
 		position: absolute;
-		top: rem(8);
-		right: rem(8);
+		top: var(--s-2);
+		right: var(--s-2);
+		color: var(--text-3);
+
+		&:hover {
+			color: var(--err);
+		}
 	}
 
 	&-wrapper {
-		@include flex(column, null, null, rem(12));
+		display: flex;
+		flex-direction: column;
+		gap: var(--s-1);
+		min-width: 0;
 	}
 
 	&-title {
-		@include h4;
+		@include h5;
 	}
+
 	&-info {
-		@include flex(row, space-between, null);
+		color: var(--text-2);
+		font-size: var(--t-sm);
 	}
+
 	&-value {
-		background-color: $bg-white;
-		border-radius: 8px;
-		padding: rem(4);
-		@include flex(row, center, center, rem(4));
+		display: inline-flex;
+		align-items: center;
+		gap: var(--s-1);
+		flex: none;
+		padding: var(--s-1) var(--s-2);
+		border-radius: var(--r-sm);
+		background-color: var(--accent-weak);
+		color: var(--accent-text);
+		@include numeric;
+		font-size: var(--t-sm);
 	}
 }
 </style>

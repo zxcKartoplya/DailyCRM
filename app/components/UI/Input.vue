@@ -184,144 +184,119 @@ watch(
 	display: flex;
 	flex-direction: column;
 	width: 100%;
-	padding-bottom: rem(12);
-	transition:
-		color 0.15s ease-in-out,
-		background-color 0.15s ease-in-out,
-		border-color 0.15s ease-in-out;
 
 	&__label {
 		display: inline-flex;
 		align-items: center;
-		padding-bottom: rem(6);
-		font-size: 0.95rem;
-		font-weight: 600;
-		color: $text-grey;
-		letter-spacing: 0.01em;
+		gap: var(--s-1);
+		padding-bottom: var(--s-2);
+		font-size: var(--t-sm);
+		font-weight: 500;
+		color: var(--text-2);
 	}
 
 	&__required {
-		color: $color-secondary;
-		font-size: 1rem;
+		color: var(--err);
 	}
 
 	&__shell {
 		display: flex;
 		flex-direction: column;
-		position: relative;
 	}
 
 	&__field {
-		position: relative;
 		display: flex;
 		align-items: center;
-		gap: 12px;
-		min-height: rem(25);
-		border-radius: $radius-md;
-		border: 1px solid $icons-grey-light;
-		background-color: $bg-grey;
-		padding: 10px 12px;
-		overflow: hidden;
+		gap: var(--s-2);
+		height: var(--control-h);
+		padding: 0 var(--s-3);
+		border: 1px solid var(--border-strong);
+		border-radius: var(--r-md);
+		background-color: var(--surface);
+		transition:
+			border-color var(--dur-fast) var(--ease),
+			box-shadow var(--dur-fast) var(--ease);
 
-		&::before {
-			content: '';
-			position: absolute;
-			inset: -1px;
-			pointer-events: none;
-			border-radius: inherit;
-			opacity: 0;
-			transition: opacity 0.18s ease;
-		}
 		&:hover {
-			border-color: $icons-grey;
+			border-color: var(--text-3);
 		}
-		&:focus {
-			border-color: $icons-grey;
-			background-color: $bg-white;
-		}
-		&:disabled {
-			cursor: not-allowed;
-			&:hover {
-				border-color: $icons-grey-light;
-			}
+
+		&:focus-within {
+			border-color: var(--accent);
+			box-shadow: 0 0 0 3px var(--accent-weak);
 		}
 	}
 
 	&__input {
 		flex: 1 1 auto;
 		width: 100%;
+		min-width: 0;
 		border: none;
 		background: transparent;
-		font-size: 1rem;
-		line-height: 1.4;
-		font-weight: 500;
-		letter-spacing: 0.01em;
+		font-size: var(--t-md);
+		color: var(--text-1);
 		outline: none;
-		@include body-usual-medium;
-		::placeholder {
-			color: $text-grey-light;
+
+		&::placeholder {
+			color: var(--text-3);
 		}
 	}
 
 	&__affix {
 		display: inline-flex;
 		align-items: center;
-		font-size: 0.95rem;
-
-		&--prefix {
-			margin-right: 2px;
-		}
-
-		&--suffix {
-			margin-left: 2px;
-		}
+		color: var(--text-3);
 	}
 
 	&__clear {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.25rem;
+		height: 1.25rem;
 		border: none;
-		outline: none;
-		padding: 6px 8px;
-		border-radius: 10px;
-		cursor: pointer;
-		font-size: 1rem;
+		border-radius: var(--r-sm);
+		background: transparent;
+		color: var(--text-3);
+		font-size: var(--t-lg);
 		line-height: 1;
-		transition: all 0.15s ease;
+		cursor: pointer;
+		transition:
+			background-color var(--dur-fast) var(--ease),
+			color var(--dur-fast) var(--ease);
 
 		&:hover {
-			border-color: $icons-grey;
-		}
-
-		&:active {
-			transform: scale(0.98);
-		}
-		&:focus {
-			border-color: $icons-grey;
-			background-color: $bg-white;
+			background-color: var(--surface-hover);
+			color: var(--text-1);
 		}
 	}
 
 	&__message {
-		position: absolute;
-		bottom: -30px;
-		@include body-label-regular;
+		padding-top: var(--s-2);
+		font-size: var(--t-xs);
+		color: var(--text-3);
 
 		&--error {
-			color: lighten(#f87171, 10%);
+			color: var(--err);
 		}
 	}
+
 	&--error {
 		.ui-input__field {
-			border-color: rgba(#f87171, 0.9);
+			border-color: var(--err);
+
+			&:focus-within {
+				box-shadow: 0 0 0 3px var(--err-weak);
+			}
 		}
 	}
 
 	&--disabled {
-		cursor: not-allowed;
-		&:hover {
-			border-color: $icons-grey-light;
-		}
-		::placeholder {
-			color: $text-grey-light;
+		opacity: 0.6;
+
+		.ui-input__field {
+			background-color: var(--surface-sunken);
+			cursor: not-allowed;
 		}
 	}
 }
@@ -329,8 +304,8 @@ watch(
 .fade-enter-active,
 .fade-leave-active {
 	transition:
-		opacity 0.16s ease,
-		transform 0.16s ease;
+		opacity var(--dur) var(--ease),
+		transform var(--dur) var(--ease);
 }
 
 .fade-enter-from,

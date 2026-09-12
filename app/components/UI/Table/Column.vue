@@ -1,3 +1,12 @@
+<script setup>
+defineProps({
+	text: [String, Number],
+	isLink: Boolean,
+	isEllipsis: Boolean,
+	isNumeric: Boolean,
+})
+</script>
+
 <template>
 	<div class="table-column">
 		<div
@@ -5,33 +14,28 @@
 			:class="{
 				'table-text--link': isLink,
 				'table-text--ellipsis': isEllipsis,
+				'table-text--numeric': isNumeric,
 			}"
 		>
 			{{ text }}
-			<slot></slot>
+			<slot />
 		</div>
 	</div>
 </template>
 
-<script setup>
-const props = defineProps({
-	text: [String, Number],
-	isLink: Boolean,
-	isEllipsis: Boolean,
-})
-</script>
-
 <style lang="scss" scoped>
 .table-column {
-	display: block;
-	position: relative;
-	padding: rem(17) rem(20);
+	display: flex;
+	align-items: center;
+	min-height: var(--row-h);
+	padding: var(--s-2) var(--s-4);
+	min-width: 0;
 }
 
 .table-text {
-	display: block;
-	color: $color-surface;
-	@include body-usual-regular;
+	min-width: 0;
+	color: var(--text-1);
+	font-size: var(--t-md);
 
 	&--ellipsis {
 		white-space: nowrap;
@@ -39,9 +43,15 @@ const props = defineProps({
 		text-overflow: ellipsis;
 	}
 
+	&--numeric {
+		@include numeric;
+		color: var(--text-2);
+	}
+
 	&--link {
 		cursor: pointer;
-		color: $blue;
+		color: var(--accent-text);
+		text-underline-offset: 3px;
 
 		&:hover {
 			text-decoration: underline;
