@@ -1,45 +1,95 @@
 @forward 'variables';
 @forward 'mixins';
+@use 'tokens';
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	-webkit-text-size-adjust: 100%;
+}
 
 body {
-	margin: 0px;
-	width: 100vw;
-	height: 100vh;
-	background: linear-gradient(
-		to bottom,
-		$blue-light 0%,
-		$blue-light 35%,
-		$cool-gray-light 35%,
-		$cool-gray-light 100%
-	);
-	overflow: hidden;
+	margin: 0;
+	min-height: 100vh;
+	background-color: var(--bg);
+	color: var(--text-1);
+	font-family: var(--font-ui);
+	font-size: var(--t-md);
+	line-height: var(--lh-base);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+figure {
+	margin: 0;
+}
+
 a {
 	color: inherit;
 	text-decoration: none;
 }
 
-.page {
-	width: calc(100% - #{rem(20)});
-	height: calc(100vh - 2.5rem);
-	overflow-y: auto;
-	scrollbar-gutter: stable;
+button,
+input,
+select,
+textarea {
+	font: inherit;
+	color: inherit;
+}
 
-	box-sizing: border-box;
-	margin-left: rem(20);
-	padding: rem(20);
-	background-color: $white;
-	border-radius: $radius-md;
-	@include shadow($shadow-color);
+:focus-visible {
+	@include focus-ring;
+}
+
+::selection {
+	background-color: var(--selection);
+}
+
+.page {
+	width: 100%;
+	max-width: var(--content-max);
+	padding: var(--s-5) var(--s-6) var(--s-7);
+}
+
+.page__head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--s-4);
+	min-height: var(--control-h);
+	margin-bottom: var(--s-5);
+	padding-bottom: var(--s-4);
+	border-bottom: 1px solid var(--border);
+}
+
+.page__title {
+	@include h2;
+}
+
+.page__lede {
+	margin-top: var(--s-1);
+	color: var(--text-2);
 }
 
 html {
-	scrollbar-color: rgba($bg-grey-medium, 0.55) transparent;
+	scrollbar-color: var(--scrollbar) transparent;
+	scrollbar-width: thin;
 }
 
 ::-webkit-scrollbar {
-	width: 8px;
-	height: 8px;
+	width: 10px;
+	height: 10px;
 }
 
 ::-webkit-scrollbar-track {
@@ -47,10 +97,13 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-	background: rgba($bg-grey-medium, 0.45);
-	border-radius: 6px;
+	background: var(--scrollbar);
+	border: 3px solid transparent;
+	background-clip: padding-box;
+	border-radius: var(--r-full);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-	background: rgba($bg-grey-medium, 0.7);
+	background: var(--scrollbar-hover);
+	background-clip: padding-box;
 }

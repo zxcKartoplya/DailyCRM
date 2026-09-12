@@ -9,6 +9,13 @@ export default defineNuxtConfig({
 				{ rel: 'icon', type: 'image/svg+xml', href: '/logo.svg?v=1' },
 				{ rel: 'shortcut icon', href: '/logo.svg?v=1' },
 			],
+			script: [
+				{
+					innerHTML:
+						"try{var t=localStorage.getItem('dailycrm-theme');if(!t||t==='system'){t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.dataset.theme=t}catch(e){}",
+					tagPosition: 'head',
+				},
+			],
 		},
 	},
 	modules: [
@@ -19,6 +26,16 @@ export default defineNuxtConfig({
 		'unplugin-icons/nuxt',
 	],
 	css: ['@/assets/scss/main.scss'],
+	fonts: {
+		defaults: {
+			subsets: ['cyrillic', 'latin'],
+			weights: [400, 500, 600, 700],
+		},
+		families: [
+			{ name: 'Onest', provider: 'google' },
+			{ name: 'JetBrains Mono', provider: 'google', weights: [400, 500] },
+		],
+	},
 	runtimeConfig: {
 		public: {
 			apiBase: process.env.API_URL || '',
