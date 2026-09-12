@@ -17,25 +17,22 @@ const hasSidebar = computed(() => {
 
 <style lang="scss" scoped>
 .layout {
-	--sidebar-offset: #{rem(270)}; // 250px width + 20px margin
-	--content-padding: #{rem(20)};
-
+	display: grid;
+	grid-template-columns: var(--nav-w) minmax(0, 1fr);
 	min-height: 100vh;
-	display: flex;
 
 	&__content {
-		flex: 1;
-		padding: var(--content-padding);
-		padding-left: var(--sidebar-offset);
-		box-sizing: border-box;
+		min-width: 0;
 	}
 
 	&--no-sidebar {
-		--sidebar-offset: 0;
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
 
-		.layout__content {
-			padding-left: var(--content-padding);
-		}
+@media (max-width: 900px) {
+	.layout {
+		grid-template-columns: minmax(0, 1fr);
 	}
 }
 </style>

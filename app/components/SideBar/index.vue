@@ -1,93 +1,149 @@
 <script lang="ts" setup>
+import { Icon } from '@iconify/vue'
+
 const sideBarLinks = [
-	{ name: 'Главная ', path: '/', icon: 'mdi:home' },
+	{ name: 'Главная', path: '/', icon: 'material-symbols:dashboard-outline-rounded' },
 	{
-		name: 'Департаменты ',
+		name: 'Департаменты',
 		path: '/departments',
 		icon: 'material-symbols:cases-rounded',
 	},
 	{
-		name: 'Работники ',
+		name: 'Работники',
 		path: '/workers',
 		icon: 'material-symbols:emoji-people-rounded',
 	},
 	{
-		name: 'Оценщики ',
+		name: 'Оценщики',
 		path: '/reviewer',
 		icon: 'material-symbols:face-retouching-natural-outline-rounded',
 	},
 	{
-		name: 'Роли ',
+		name: 'Роли',
 		path: '/role',
 		icon: 'material-symbols:domino-mask',
 	},
-
-	{
-		name: 'Редактирование',
-		subLink: [
-			{
-				name: 'Работника ',
-				path: '/edit/workers',
-				icon: 'material-symbols:emoji-people-rounded',
-			},
-			{
-				name: 'Департамента ',
-				path: '/edit/department',
-				icon: 'material-symbols:cases-rounded',
-			},
-			{
-				name: 'Оценщика ',
-				path: '/edit/reviewer',
-				icon: 'material-symbols:face-retouching-natural-outline-rounded',
-			},
-			{
-				name: 'Роли ',
-				path: '/edit/role',
-				icon: 'material-symbols:domino-mask',
-			},
-		],
-	},
-	// {
-	// 	name: 'Настройки',
-	// 	path: '/setttings',
-	// 	icon: 'material-symbols:settings-outline-rounded',
-	// },
 ]
+
+const { isDark, toggle } = useTheme()
 </script>
 
 <template>
-	<div class="sidebar">
-		<NuxtLink to="/" class="sidebar__logo"
-			><div class="sidebar__logo--wrapper"><IconLogo /> DailyCRM</div>
+	<aside class="sidebar">
+		<NuxtLink to="/" class="sidebar__logo">
+			<IconLogo />
+			<span class="sidebar__wordmark">DailyCRM</span>
 		</NuxtLink>
-		<div class="sidebar__line"></div>
-		<SideBarItem v-for="link in sideBarLinks" v-bind="link" />
-	</div>
+
+		<nav class="sidebar__nav">
+			<SideBarItem v-for="link in sideBarLinks" :key="link.path" v-bind="link" />
+		</nav>
+
+		<div class="sidebar__foot">
+			<button class="sidebar__theme" type="button" @click="toggle">
+				<ClientOnly>
+					<Icon
+						:icon="
+							isDark
+								? 'material-symbols:light-mode-outline-rounded'
+								: 'material-symbols:dark-mode-outline-rounded'
+						"
+						width="18"
+						height="18"
+					/>
+					<span>{{ isDark ? 'Светлая тема' : 'Тёмная тема' }}</span>
+					<template #fallback>
+						<Icon
+							icon="material-symbols:dark-mode-outline-rounded"
+							width="18"
+							height="18"
+						/>
+						<span>Тема</span>
+					</template>
+				</ClientOnly>
+			</button>
+		</div>
+	</aside>
 </template>
 
 <style lang="scss" scoped>
 .sidebar {
-	width: rem(250);
-	height: calc(100vh - #{rem(40)});
-	margin: rem(20);
-	border-radius: $radius-md;
-	background-color: $white;
-	position: fixed;
-	@include shadow($shadow-color);
-	&__logo {
-		width: 100%;
-		height: rem(60);
-		@include flex(row, center, center, rem(16));
-		@include h4;
+	display: flex;
+	flex-direction: column;
+	width: var(--nav-w);
+	height: 100vh;
+	position: sticky;
+	top: 0;
+	padding: var(--s-4) var(--s-3);
+	background-color: var(--surface-nav);
+	border-right: 1px solid var(--border);
 
-		&--wrapper {
-			@include flex(row, center, center, rem(8));
+	&__logo {
+		display: flex;
+		align-items: center;
+		gap: var(--s-3);
+		height: var(--control-h);
+		padding: 0 var(--s-3);
+		margin-bottom: var(--s-5);
+		color: var(--text-1);
+	}
+
+	&__wordmark {
+		font-size: var(--t-lg);
+		font-weight: 600;
+		letter-spacing: var(--tracking-tight);
+	}
+
+	&__nav {
+		display: flex;
+		flex-direction: column;
+		gap: var(--s-1);
+	}
+
+	&__foot {
+		margin-top: auto;
+		padding-top: var(--s-3);
+		border-top: 1px solid var(--border);
+	}
+
+	&__theme {
+		display: flex;
+		align-items: center;
+		gap: var(--s-3);
+		width: 100%;
+		height: var(--control-h);
+		padding: 0 var(--s-3);
+		border: none;
+		border-radius: var(--r-md);
+		background: transparent;
+		color: var(--text-2);
+		font-size: var(--t-md);
+		font-weight: 500;
+		text-align: left;
+		cursor: pointer;
+		transition:
+			background-color var(--dur-fast) var(--ease),
+			color var(--dur-fast) var(--ease);
+
+		&:hover {
+			background-color: var(--surface-hover);
+			color: var(--text-1);
 		}
 	}
-	&__line {
-		margin: 0 rem(10) rem(20) rem(10);
-		height: 1px;
-		background-color: $gray-light;
+}
+
+@media (max-width: 900px) {
+	.sidebar {
+		position: static;
+		width: 100%;
+		height: auto;
+		border-right: none;
+		border-bottom: 1px solid var(--border);
+
+		&__nav {
+			flex-direction: row;
+			flex-wrap: wrap;
+		}
 	}
 }
 </style>

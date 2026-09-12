@@ -1,145 +1,68 @@
 <script lang="ts" setup>
 import { Icon } from '@iconify/vue'
-import { IconColors } from '~/types/icon'
 
 type Props = {
 	name: string
-	path?: string
-	icon?: string
-	subLink?: Props[]
+	path: string
+	icon: string
 }
 
-const { name, path, icon, subLink } = defineProps<Props>()
-const router = useRouter()
+const { name, path, icon } = defineProps<Props>()
+const route = useRoute()
 
-const isOpen = ref(false)
-const hasSubLinks = computed(() => Array.isArray(subLink) && subLink.length > 0)
-const isActive = computed(() => {
-	if (path && path !== '/') {
-		return checkPath(path, router.currentRoute.value.path)
-	} else if (path === '/') {
-		return router.currentRoute.value.path === '/'
-	}
-	return false
-})
-
-const checkPath = (path: string, currentPath: string): boolean => {
-	return path === currentPath
-}
-
-const toggle = () => {
-	if (!hasSubLinks.value) return
-	isOpen.value = !isOpen.value
-}
+const isActive = computed(() =>
+	path === '/' ? route.path === '/' : route.path.startsWith(path),
+)
 </script>
 
 <template>
-	<div class="item" :class="{ 'item--open': isOpen }">
-		<NuxtLink v-if="path && !hasSubLinks" class="item__link" :to="path">
-			<Icon
-				v-if="icon"
-				:icon="icon"
-				width="24"
-				height="24"
-				:color="isActive ? IconColors.BLACK : IconColors.GRAY_DEFAULT"
-			/>
-			<div class="item__text" :class="{ 'item__text--active': isActive }">
-				{{ name }}
-			</div>
-		</NuxtLink>
-
-		<button
-			v-else
-			class="item__link item__link--button"
-			type="button"
-			@click="toggle"
-		>
-			<Icon
-				v-if="icon"
-				:icon="icon"
-				width="20"
-				height="20"
-				:color="IconColors.GRAY_DEFAULT"
-			/>
-			<div class="item__text" :class="{ 'item__text--active': isActive }">
-				{{ name }}
-			</div>
-			<Icon
-				icon="mdi:chevron-down"
-				class="item__chevron"
-				:class="{ 'item__chevron--open': isOpen }"
-				:color="IconColors.GRAY_DEFAULT"
-				width="20"
-				height="20"
-			/>
-		</button>
-		<Transition name="sublink">
-			<div class="item__sublink" v-if="hasSubLinks && isOpen">
-				<SideBarItem
-					v-for="link in subLink"
-					:key="link.path || link.name"
-					v-bind="link"
-					class="item__sublink--item"
-				/>
-			</div>
-		</Transition>
-	</div>
+	<NuxtLink class="item" :class="{ 'item--active': isActive }" :to="path">
+		<Icon :icon="icon" class="item__icon" width="18" height="18" />
+		<span class="item__text">{{ name }}</span>
+	</NuxtLink>
 </template>
 
 <style lang="scss" scoped>
 .item {
-	margin: rem(6) rem(10);
-	border-radius: $radius-md;
-	background-color: $white;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+	display: flex;
+	align-items: center;
+	gap: var(--s-3);
+	height: var(--control-h);
+	padding: 0 var(--s-3);
+	border-radius: var(--r-md);
+	color: var(--text-2);
+	transition:
+		background-color var(--dur-fast) var(--ease),
+		color var(--dur-fast) var(--ease);
 
-	&--open {
-		background-color: $bg-blue;
+	&__icon {
+		flex: none;
+		color: var(--text-3);
+		transition: color var(--dur-fast) var(--ease);
 	}
-	&__link {
-		width: 100%;
-		padding: rem(14) rem(16);
-		border: none;
-		background: transparent;
-		cursor: pointer;
-		color: inherit;
-		text-decoration: none;
-		@include flex(row, space-between, center, rem(10));
-		&--button {
-			text-align: left;
-		}
-	}
+
 	&__text {
-		color: $cool-gray-medium;
-		flex: 1;
-		text-align: left;
+		font-size: var(--t-md);
+		font-weight: 500;
+	}
 
-		&--active {
-			color: $text-black;
-		}
-	}
-	&__chevron {
-		transition: transform 0.2s ease;
-		&--open {
-			transform: rotate(180deg);
-		}
-	}
-	&__sublink {
-		padding: 0 0 rem(10) rem(30);
-		@include flex(column, center, flex-start, rem(6));
-		&--item {
-			width: 90%;
-		}
-	}
-}
+	&:hover {
+		background-color: var(--surface-hover);
+		color: var(--text-1);
 
-.sublink-enter-active,
-.sublink-leave-active {
-	transition: all 0.15s ease;
-}
-.sublink-enter-from,
-.sublink-leave-to {
-	opacity: 0;
-	transform: translateY(-4px);
+		.item__icon {
+			color: var(--text-2);
+		}
+	}
+
+	&--active,
+	&--active:hover {
+		background-color: var(--accent-weak);
+		color: var(--accent-text);
+
+		.item__icon {
+			color: var(--accent-text);
+		}
+	}
 }
 </style>
