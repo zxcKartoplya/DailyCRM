@@ -3,10 +3,7 @@ import Service from './services'
 
 class LoginService extends Service {
 	async login(userInfo: LoginData) {
-		const config = useRuntimeConfig()
-		return (await this.post('/login', userInfo, {
-			baseURL: config.public.authApiBase,
-		})) as APILoginResponse
+		return await this.post<APILoginResponse>('auth/login', userInfo)
 	}
 }
 

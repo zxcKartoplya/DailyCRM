@@ -9,22 +9,22 @@ import Service from './services'
 
 class ReviewersService extends Service {
 	async fetchReviewers() {
-		return (await this.get('reviewers')) as APIFetchReviewers
+		return (await this.get('admin/reviewers')) as APIFetchReviewers
 	}
 	async addReviewer(data: APIReviewerPayload) {
-		return (await this.post('reviewers', data)) as APICreatedReviewer
+		return (await this.post('admin/reviewers', data)) as APICreatedReviewer
 	}
 	async delReviewer(id: number) {
-		return await this.delete(`reviewers/${id}`)
+		return await this.delete(`admin/reviewers/${id}`)
 	}
 	async fetchReviewer(id: string) {
-		return (await this.get(`reviewers/${id}`)) as APIFetchReviewer
+		return (await this.get(`admin/reviewers/${id}`)) as APIFetchReviewer
 	}
 	async putReviewer(id: string, data: APIReviewerPayload) {
-		return await this.put(`reviewers/${id}`, data)
+		return await this.put(`admin/reviewers/${id}`, data)
 	}
 	async fetchDescription(name: string, description: string) {
-		return (await this.post('reviewers/description', { name, description })) as AIReviewerResponse
+		return (await this.post('admin/reviewers/description', { name, description })) as AIReviewerResponse
 	}
 }
 

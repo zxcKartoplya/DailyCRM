@@ -3,19 +3,19 @@ import Service from './services'
 
 class JobService extends Service {
 	async fetchJobs() {
-		return (await this.get('jobs')) as Role[]
+		return (await this.get('admin/jobs')) as Role[]
 	}
 	async addJob(data: { name: string; description?: string; department_id: number; reviewer_id: number }) {
-		return await this.post('jobs', data)
+		return await this.post('admin/jobs', data)
 	}
 	async delJob(id: number) {
-		return await this.delete(`jobs/${id}`)
+		return await this.delete(`admin/jobs/${id}`)
 	}
 	async fetchJob(id: string) {
-		return (await this.get(`jobs/${id}`)) as Role
+		return (await this.get(`admin/jobs/${id}`)) as Role
 	}
 	async putJob(id: string, values: { name?: string; description?: string; department_id?: number; reviewer_id?: number }) {
-		return await this.put(`jobs/${id}`, values)
+		return await this.put(`admin/jobs/${id}`, values)
 	}
 }
 

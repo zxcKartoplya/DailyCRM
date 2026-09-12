@@ -2,10 +2,7 @@ import Service from './services'
 
 class AdminService extends Service {
 	async bootstrapAdmin(data: { name: string; email: string; password: string }) {
-		const config = useRuntimeConfig()
-		return this.post('auth/bootstrap-admin', data, {
-			baseURL: config.public.authApiBase,
-		})
+		return this.post('auth/bootstrap-admin', data)
 	}
 }
 

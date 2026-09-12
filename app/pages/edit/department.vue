@@ -2,6 +2,7 @@
 import { Field, useForm } from 'vee-validate'
 import { useDepartamentsStore } from '~/stores/departments'
 import { Alert } from '~/types/alert'
+import { alertMessage } from '~/utils/alertMessage'
 import { departamentSchema } from '~/utils/validation/departamentSchema'
 
 const departamentsStore = useDepartamentsStore()
@@ -23,7 +24,7 @@ const add = handleSubmit(async formValues => {
 			alertStore.showAlert(Alert.Added)
 		}
 	} catch (error) {
-		alertStore.showAlert(Alert.AddedError)
+		alertStore.showAlert(alertMessage(error, Alert.AddedError))
 	}
 })
 </script>
