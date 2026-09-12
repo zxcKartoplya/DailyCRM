@@ -33,9 +33,9 @@ const { handleSubmit, values } = useForm({
 	validationSchema: WorkerCreateSchema,
 	initialValues: {
 		name: worker.value?.name,
-		email: worker.value?.email,
-		department_id: worker.value?.department_id,
-		job_id: worker.value?.job_id,
+		email: worker.value?.email ?? undefined,
+		department_id: worker.value?.department_id ?? undefined,
+		job_id: worker.value?.job_id ?? undefined,
 		status: worker.value?.status,
 	},
 })

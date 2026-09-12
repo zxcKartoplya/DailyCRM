@@ -60,7 +60,7 @@ onMounted(() => {
 					isEllipsis
 					@click="goWorker(worker.id)"
 				/>
-				<UITableColumn :text="worker.department_name" isEllipsis />
+				<UITableColumn :text="worker.department_name ?? '—'" isEllipsis />
 				<UITableColumn>
 					<UIStatus :status="worker.status" />
 				</UITableColumn>

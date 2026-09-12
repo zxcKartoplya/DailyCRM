@@ -27,7 +27,7 @@ const { handleSubmit, values } = useForm({
 		name: job.value?.name,
 		reviewer_id: job.value?.reviewer_id,
 		department_id: job.value?.department_id,
-		description: job.value?.description,
+		description: job.value?.description ?? undefined,
 	},
 })
 

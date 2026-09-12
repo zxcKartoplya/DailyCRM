@@ -1,35 +1,11 @@
-import type { Job } from './job'
+import type { Schemas } from '~/types/api'
 
-export type Reviewer = {
-	id: number
-	name: string
-	description: string
-	metrics: Metric[]
-	jobs?: Job[]
-}
+export type Reviewer = Schemas['ReviewerWithJobs']
+export type Metric = Schemas['Metric']
 
 export type APIFetchReviewers = Reviewer[]
 export type APIFetchReviewer = Reviewer
-export type APICreatedReviewer = Reviewer
+export type APICreatedReviewer = Schemas['Reviewer']
+export type APIReviewerPayload = Schemas['ReviewerCreate']
 
-export type APIReviewerPayload = {
-	name: string
-	description: string
-	metrics?: Metric[]
-}
-
-export type Metric = {
-	value: number
-	json_name: string
-	display_name: string
-	description: string
-}
-
-export type GigachatResponce = {
-	name: string
-	summary: string
-	what_is_evaluated: string[]
-	metrics: Metric[]
-}
-
-export type AIReviewerResponse = { gigachat_response: GigachatResponce }
+export type AIReviewerResponse = Schemas['ReviewerDescriptionResponse']

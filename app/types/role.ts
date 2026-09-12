@@ -1,9 +1,5 @@
-export type Role = {
-	id: number
-	name: string
-	department_id: number
-	reviewer_id: number
-	reviewer_name: string
-	department_name: string
-	description: string
-}
+import type { Schemas } from '~/types/api'
+
+export type Role = Schemas['Job']
+export type RoleCreate = Schemas['JobCreate']
+export type RoleUpdate = Schemas['JobUpdate']

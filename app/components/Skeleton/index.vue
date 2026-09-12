@@ -38,7 +38,7 @@ const computedViewBox = computed<string>(
 	<svg
 		:width="width"
 		:height="height"
-		:viewBox="preserveAspectRatio === 'none' ? null : computedViewBox"
+		:viewBox="preserveAspectRatio === 'none' ? undefined : computedViewBox"
 		:preserveAspectRatio="preserveAspectRatio"
 	>
 		<rect
