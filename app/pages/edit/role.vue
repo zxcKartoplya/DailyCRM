@@ -51,11 +51,13 @@ onMounted(() => {
 </script>
 
 <template>
-	<form class="page" @submit.prevent="add">
-		<div class="page__text">
-			{{ jobId ? 'Редактирование' : 'Добавление новой' }} роли работника
-		</div>
-		<div class="page__field">
+	<section class="page">
+		<header class="page__head">
+			<h1 class="page__title">
+				{{ jobId ? 'Редактирование роли' : 'Новая роль' }}
+			</h1>
+		</header>
+		<form class="form" @submit.prevent="add">
 			<Field
 				v-slot="{ field, errorMessage, handleChange, handleBlur }"
 				name="name"
@@ -69,7 +71,7 @@ onMounted(() => {
 					@update:model-value="handleChange"
 				/>
 			</Field>
-			<div class="page__field-row">
+			<div class="form__row">
 				<Field
 					v-slot="{ field, errorMessage, handleChange, handleBlur }"
 					name="reviewer_id"
@@ -88,7 +90,7 @@ onMounted(() => {
 					name="department_id"
 				>
 					<UISelect
-						label="Закрепленный департамент"
+						label="Департамент"
 						placeholder="Выберите департамент"
 						:options="departamentsOptions"
 						:modelValue="field.value"
@@ -110,28 +112,35 @@ onMounted(() => {
 					@update:model-value="handleChange"
 				/>
 			</Field>
-		</div>
-		<UIButton class="page__button" type="submit">{{
-			jobId ? 'Сохранить' : 'Добавить'
-		}}</UIButton>
-	</form>
+			<div class="form__actions">
+				<UIButton type="submit">
+					{{ jobId ? 'Сохранить' : 'Добавить' }}
+				</UIButton>
+				<UIButton variant="ghost" @click="router.push('/role')">Отмена</UIButton>
+			</div>
+		</form>
+	</section>
 </template>
 
 <style lang="scss" scoped>
-.page {
-	&__text {
-		@include h2;
-	}
-	&__field {
-		padding-top: rem(20);
-		@include flex(col, null, null, rem(12));
+.form {
+	display: flex;
+	flex-direction: column;
+	gap: var(--s-4);
+	max-width: 36rem;
 
-		&-row {
-			@include flex(row, space-between, center, rem(20));
-		}
+	&__row {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+		gap: var(--s-4);
 	}
-	&__button {
-		margin: 0 auto;
+
+	&__actions {
+		display: flex;
+		gap: var(--s-3);
+		margin-top: var(--s-2);
+		padding-top: var(--s-4);
+		border-top: 1px solid var(--border);
 	}
 }
 </style>

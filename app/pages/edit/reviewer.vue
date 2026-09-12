@@ -83,15 +83,17 @@ const createMetric = (metric: Metric) => {
 </script>
 
 <template>
-	<form class="page" @submit.prevent="add">
-		<div class="page__text">Создание оценщика</div>
-		<div class="page__fields">
+	<section class="page">
+		<header class="page__head">
+			<h1 class="page__title">Новый оценщик</h1>
+		</header>
+		<form class="form" @submit.prevent="add">
 			<Field
 				v-slot="{ field, errorMessage, handleChange, handleBlur }"
 				name="name"
 			>
 				<UIInput
-					label="Роль оценщика"
+					label="Название"
 					placeholder="Например: Тимлид, Старший менеджер"
 					required
 					:modelValue="field.value"
@@ -106,7 +108,7 @@ const createMetric = (metric: Metric) => {
 				name="description"
 			>
 				<UIInput
-					label="Краткое описание роли"
+					label="Что оценивает"
 					placeholder="Что именно оценивает данный тип оценщика"
 					required
 					:modelValue="field.value"
@@ -116,9 +118,9 @@ const createMetric = (metric: Metric) => {
 				/>
 			</Field>
 
-			<div class="page__textarea">
-				<div class="page__row">
-					<div class="page__label">Метрики, которые отслеживает оценщик</div>
+			<div class="metrics">
+				<div class="metrics__head">
+					<h2 class="metrics__title">Метрики</h2>
 					<UIButton
 						@click="getDescription"
 						variant="secondary"
@@ -126,7 +128,11 @@ const createMetric = (metric: Metric) => {
 						>{{ metrics?.length ? 'Обновить' : 'Заполнить' }}</UIButton
 					>
 				</div>
-				<div v-if="!isLoading" class="page__metrics">
+				<p class="metrics__hint">
+					Заполните название и описание — метрики предложит модель. Всё, что она
+					предложит, можно исправить или удалить.
+				</p>
+				<div v-if="!isLoading" class="metrics__list">
 					<MetricItem
 						v-for="(metric, index) in metrics"
 						:key="index"
@@ -136,17 +142,23 @@ const createMetric = (metric: Metric) => {
 						@open="openMetric(metric)"
 						@close="deleteMetric(metric.display_name)"
 					/>
-					<UIButton size="full" color="grey" @click="openMetricModal">
-						<IconAdd />
+					<UIButton variant="secondary" is-block @click="openMetricModal">
+						<template #icon-left><IconAdd size="18" /></template>
+						Добавить метрику
 					</UIButton>
 				</div>
-				<div v-else class="page__metrics-loading">
+				<div v-else class="metrics__loading">
 					<UILoading size="lg" />
 				</div>
 			</div>
-		</div>
 
-		<UIButton type="submit" class="page__button">Создать</UIButton>
+			<div class="form__actions">
+				<UIButton type="submit">Создать</UIButton>
+				<UIButton variant="ghost" @click="router.push('/reviewer')">
+					Отмена
+				</UIButton>
+			</div>
+		</form>
 		<Transition name="fade">
 			<ModalMetric
 				v-if="isMetricModalOpen"
@@ -155,43 +167,66 @@ const createMetric = (metric: Metric) => {
 				@create="createMetric"
 			/>
 		</Transition>
-	</form>
+	</section>
 </template>
 
 <style lang="scss" scoped>
-.page {
-	gap: rem(16);
-	@include flex(column, null, null);
-
-	&__text {
-		@include h1;
-	}
-
-	&__fields {
-		@include flex(column, null, null, rem(12));
-	}
-
-	&__metrics {
-		@include flex(column, null, null, rem(8));
-
-		&-loading {
-			@include flex(column, center, center);
-			height: rem(100);
-		}
-	}
+.form {
+	display: flex;
+	flex-direction: column;
+	gap: var(--s-4);
+	max-width: 36rem;
 
 	&__row {
-		@include flex(row, space-between, center);
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+		gap: var(--s-4);
 	}
 
-	&__label {
-		font-size: rem(14);
-		font-weight: 600;
-		color: $text-grey;
+	&__actions {
+		display: flex;
+		gap: var(--s-3);
+		margin-top: var(--s-2);
+		padding-top: var(--s-4);
+		border-top: 1px solid var(--border);
+	}
+}
+
+.metrics {
+	display: flex;
+	flex-direction: column;
+	gap: var(--s-3);
+	margin-top: var(--s-2);
+	padding-top: var(--s-4);
+	border-top: 1px solid var(--border);
+
+	&__head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--s-4);
 	}
 
-	&__button {
-		align-self: flex-start;
+	&__title {
+		@include h4;
+	}
+
+	&__hint {
+		max-width: 60ch;
+		color: var(--text-3);
+		font-size: var(--t-sm);
+	}
+
+	&__list {
+		display: flex;
+		flex-direction: column;
+		gap: var(--s-2);
+	}
+
+	&__loading {
+		display: flex;
+		justify-content: center;
+		padding: var(--s-6);
 	}
 }
 </style>
