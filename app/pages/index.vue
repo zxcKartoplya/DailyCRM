@@ -132,7 +132,12 @@ useSeoMeta({
 				</header>
 
 				<ul v-if="!isLoading && topDepartments.length" class="bars">
-					<li v-for="dept in topDepartments" :key="dept.id" class="bars__item">
+					<li
+						v-for="(dept, index) in topDepartments"
+						:key="dept.id"
+						class="bars__item"
+						:style="{ '--delay': `${index * 40}ms` }"
+					>
 						<span class="bars__name" :title="dept.name">{{ dept.name }}</span>
 						<span class="bars__track">
 							<span
@@ -293,12 +298,21 @@ useSeoMeta({
 		height: 100%;
 		border-radius: inherit;
 		background-color: var(--accent);
+		transform-origin: left center;
+		animation: bar-reveal var(--dur-slow) var(--ease) backwards;
+		animation-delay: var(--delay, 0ms);
 	}
 
 	&__value {
 		@include numeric;
 		color: var(--text-2);
 		font-size: var(--t-sm);
+	}
+}
+
+@keyframes bar-reveal {
+	from {
+		transform: scaleX(0);
 	}
 }
 

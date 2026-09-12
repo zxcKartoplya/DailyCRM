@@ -15,7 +15,7 @@ onMounted(() => {
 
 <template>
 	<div class="page-stage">
-		<Transition name="fade">
+		<Transition name="swap">
 			<SkeletonPage v-if="isLoading" />
 
 			<section v-else-if="job" key="content" class="page">
@@ -113,18 +113,18 @@ onMounted(() => {
 	}
 }
 
-.fade-enter-active,
-.fade-leave-active {
+.swap-enter-active,
+.swap-leave-active {
 	transition: opacity var(--dur-slow) var(--ease);
 }
 
-.fade-leave-active {
+.swap-leave-active {
 	position: absolute;
 	inset: 0;
 }
 
-.fade-enter-from,
-.fade-leave-to {
+.swap-enter-from,
+.swap-leave-to {
 	opacity: 0;
 }
 </style>
