@@ -21,12 +21,41 @@ const activeCount = byStatus(Statuses.ACTIVE)
 const invitedCount = byStatus(Statuses.INVITED)
 const inactiveCount = byStatus(Statuses.INACTIVE)
 
+const { pluralize } = usePluralize()
+
 const summary = computed(() => [
-	{ label: 'Сотрудников', value: workers.value.length },
-	{ label: 'Активных', value: activeCount.value },
-	{ label: 'Приглашённых', value: invitedCount.value },
-	{ label: 'Департаментов', value: departments.value.length },
-	{ label: 'Оценщиков', value: reviewers.value.length },
+	{
+		value: workers.value.length,
+		word: pluralize(workers.value.length, [
+			'сотрудник',
+			'сотрудника',
+			'сотрудников',
+		]),
+	},
+	{
+		value: activeCount.value,
+		word: pluralize(activeCount.value, ['активен', 'активны', 'активны']),
+	},
+	{
+		value: invitedCount.value,
+		word: pluralize(invitedCount.value, ['приглашён', 'приглашены', 'приглашены']),
+	},
+	{
+		value: departments.value.length,
+		word: pluralize(departments.value.length, [
+			'департамент',
+			'департамента',
+			'департаментов',
+		]),
+	},
+	{
+		value: reviewers.value.length,
+		word: pluralize(reviewers.value.length, [
+			'оценщик',
+			'оценщика',
+			'оценщиков',
+		]),
+	},
 ])
 
 const topDepartments = computed(() =>
@@ -91,15 +120,15 @@ useSeoMeta({
 			</UIButton>
 		</header>
 
-		<dl class="summary">
-			<div v-for="item in summary" :key="item.label" class="summary__item">
-				<dt class="summary__label">{{ item.label }}</dt>
-				<dd class="summary__value">
+		<p class="summary">
+			<span v-for="(item, index) in summary" :key="item.word" class="summary__fact">
+				<span class="summary__value">
 					<span v-if="isLoading" class="summary__placeholder" />
 					<template v-else>{{ item.value }}</template>
-				</dd>
-			</div>
-		</dl>
+				</span>
+				{{ item.word }}<span v-if="index < summary.length - 1" class="summary__sep">,</span>
+			</span>
+		</p>
 
 		<div class="columns">
 			<section class="block">
@@ -161,30 +190,34 @@ useSeoMeta({
 
 <style lang="scss" scoped>
 .summary {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
-	gap: var(--s-5);
 	margin: 0 0 var(--s-6);
 	padding-bottom: var(--s-5);
 	border-bottom: 1px solid var(--border);
+	color: var(--text-2);
+	font-size: var(--t-lg);
+	line-height: 1.7;
 
-	&__label {
-		@include label;
+	&__fact {
+		white-space: nowrap;
+		margin-right: var(--s-3);
 	}
 
 	&__value {
-		margin: var(--s-2) 0 0;
 		@include numeric;
 		font-size: var(--t-3xl);
 		font-weight: 500;
-		line-height: 1;
 		letter-spacing: var(--tracking-tight);
+		color: var(--text-1);
+	}
+
+	&__sep {
+		color: var(--text-3);
 	}
 
 	&__placeholder {
 		display: inline-block;
-		width: 2ch;
-		height: 1em;
+		width: 1.4ch;
+		height: 0.7em;
 		border-radius: var(--r-sm);
 		background-color: var(--skeleton-base);
 	}

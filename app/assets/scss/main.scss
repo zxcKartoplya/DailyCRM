@@ -13,6 +13,7 @@ html {
 
 body {
 	margin: 0;
+	caret-color: var(--accent);
 	min-height: 100vh;
 	background-color: var(--bg);
 	color: var(--text-1);
@@ -115,6 +116,26 @@ html {
 ::-webkit-scrollbar-thumb:hover {
 	background: var(--scrollbar-hover);
 	background-clip: padding-box;
+}
+
+.sidebar__theme-icon--to-light,
+.sidebar__theme-label--to-light {
+	display: none;
+}
+
+[data-theme='dark'] {
+	.sidebar__theme-icon--to-dark,
+	.sidebar__theme-label--to-dark {
+		display: none;
+	}
+
+	.sidebar__theme-icon--to-light {
+		display: inline-flex;
+	}
+
+	.sidebar__theme-label--to-light {
+		display: inline;
+	}
 }
 
 .fade-enter-active,

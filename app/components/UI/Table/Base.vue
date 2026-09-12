@@ -22,6 +22,34 @@ const props = defineProps({
 const columnTemplatesStyle = props.columnTemplates
 
 const scrollContainer = ref(null)
+const tableEl = ref(null)
+const hasHiddenColumns = ref(false)
+
+const syncOverflow = () => {
+	const el = scrollContainer.value
+	if (!el) return
+	hasHiddenColumns.value =
+		el.scrollWidth - el.clientWidth - el.scrollLeft > 1
+}
+
+let observer = null
+
+onMounted(() => {
+	syncOverflow()
+	window.addEventListener('resize', syncOverflow)
+	if (typeof ResizeObserver !== 'undefined') {
+		observer = new ResizeObserver(syncOverflow)
+		if (scrollContainer.value) observer.observe(scrollContainer.value)
+		if (tableEl.value) observer.observe(tableEl.value)
+	}
+})
+
+onUnmounted(() => {
+	window.removeEventListener('resize', syncOverflow)
+	observer?.disconnect()
+})
+
+watch(() => props.headList, syncOverflow, { flush: 'post' })
 
 const handleWheel = event => {
 	if (!scrollContainer.value) return
@@ -43,9 +71,14 @@ const handleWheel = event => {
 </script>
 
 <template>
-	<div class="table-shell">
-		<div class="table-wrapper" ref="scrollContainer" @wheel="handleWheel">
-			<div class="table">
+	<div class="table-shell" :class="{ 'table-shell--clipped': hasHiddenColumns }">
+		<div
+			ref="scrollContainer"
+			class="table-wrapper"
+			@wheel="handleWheel"
+			@scroll="syncOverflow"
+		>
+			<div ref="tableEl" class="table">
 				<div class="table-head">
 					<UITableHeadItem
 						v-for="element in headList"
@@ -63,10 +96,22 @@ const handleWheel = event => {
 
 <style lang="scss" scoped>
 .table-shell {
+	position: relative;
 	border: 1px solid var(--border);
 	border-radius: var(--r-lg);
 	background-color: var(--surface);
 	overflow: hidden;
+
+	&--clipped::after {
+		content: '';
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		width: var(--s-6);
+		pointer-events: none;
+		background: linear-gradient(to right, transparent, var(--surface) 85%);
+	}
 }
 
 .table-wrapper {

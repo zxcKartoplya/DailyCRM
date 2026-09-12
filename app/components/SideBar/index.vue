@@ -2,34 +2,34 @@
 import { Icon } from '@iconify/vue'
 
 const sideBarLinks = [
-	{ name: 'Главная', path: '/', icon: 'material-symbols:dashboard-outline-rounded' },
+	{
+		name: 'Главная',
+		path: '/',
+		icon: 'material-symbols:space-dashboard-outline-rounded',
+	},
 	{
 		name: 'Департаменты',
 		path: '/departments',
-		icon: 'material-symbols:cases-rounded',
+		icon: 'material-symbols:account-tree-outline-rounded',
 	},
 	{
 		name: 'Сотрудники',
 		path: '/workers',
-		icon: 'material-symbols:emoji-people-rounded',
+		icon: 'material-symbols:group-outline-rounded',
 	},
 	{
 		name: 'Оценщики',
 		path: '/reviewer',
-		icon: 'material-symbols:face-retouching-natural-outline-rounded',
+		icon: 'material-symbols:fact-check-outline-rounded',
 	},
 	{
 		name: 'Роли',
 		path: '/role',
-		icon: 'material-symbols:domino-mask',
+		icon: 'material-symbols:badge-outline-rounded',
 	},
 ]
 
-const { isDark, toggle } = useTheme()
-
-const themeLabel = computed(() =>
-	isDark.value ? 'Светлая тема' : 'Тёмная тема',
-)
+const { toggle } = useTheme()
 </script>
 
 <template>
@@ -47,30 +47,28 @@ const themeLabel = computed(() =>
 			<button
 				class="sidebar__theme"
 				type="button"
-				:aria-label="themeLabel"
-				:title="themeLabel"
+				aria-label="Переключить тему"
+				title="Переключить тему"
 				@click="toggle"
 			>
-				<ClientOnly>
-					<Icon
-						:icon="
-							isDark
-								? 'material-symbols:light-mode-outline-rounded'
-								: 'material-symbols:dark-mode-outline-rounded'
-						"
-						width="18"
-						height="18"
-					/>
-					<span class="sidebar__theme-label">{{ themeLabel }}</span>
-					<template #fallback>
-						<Icon
-							icon="material-symbols:dark-mode-outline-rounded"
-							width="18"
-							height="18"
-						/>
-						<span class="sidebar__theme-label">Тема</span>
-					</template>
-				</ClientOnly>
+				<Icon
+					icon="material-symbols:dark-mode-outline-rounded"
+					class="sidebar__theme-icon sidebar__theme-icon--to-dark"
+					width="18"
+					height="18"
+				/>
+				<Icon
+					icon="material-symbols:light-mode-outline-rounded"
+					class="sidebar__theme-icon sidebar__theme-icon--to-light"
+					width="18"
+					height="18"
+				/>
+				<span class="sidebar__theme-label sidebar__theme-label--to-dark">
+					Тёмная тема
+				</span>
+				<span class="sidebar__theme-label sidebar__theme-label--to-light">
+					Светлая тема
+				</span>
 			</button>
 		</div>
 	</aside>
@@ -140,6 +138,7 @@ const themeLabel = computed(() =>
 			color: var(--text-1);
 		}
 	}
+
 }
 
 @media (max-width: 900px) {

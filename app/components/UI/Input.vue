@@ -161,7 +161,7 @@ watch(
 					aria-label="Очистить поле"
 					@click="clearValue"
 				>
-					×
+					<IconClose size="14" />
 				</button>
 			</div>
 
@@ -252,13 +252,13 @@ watch(
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
+		flex: none;
 		width: 1.25rem;
 		height: 1.25rem;
 		border: none;
 		border-radius: var(--r-sm);
 		background: transparent;
 		color: var(--text-3);
-		font-size: var(--t-lg);
 		line-height: 1;
 		cursor: pointer;
 		transition:

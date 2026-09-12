@@ -7,14 +7,6 @@
 	@return math.div($px-value, 16) + rem;
 }
 
-@mixin h1 {
-	font-size: var(--t-3xl);
-	font-weight: 600;
-	line-height: var(--lh-tight);
-	letter-spacing: var(--tracking-tight);
-	color: var(--text-1);
-}
-
 @mixin h2 {
 	font-size: var(--t-2xl);
 	font-weight: 600;
