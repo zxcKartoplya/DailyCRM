@@ -1,0 +1,281 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-12T00:00:00Z",
+  "title": "Design System: DailyCRM",
+  "extensions": {
+    "colorMeta": {
+      "accent": {
+        "role": "primary",
+        "displayName": "Рабочий синий",
+        "canonical": "#2563db",
+        "darkCounterpart": "#4c8dff",
+        "tonalRamp": ["#0b1c3d", "#12295c", "#17409a", "#1d4fba", "#2563db", "#5b8ce6", "#9dbbf1", "#dde7fa"]
+      },
+      "accent-weak": {
+        "role": "primary",
+        "displayName": "Синий-подложка",
+        "canonical": "rgba(37, 99, 219, 0.1)",
+        "darkCounterpart": "rgba(76, 141, 255, 0.16)",
+        "tonalRamp": ["rgba(37,99,219,0.02)", "rgba(37,99,219,0.04)", "rgba(37,99,219,0.06)", "rgba(37,99,219,0.08)", "rgba(37,99,219,0.10)", "rgba(37,99,219,0.14)", "rgba(37,99,219,0.18)", "rgba(37,99,219,0.24)"]
+      },
+      "accent-text": {
+        "role": "primary",
+        "displayName": "Синий-текст",
+        "canonical": "#1d4fba",
+        "darkCounterpart": "#8ab4ff",
+        "tonalRamp": ["#08142e", "#0f2255", "#17409a", "#1d4fba", "#3d72d6", "#6e99e6", "#a8c3f2", "#e3ecfb"]
+      },
+      "bg": {
+        "role": "neutral",
+        "displayName": "Холодная база",
+        "canonical": "#fbfcfd",
+        "darkCounterpart": "#0e1116",
+        "tonalRamp": ["#0e1116", "#151a21", "#2a323d", "#4a545f", "#8c95a3", "#d2d9e3", "#f0f3f7", "#fbfcfd"]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Поверхность",
+        "canonical": "#ffffff",
+        "darkCounterpart": "#151a21",
+        "tonalRamp": ["#11151b", "#151a21", "#222a35", "#3d4753", "#7b8593", "#c9d1dc", "#f2f5f8", "#ffffff"]
+      },
+      "surface-nav": {
+        "role": "neutral",
+        "displayName": "Навигационный слой",
+        "canonical": "#f4f6f9",
+        "darkCounterpart": "#11151b",
+        "tonalRamp": ["#0d1015", "#11151b", "#1f252e", "#39424e", "#78828f", "#c3cbd6", "#e8ecf2", "#f4f6f9"]
+      },
+      "surface-sunken": {
+        "role": "neutral",
+        "displayName": "Утопленный слой",
+        "canonical": "#f0f3f7",
+        "darkCounterpart": "#0a0d11",
+        "tonalRamp": ["#0a0d11", "#0f1318", "#1c222b", "#353e4a", "#747e8c", "#bfc8d4", "#e4e9f0", "#f0f3f7"]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Линия",
+        "canonical": "#e4e8ee",
+        "darkCounterpart": "rgba(255, 255, 255, 0.09)",
+        "tonalRamp": ["#1b1f26", "#2b313a", "#495260", "#6f7886", "#9ba4b1", "#c6ccd6", "#e4e8ee", "#f4f6f9"]
+      },
+      "border-strong": {
+        "role": "neutral",
+        "displayName": "Сильная линия",
+        "canonical": "#d2d9e3",
+        "darkCounterpart": "rgba(255, 255, 255, 0.17)",
+        "tonalRamp": ["#171b21", "#262c35", "#414a57", "#67707e", "#949dab", "#bac2cf", "#d2d9e3", "#eef1f6"]
+      },
+      "text-1": {
+        "role": "neutral",
+        "displayName": "Основной текст",
+        "canonical": "#14181f",
+        "darkCounterpart": "#e6eaf0",
+        "tonalRamp": ["#080a0d", "#14181f", "#262d38", "#3d4653", "#5b6472", "#8c95a3", "#c3cad4", "#eef1f5"]
+      },
+      "text-2": {
+        "role": "neutral",
+        "displayName": "Вторичный текст",
+        "canonical": "#5b6472",
+        "darkCounterpart": "#9aa4b2",
+        "tonalRamp": ["#0d1015", "#1a1f27", "#2f3641", "#454e5b", "#5b6472", "#8c95a3", "#bcc3cd", "#e9ecf1"]
+      },
+      "text-3": {
+        "role": "neutral",
+        "displayName": "Третичный текст",
+        "canonical": "#8c95a3",
+        "darkCounterpart": "#6b7483",
+        "tonalRamp": ["#111419", "#20252d", "#374049", "#525b68", "#6b7483", "#8c95a3", "#c0c7d1", "#ebeef2"]
+      },
+      "ok": {
+        "role": "tertiary",
+        "displayName": "Статус «в порядке»",
+        "canonical": "#17794b",
+        "darkCounterpart": "#3fbf86",
+        "tonalRamp": ["#04170e", "#0a3122", "#0f4a31", "#17794b", "#26a069", "#3fbf86", "#8ddcb8", "#dcf3e8"]
+      },
+      "warn": {
+        "role": "tertiary",
+        "displayName": "Статус «внимание»",
+        "canonical": "#8a5a00",
+        "darkCounterpart": "#e0a536",
+        "tonalRamp": ["#1a1100", "#33220a", "#5c3c00", "#8a5a00", "#b8820f", "#e0a536", "#efca86", "#faeed6"]
+      },
+      "err": {
+        "role": "tertiary",
+        "displayName": "Статус «ошибка»",
+        "canonical": "#c0332b",
+        "darkCounterpart": "#f1766b",
+        "tonalRamp": ["#210807", "#4a120f", "#7d1f1a", "#a02821", "#c0332b", "#e2594f", "#f1766b", "#fbdcd9"]
+      },
+      "skeleton-base": {
+        "role": "neutral",
+        "displayName": "Скелетон, база",
+        "canonical": "#edf0f4",
+        "darkCounterpart": "#1a2029",
+        "tonalRamp": ["#12161c", "#1a2029", "#2b333f", "#454f5c", "#77818f", "#b6bec9", "#edf0f4", "#f7f9fb"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Крупное число", "purpose": "Счётчики в строке сводки на дашборде — число внутри живого предложения, а не заголовок." },
+      "headline": { "displayName": "Заголовок раздела", "purpose": "Имя раздела в шапке страницы. Один на экран." },
+      "title": { "displayName": "Заголовок модалки", "purpose": "Заголовок модального окна." },
+      "subtitle": { "displayName": "Заголовок блока", "purpose": "Заголовок блока внутри страницы." },
+      "body-large": { "displayName": "Крупный текст", "purpose": "Строка сводки и значения в списке фактов." },
+      "body": { "displayName": "Базовый текст", "purpose": "Текст интерфейса и контролов. Длинный текст ограничен 60–68ch." },
+      "body-small": { "displayName": "Мелкий текст", "purpose": "Подписи полей, метаинформация строки, статус." },
+      "label": { "displayName": "Служебная подпись", "purpose": "UPPERCASE с разрядкой: заголовок колонки таблицы и подпись поля в списке фактов. Больше нигде." },
+      "numeric": { "displayName": "Числовой набор", "purpose": "Любое число, id и дата: моноширинный с табличными цифрами." }
+    },
+    "shadows": [
+      { "name": "focus-ring", "value": "0 0 0 2px var(--bg), 0 0 0 4px var(--accent)", "purpose": "Глобальное кольцо на :focus-visible. Единственная тень уровня системы; подъёма не обозначает." },
+      { "name": "field-focus-halo", "value": "0 0 0 3px var(--accent-weak)", "purpose": "Ореол вокруг поля/селекта/textarea в фокусе. В состоянии ошибки — 0 0 0 3px var(--err-weak)." }
+    ],
+    "motion": [
+      { "name": "ease", "value": "cubic-bezier(0.2, 0.7, 0.3, 1)", "purpose": "Единственная кривая системы." },
+      { "name": "dur-fast", "value": "120ms", "purpose": "Состояния контролов: фон, цвет границы, цвет текста." },
+      { "name": "dur", "value": "160ms", "purpose": "Появление сообщений под полем и смена страницы (fade + 4px)." },
+      { "name": "dur-slow", "value": "220ms", "purpose": "Смена скелетона на содержимое; разворот полос департаментов scaleX с задержкой 40ms на позицию." },
+      { "name": "reduced-motion", "value": "prefers-reduced-motion: reduce → 0.01ms", "purpose": "Глобальное глушение анимаций и переходов." }
+    ],
+    "breakpoints": [
+      { "name": "dashboard-collapse", "value": "1100px" },
+      { "name": "nav-horizontal", "value": "900px" },
+      { "name": "page-compact", "value": "700px" }
+    ],
+    "layoutMeta": {
+      "nav-w": "15rem",
+      "content-max": "82rem",
+      "row-h": "2.5rem",
+      "control-h": "2.125rem",
+      "control-h-sm": "1.75rem"
+    },
+    "evidenceLimits": [
+      "Наполненные состояния не осмотрены ни в одном раунде: строки таблиц с данными, статусные точки на реальных значениях, полосы департаментов по численности, блок AI-оценки с ответом модели. Бэкенд 45.90.216.186 из среды недоступен.",
+      "Проверены по факту: пустые состояния, скелетоны, каркас, контролы, токены обеих тем."
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Первичное действие раздела. Одна на экран, в правой части шапки страницы.",
+      "html": "<button class=\"ds-btn-primary\">Добавить сотрудника</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; height: 2.125rem; padding: 0 1rem; border: 1px solid transparent; border-radius: 6px; background-color: var(--accent, #2563db); color: var(--text-on-accent, #fff); font-family: Onest, system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; white-space: nowrap; cursor: pointer; transition: background-color 120ms cubic-bezier(0.2,0.7,0.3,1), border-color 120ms cubic-bezier(0.2,0.7,0.3,1); } .ds-btn-primary:hover { background-color: var(--accent-hover, #1d4fba); } .ds-btn-primary:active { background-color: var(--accent-active, #17409a); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg, #fbfcfd), 0 0 0 4px var(--accent, #2563db); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Действие второго плана: «Редактировать», «Запросить оценку». Белая поверхность в сильной рамке.",
+      "html": "<button class=\"ds-btn-secondary\">Редактировать</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; height: 2.125rem; padding: 0 1rem; border: 1px solid var(--border-strong, #d2d9e3); border-radius: 6px; background-color: var(--surface, #fff); color: var(--text-1, #14181f); font-family: Onest, system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: background-color 120ms cubic-bezier(0.2,0.7,0.3,1), border-color 120ms cubic-bezier(0.2,0.7,0.3,1); } .ds-btn-secondary:hover { background-color: var(--surface-hover, rgba(20,24,31,0.04)); } .ds-btn-secondary:active { background-color: var(--surface-active, rgba(20,24,31,0.07)); } .ds-btn-secondary:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg, #fbfcfd), 0 0 0 4px var(--accent, #2563db); }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Третьестепенное действие без собственной формы в покое: подложка появляется только при наведении.",
+      "html": "<button class=\"ds-btn-ghost\">Отмена</button>",
+      "css": ".ds-btn-ghost { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; height: 2.125rem; padding: 0 1rem; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--text-2, #5b6472); font-family: Onest, system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: background-color 120ms cubic-bezier(0.2,0.7,0.3,1), color 120ms cubic-bezier(0.2,0.7,0.3,1); } .ds-btn-ghost:hover { background-color: var(--surface-hover, rgba(20,24,31,0.04)); color: var(--text-1, #14181f); } .ds-btn-ghost:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg, #fbfcfd), 0 0 0 4px var(--accent, #2563db); }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Поле ввода с подписью сверху. Фокус — синяя граница плюс ореол в 3px, без подъёма.",
+      "html": "<div class=\"ds-field\"><label class=\"ds-field-label\" for=\"ds-field-name\">Имя сотрудника</label><div class=\"ds-field-shell\"><input id=\"ds-field-name\" class=\"ds-field-input\" type=\"text\" placeholder=\"Иванов Иван\" /></div><p class=\"ds-field-hint\">Как в кадровых документах</p></div>",
+      "css": ".ds-field { display: flex; flex-direction: column; width: 100%; max-width: 20rem; font-family: Onest, system-ui, sans-serif; } .ds-field-label { padding-bottom: 0.5rem; font-size: 0.8125rem; font-weight: 500; color: var(--text-2, #5b6472); } .ds-field-shell { display: flex; align-items: center; gap: 0.5rem; height: 2.125rem; padding: 0 0.75rem; border: 1px solid var(--border-strong, #d2d9e3); border-radius: 6px; background-color: var(--surface, #fff); transition: border-color 120ms cubic-bezier(0.2,0.7,0.3,1), box-shadow 120ms cubic-bezier(0.2,0.7,0.3,1); } .ds-field-shell:hover { border-color: var(--text-3, #8c95a3); } .ds-field-shell:focus-within { border-color: var(--accent, #2563db); box-shadow: 0 0 0 3px var(--accent-weak, rgba(37,99,219,0.1)); } .ds-field-input { flex: 1 1 auto; min-width: 0; border: none; background: transparent; outline: none; font-size: 0.875rem; color: var(--text-1, #14181f); } .ds-field-input::placeholder { color: var(--text-3, #8c95a3); } .ds-field-hint { margin: 0; padding-top: 0.5rem; font-size: 0.75rem; color: var(--text-3, #8c95a3); }"
+    },
+    {
+      "name": "Sidebar Navigation",
+      "kind": "nav",
+      "refersTo": "nav-item",
+      "description": "Липкая колонка 15rem на втором нейтральном слое. Текущий раздел отмечен подложкой accent-weak, без полосы-индикатора.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-item ds-nav-item--active\" href=\"#\"><svg class=\"ds-nav-icon\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M4 13h6V4H4v9Zm0 7h6v-5H4v5Zm10 0h6v-9h-6v9Zm0-16v5h6V4h-6Z\"/></svg><span>Главная</span></a><a class=\"ds-nav-item\" href=\"#\"><svg class=\"ds-nav-icon\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-3.3 0-8 1.7-8 4v2h16v-2c0-2.3-4.7-4-8-4Z\"/></svg><span>Сотрудники</span></a></nav>",
+      "css": ".ds-nav { display: flex; flex-direction: column; gap: 0.25rem; width: 15rem; padding: 1rem 0.75rem; background-color: var(--surface-nav, #f4f6f9); border-right: 1px solid var(--border, #e4e8ee); font-family: Onest, system-ui, sans-serif; } .ds-nav-item { display: flex; align-items: center; gap: 0.75rem; height: 2.125rem; padding: 0 0.75rem; border-radius: 6px; color: var(--text-2, #5b6472); font-size: 0.875rem; font-weight: 500; text-decoration: none; transition: background-color 120ms cubic-bezier(0.2,0.7,0.3,1), color 120ms cubic-bezier(0.2,0.7,0.3,1); } .ds-nav-icon { flex: none; color: var(--text-3, #8c95a3); transition: color 120ms cubic-bezier(0.2,0.7,0.3,1); } .ds-nav-item:hover { background-color: var(--surface-hover, rgba(20,24,31,0.04)); color: var(--text-1, #14181f); } .ds-nav-item:hover .ds-nav-icon { color: var(--text-2, #5b6472); } .ds-nav-item--active, .ds-nav-item--active:hover { background-color: var(--accent-weak, rgba(37,99,219,0.1)); color: var(--accent-text, #1d4fba); } .ds-nav-item--active .ds-nav-icon { color: var(--accent-text, #1d4fba); }"
+    },
+    {
+      "name": "Data Table",
+      "kind": "card",
+      "refersTo": "table-shell",
+      "description": "Оболочка списка: белая поверхность в рамке 8px, шапка на навигационном слое, строки разделены линией 1px.",
+      "html": "<div class=\"ds-table\"><div class=\"ds-table-head\"><div class=\"ds-table-cell\">Сотрудник</div><div class=\"ds-table-cell\">Департамент</div><div class=\"ds-table-cell\">Статус</div></div><div class=\"ds-table-row\"><div class=\"ds-table-cell ds-table-cell--body\">Иванов Иван</div><div class=\"ds-table-cell ds-table-cell--body\">Разработка</div><div class=\"ds-table-cell ds-table-cell--body\"><span class=\"ds-status ds-status--active\"><span class=\"ds-status-dot\"></span>Активен</span></div></div><div class=\"ds-table-row\"><div class=\"ds-table-cell ds-table-cell--body\">Петрова Анна</div><div class=\"ds-table-cell ds-table-cell--body\">Аналитика</div><div class=\"ds-table-cell ds-table-cell--body\"><span class=\"ds-status ds-status--invited\"><span class=\"ds-status-dot\"></span>Приглашён</span></div></div></div>",
+      "css": ".ds-table { border: 1px solid var(--border, #e4e8ee); border-radius: 8px; background-color: var(--surface, #fff); overflow: hidden; font-family: Onest, system-ui, sans-serif; } .ds-table-head { display: grid; grid-template-columns: minmax(0,2fr) minmax(0,2fr) minmax(0,1fr); background-color: var(--surface-nav, #f4f6f9); border-bottom: 1px solid var(--border, #e4e8ee); } .ds-table-row { display: grid; grid-template-columns: minmax(0,2fr) minmax(0,2fr) minmax(0,1fr); align-items: center; border-bottom: 1px solid var(--border, #e4e8ee); color: var(--text-1, #14181f); transition: background-color 120ms cubic-bezier(0.2,0.7,0.3,1); } .ds-table-row:last-child { border-bottom: none; } .ds-table-row:hover { background-color: var(--surface-hover, rgba(20,24,31,0.04)); } .ds-table-cell { display: flex; align-items: center; min-height: 2.5rem; padding: 0 1rem; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.02em; text-transform: uppercase; color: var(--text-3, #8c95a3); white-space: nowrap; } .ds-table-cell--body { font-size: 0.875rem; font-weight: 400; letter-spacing: normal; text-transform: none; color: inherit; } .ds-status { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: var(--text-2, #5b6472); } .ds-status-dot { width: 6px; height: 6px; border-radius: 50%; background-color: currentColor; } .ds-status--active { color: var(--ok, #17794b); } .ds-status--invited { color: var(--warn, #8a5a00); } .ds-status--inactive { color: var(--text-3, #8c95a3); }"
+    },
+    {
+      "name": "Status",
+      "kind": "chip",
+      "refersTo": "status-active",
+      "description": "Статус без плашки: точка 6px в цвет текста плюс подпись. Три тона — активен, приглашён, неактивен.",
+      "html": "<span class=\"ds-st ds-st--active\"><span class=\"ds-st-dot\"></span>Активен</span> <span class=\"ds-st ds-st--invited\"><span class=\"ds-st-dot\"></span>Приглашён</span> <span class=\"ds-st ds-st--inactive\"><span class=\"ds-st-dot\"></span>Неактивен</span>",
+      "css": ".ds-st { display: inline-flex; align-items: center; gap: 0.5rem; margin-right: 1rem; font-family: Onest, system-ui, sans-serif; font-size: 0.8125rem; color: var(--text-2, #5b6472); white-space: nowrap; } .ds-st-dot { width: 6px; height: 6px; border-radius: 50%; background-color: currentColor; } .ds-st--active { color: var(--ok, #17794b); } .ds-st--invited { color: var(--warn, #8a5a00); } .ds-st--inactive { color: var(--text-3, #8c95a3); }"
+    },
+    {
+      "name": "Page Header",
+      "kind": "custom",
+      "refersTo": "button-primary",
+      "description": "Открывающий блок каждой страницы: имя раздела слева, первичное действие справа, правило 1px снизу.",
+      "html": "<header class=\"ds-page-head\"><div><h1 class=\"ds-page-title\">Команда</h1><p class=\"ds-page-lede\">3 из 24 сотрудников не в работе</p></div><button class=\"ds-page-action\">Добавить сотрудника</button></header>",
+      "css": ".ds-page-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 2.125rem; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border, #e4e8ee); font-family: Onest, system-ui, sans-serif; } .ds-page-title { margin: 0; font-size: 1.5625rem; font-weight: 600; line-height: 1.2; letter-spacing: -0.015em; color: var(--text-1, #14181f); } .ds-page-lede { margin: 0.25rem 0 0; font-size: 0.875rem; color: var(--text-2, #5b6472); } .ds-page-action { height: 2.125rem; padding: 0 1rem; border: 1px solid transparent; border-radius: 6px; background-color: var(--accent, #2563db); color: var(--text-on-accent, #fff); font-family: inherit; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: background-color 120ms cubic-bezier(0.2,0.7,0.3,1); } .ds-page-action:hover { background-color: var(--accent-hover, #1d4fba); }"
+    },
+    {
+      "name": "Summary Line",
+      "kind": "custom",
+      "refersTo": "display",
+      "description": "Счётчики дашборда строкой живого текста с крупными табличными числами — вместо ряда KPI-плиток.",
+      "html": "<p class=\"ds-summary\"><span class=\"ds-summary-fact\"><span class=\"ds-summary-value\">24</span> сотрудника<span class=\"ds-summary-sep\">,</span></span><span class=\"ds-summary-fact\"><span class=\"ds-summary-value\">21</span> активны<span class=\"ds-summary-sep\">,</span></span><span class=\"ds-summary-fact\"><span class=\"ds-summary-value\">6</span> департаментов</span></p>",
+      "css": ".ds-summary { margin: 0 0 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border, #e4e8ee); font-family: Onest, system-ui, sans-serif; font-size: 1rem; line-height: 1.7; color: var(--text-2, #5b6472); } .ds-summary-fact { white-space: nowrap; margin-right: 0.75rem; } .ds-summary-value { font-family: 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; font-feature-settings: 'tnum' 1; font-size: 2rem; font-weight: 500; letter-spacing: -0.015em; color: var(--text-1, #14181f); } .ds-summary-sep { color: var(--text-3, #8c95a3); }"
+    },
+    {
+      "name": "Department Bar",
+      "kind": "custom",
+      "refersTo": "table-row",
+      "description": "Департамент по численности: имя, утопленный трек с синей заливкой и моноширинное значение справа.",
+      "html": "<ul class=\"ds-bars\"><li class=\"ds-bars-item\"><span class=\"ds-bars-name\">Разработка</span><span class=\"ds-bars-track\"><span class=\"ds-bars-fill\" style=\"inline-size: 100%\"></span></span><span class=\"ds-bars-value\">12</span></li><li class=\"ds-bars-item\"><span class=\"ds-bars-name\">Аналитика</span><span class=\"ds-bars-track\"><span class=\"ds-bars-fill\" style=\"inline-size: 42%\"></span></span><span class=\"ds-bars-value\">5</span></li></ul>",
+      "css": ".ds-bars { margin: 0; padding: 0; list-style: none; font-family: Onest, system-ui, sans-serif; font-size: 0.875rem; color: var(--text-1, #14181f); } .ds-bars-item { display: grid; grid-template-columns: minmax(0,1fr) minmax(4rem,6rem) auto; align-items: center; gap: 0.75rem; padding: 0.75rem 0; border-top: 1px solid var(--border, #e4e8ee); } .ds-bars-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .ds-bars-track { height: 6px; border-radius: 999px; background-color: var(--surface-sunken, #f0f3f7); overflow: hidden; } .ds-bars-fill { display: block; height: 100%; border-radius: inherit; background-color: var(--accent, #2563db); } .ds-bars-value { font-family: 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; font-size: 0.8125rem; color: var(--text-2, #5b6472); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Операторский пульт",
+    "overview": "DailyCRM выглядит как приборная панель дежурного, а не как маркетинговая страница продукта. Руководитель заходит точечно и хочет за один экран понять состояние команды, поэтому интерфейс отдаёт всё место данным: содержимое лежит прямо на холодной почти-белой плоскости, без белой карточки-страницы под ним и без цветной подложки под ней. Плотность операторская — высота строки 2.5rem, высота контрола 2.125rem, отступы идут по восьмеричной сетке от 0.25rem до 4rem.\n\nМир держится на двух материалах: плоскость и линия. Разделение плоскостей делает граница в 1px, не тень. Глубины в системе нет: все box-shadow в сборке — это фокус-кольца и подсветка фокуса поля, ни одного теневого подъёма поверхности не существует. Слоёв ровно три: базовый фон, белая поверхность таблиц и панелей, и второй нейтральный слой, который холоднее содержимого и лежит под навигацией и шапкой таблицы.\n\nЦвет расходуется скупо. Синий акцент звучит на первичном действии, активном пункте навигации, фокусе и на полосах департаментов — и больше нигде. Статусы приглушены до трёх тонов и появляются точкой 6px рядом с подписью, а не заливкой плашки. Числа, id и даты набраны JetBrains Mono с табличными цифрами. Тёмная тема не косметическая: она переопределяет весь набор токенов на [data-theme='dark'].",
+    "keyCharacteristics": [
+      "Плоскости разделяются границей 1px, теней-подъёмов нет ни одной",
+      "Один синий акцент: первичное действие, текущий раздел, фокус, полосы данных",
+      "Холодная почти-белая база #fbfcfd, второй нейтральный слой под навигацией",
+      "Onest в интерфейсе, JetBrains Mono с табличными цифрами в числах, id и датах",
+      "Радиусы 4–8px, полное скругление только у треков и полос прогресса",
+      "Светлая и тёмная темы — равноправные наборы токенов, не оттенок одной"
+    ],
+    "rules": [
+      { "name": "Правило одного синего", "body": "Синий появляется только там, где он означает «действуй здесь» или «ты здесь»: первичная кнопка, активный пункт навигации, фокус, полоса данных. Раскрасить синим заголовок, иконку или карточку — значит уничтожить его смысл.", "section": "colors" },
+      { "name": "Правило приглушённого статуса", "body": "Статус сообщается цветом текста и точкой 6px, а не заливкой плашки. Насыщенные статусные плитки в этом мире не живут.", "section": "colors" },
+      { "name": "Правило линии вместо тени", "body": "Любое разделение плоскостей — 1px solid var(--border). Если возникает соблазн добавить тень, значит нужна граница.", "section": "colors" },
+      { "name": "Правило табличных цифр", "body": "Всё, что читается как число — счётчик, id, значение метрики, дата — набирается моноширинным с font-variant-numeric: tabular-nums. Число в Onest в этой системе означает, что забыли применить правило.", "section": "typography" },
+      { "name": "Правило заглавных", "body": "Верхний регистр с разрядкой — только машинная подпись данных: заголовок колонки и подпись поля в списке фактов. Заглавными нельзя набирать заголовки, надзаголовки над заголовком и любой текст, который человек читает как фразу.", "section": "typography" },
+      { "name": "Правило нулевой высоты", "body": "box-shadow в этой системе разрешён только как фокусное кольцо или ореол фокуса поля. Любая тень, имитирующая подъём поверхности, — чужеродна: вместо неё берётся граница или соседний тональный слой.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do разделять плоскости границей 1px solid var(--border) и тональным слоем, а не тенью.",
+      "Do держать ровно одну первичную синюю кнопку на экран — в правой части шапки раздела.",
+      "Do набирать числа, id и даты моноширинным с табличными цифрами (миксин numeric).",
+      "Do открывать страницу блоком .page__head: имя раздела слева, действие справа, правило 1px снизу.",
+      "Do класть навигацию и шапку таблицы на второй нейтральный слой surface-nav, который холоднее содержимого.",
+      "Do сообщать статус цветом текста и точкой 6px.",
+      "Do добавлять любой новый цвет сразу в оба набора токенов — :root и [data-theme='dark'].",
+      "Do брать отступы и радиусы из токенов: 8 шагов ритма, 4 значения радиуса."
+    ],
+    "donts": [
+      "Don't добавлять box-shadow ради подъёма поверхности — тень допустима только как фокусное кольцо или ореол фокуса поля.",
+      "Don't заворачивать содержимое страницы в белую карточку поверх цветного фона и не ставить ряд KPI-плиток над содержимым: счётчики набираются строкой живого текста.",
+      "Don't красить синим заголовки, иконки и декоративные элементы — синий означает действие, текущий раздел или фокус.",
+      "Don't набирать заглавными заголовки и надзаголовки: верхний регистр закреплён за заголовком колонки и подписью поля в списке фактов.",
+      "Don't заменять приглушённый статус насыщенной плашкой.",
+      "Don't вводить второй акцентный оттенок или второе семейство шрифта помимо Onest и JetBrains Mono.",
+      "Don't жёстко прописывать цвет, отступ или радиус мимо токенов — тёмная тема ломается молча.",
+      "Don't двигать и масштабировать элемент при наведении: реакция состояния — только цвет."
+    ]
+  }
+}
