@@ -2,24 +2,22 @@
 
 <template>
 	<section class="page">
-		<div class="ui-loading-page">
-			<div class="ui-loading-page__header">
-				<Skeleton class="ui-loading-page__title" preserveAspectRatio="none">
-					<rect x="0" y="0" width="100%" height="100%" rx="8" ry="8" />
-				</Skeleton>
-				<Skeleton class="ui-loading-page__subtitle" preserveAspectRatio="none">
-					<rect x="0" y="0" width="100%" height="100%" rx="6" ry="6" />
-				</Skeleton>
-			</div>
+		<div class="loading">
+			<Skeleton class="loading__title" preserveAspectRatio="none">
+				<rect x="0" y="0" width="100%" height="100%" rx="6" ry="6" />
+			</Skeleton>
+			<Skeleton class="loading__subtitle" preserveAspectRatio="none">
+				<rect x="0" y="0" width="100%" height="100%" rx="4" ry="4" />
+			</Skeleton>
 
-			<div class="ui-loading-page__cards">
+			<div class="loading__rows">
 				<Skeleton
 					v-for="index in 4"
-					:key="`card-${index}`"
-					class="ui-loading-page__card"
+					:key="`row-${index}`"
+					class="loading__row"
 					preserveAspectRatio="none"
 				>
-					<rect x="0" y="0" width="100%" height="100%" rx="12" ry="12" />
+					<rect x="0" y="0" width="100%" height="100%" rx="8" ry="8" />
 				</Skeleton>
 			</div>
 		</div>
@@ -27,33 +25,32 @@
 </template>
 
 <style lang="scss" scoped>
-.ui-loading-page {
+.loading {
+	display: flex;
+	flex-direction: column;
 	width: 100%;
-	@include flex(column, null, null, 24px);
-
-	&__header {
-		@include flex(column, null, null, 12px);
-	}
 
 	&__title {
-		width: 400px;
-		height: 28px;
+		width: min(20rem, 60%);
+		height: 1.75rem;
 	}
 
 	&__subtitle {
-		width: 250px;
-		height: 16px;
+		width: min(12rem, 40%);
+		height: 1rem;
+		margin-top: var(--s-3);
 	}
 
-	&__cards {
-		display: grid;
-		grid-template-columns: repeat(1, minmax(0, 1fr));
-		gap: 16px;
+	&__rows {
+		display: flex;
+		flex-direction: column;
+		gap: var(--s-3);
+		margin-top: var(--s-6);
 	}
 
-	&__card {
+	&__row {
 		width: 100%;
-		height: 140px;
+		height: 4rem;
 	}
 }
 </style>

@@ -7,48 +7,32 @@ import type { User } from '~/types/users'
 import type { Departament } from '~/types/departaments'
 import type { Reviewer } from '~/types/reviewers'
 
+const router = useRouter()
+
 const isLoading = ref(true)
 const workers = ref<User[]>([])
 const departments = ref<Departament[]>([])
 const reviewers = ref<Reviewer[]>([])
 
-const activeWorkers = computed(() =>
-	workers.value.filter(w => w.status === Statuses.ACTIVE),
-)
+const byStatus = (status: Statuses) =>
+	computed(() => workers.value.filter(w => w.status === status).length)
 
-const kpis = computed(() => [
-	{
-		title: 'Активные сотрудники',
-		value: activeWorkers.value.length,
-		delta: workers.value.length
-			? `${Math.round((activeWorkers.value.length / workers.value.length) * 100)}% от общего`
-			: '—',
-		negative: false,
-	},
-	{
-		title: 'Всего сотрудников',
-		value: workers.value.length,
-		delta: null,
-		negative: false,
-	},
-	{
-		title: 'Департаментов',
-		value: departments.value.length,
-		delta: null,
-		negative: false,
-	},
-	{
-		title: 'Оценщиков',
-		value: reviewers.value.length,
-		delta: null,
-		negative: false,
-	},
+const activeCount = byStatus(Statuses.ACTIVE)
+const invitedCount = byStatus(Statuses.INVITED)
+const inactiveCount = byStatus(Statuses.INACTIVE)
+
+const summary = computed(() => [
+	{ label: 'Сотрудников', value: workers.value.length },
+	{ label: 'Активных', value: activeCount.value },
+	{ label: 'Приглашённых', value: invitedCount.value },
+	{ label: 'Департаментов', value: departments.value.length },
+	{ label: 'Оценщиков', value: reviewers.value.length },
 ])
 
 const topDepartments = computed(() =>
 	[...departments.value]
 		.sort((a, b) => (b.employees_count ?? 0) - (a.employees_count ?? 0))
-		.slice(0, 5),
+		.slice(0, 6),
 )
 
 const maxEmployees = computed(() =>
@@ -61,25 +45,10 @@ const recentWorkers = computed(() =>
 			(a, b) =>
 				new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
 		)
-		.slice(0, 3),
+		.slice(0, 6),
 )
 
-const statusLabel = (status: Statuses) => {
-	const map: Record<Statuses, string> = {
-		[Statuses.ACTIVE]: 'Активен',
-		[Statuses.INACTIVE]: 'Неактивен',
-		[Statuses.INVITED]: 'Приглашён',
-	}
-	return map[status] ?? status
-}
-
-const statusClass = (status: Statuses) => {
-	return {
-		active: status === Statuses.ACTIVE,
-		inactive: status === Statuses.INACTIVE,
-		invited: status === Statuses.INVITED,
-	}
-}
+const needsAttention = computed(() => invitedCount.value + inactiveCount.value)
 
 onMounted(async () => {
 	try {
@@ -102,363 +71,240 @@ useSeoMeta({
 </script>
 
 <template>
-	<section class="dashboard">
-		<div class="dashboard__header">
+	<section class="page">
+		<header class="page__head">
 			<div>
-				<div class="dashboard__title">Сводка по дейликам</div>
-				<div class="dashboard__subtitle">
-					Аналитика качества задач и прогресса команд
-				</div>
+				<h1 class="page__title">Команда</h1>
+				<p class="page__lede">
+					<template v-if="isLoading">Загружаем данные…</template>
+					<template v-else-if="needsAttention">
+						{{ needsAttention }} из {{ workers.length }} сотрудников не в работе
+					</template>
+					<template v-else-if="workers.length">
+						Все сотрудники активны
+					</template>
+					<template v-else>Данных пока нет</template>
+				</p>
 			</div>
-			<div class="dashboard__period">Актуальные данные</div>
+			<UIButton @click="router.push('/edit/workers')">
+				Добавить сотрудника
+			</UIButton>
+		</header>
+
+		<dl class="summary">
+			<div v-for="item in summary" :key="item.label" class="summary__item">
+				<dt class="summary__label">{{ item.label }}</dt>
+				<dd class="summary__value">
+					<span v-if="isLoading" class="summary__placeholder" />
+					<template v-else>{{ item.value }}</template>
+				</dd>
+			</div>
+		</dl>
+
+		<div class="columns">
+			<section class="block">
+				<header class="block__head">
+					<h2 class="block__title">Последние сотрудники</h2>
+					<NuxtLink class="block__link" to="/workers">Все сотрудники</NuxtLink>
+				</header>
+
+				<ul v-if="!isLoading && recentWorkers.length" class="people">
+					<li v-for="worker in recentWorkers" :key="worker.id" class="people__item">
+						<NuxtLink class="people__name" :to="`/workers/${worker.id}`">
+							{{ worker.name }}
+						</NuxtLink>
+						<span class="people__meta">
+							{{ worker.job_name ?? '—' }} · {{ worker.department_name ?? '—' }}
+						</span>
+						<UIStatus :status="worker.status" />
+					</li>
+				</ul>
+				<p v-else-if="!isLoading" class="block__empty">
+					Сотрудников пока нет.
+				</p>
+				<div v-else class="block__loading"><UILoading /></div>
+			</section>
+
+			<section class="block">
+				<header class="block__head">
+					<h2 class="block__title">Департаменты</h2>
+					<NuxtLink class="block__link" to="/departments">Все</NuxtLink>
+				</header>
+
+				<ul v-if="!isLoading && topDepartments.length" class="bars">
+					<li v-for="dept in topDepartments" :key="dept.id" class="bars__item">
+						<span class="bars__name" :title="dept.name">{{ dept.name }}</span>
+						<span class="bars__track">
+							<span
+								class="bars__fill"
+								:style="{
+									inlineSize: `${((dept.employees_count ?? 0) / maxEmployees) * 100}%`,
+								}"
+							/>
+						</span>
+						<span class="bars__value">{{ dept.employees_count ?? 0 }}</span>
+					</li>
+				</ul>
+				<p v-else-if="!isLoading" class="block__empty">
+					Департаментов пока нет.
+				</p>
+				<div v-else class="block__loading"><UILoading /></div>
+			</section>
 		</div>
-
-		<template v-if="isLoading">
-			<div class="dashboard__grid">
-				<div class="card card--wide">
-					<div class="card__title">Ключевые показатели</div>
-					<div class="kpi-list">
-						<div class="kpi kpi--skeleton" v-for="i in 4" :key="i" />
-					</div>
-				</div>
-				<div class="card skeleton-block" />
-				<div class="card skeleton-block" />
-				<div class="card card--wide skeleton-block" />
-			</div>
-		</template>
-
-		<template v-else>
-			<div class="dashboard__grid">
-				<div class="card card--wide">
-					<div class="card__title">Ключевые показатели</div>
-					<div class="kpi-list">
-						<div class="kpi" v-for="kpi in kpis" :key="kpi.title">
-							<div class="kpi__title">{{ kpi.title }}</div>
-							<div class="kpi__value">{{ kpi.value }}</div>
-							<div v-if="kpi.delta" class="kpi__delta">{{ kpi.delta }}</div>
-						</div>
-					</div>
-				</div>
-
-				<div class="card">
-					<div class="card__title">Распределение по департаментам</div>
-					<div class="trend">
-						<div
-							class="trend__row"
-							v-for="dept in topDepartments"
-							:key="dept.id"
-						>
-							<div class="trend__day" :title="dept.name">{{ dept.name }}</div>
-							<div class="trend__bar">
-								<div
-									class="trend__fill"
-									:style="{
-										width: `${((dept.employees_count ?? 0) / maxEmployees) * 100}%`,
-									}"
-								/>
-							</div>
-							<div class="trend__value">{{ dept.employees_count ?? 0 }}</div>
-						</div>
-						<div v-if="topDepartments.length === 0" class="empty">
-							Нет данных
-						</div>
-					</div>
-				</div>
-
-				<div class="card">
-					<div class="card__title">Топ департаментов</div>
-					<div class="dept-list">
-						<div
-							class="dept"
-							v-for="dept in topDepartments"
-							:key="dept.id"
-						>
-							<div class="dept__name">{{ dept.name }}</div>
-							<div class="dept__value">{{ dept.employees_count ?? 0 }} чел.</div>
-						</div>
-						<div v-if="topDepartments.length === 0" class="empty">
-							Нет данных
-						</div>
-					</div>
-				</div>
-
-				<div class="card card--wide">
-					<div class="card__title">Последние сотрудники</div>
-					<div class="recent">
-						<div
-							class="recent__item"
-							v-for="worker in recentWorkers"
-							:key="worker.id"
-						>
-							<div class="recent__info">
-								<div class="recent__name">{{ worker.name }}</div>
-								<div class="recent__meta">
-									{{ worker.job_name ?? '—' }} · {{ worker.department_name ?? '—' }}
-								</div>
-							</div>
-							<div class="recent__badge" :class="statusClass(worker.status)">
-								{{ statusLabel(worker.status) }}
-							</div>
-						</div>
-						<div v-if="recentWorkers.length === 0" class="empty">
-							Нет данных
-						</div>
-					</div>
-				</div>
-			</div>
-		</template>
 	</section>
 </template>
 
 <style lang="scss" scoped>
-.dashboard {
-	padding: rem(20);
-	@include flex(column, null, null, rem(20));
-
-	&__header {
-		@include flex(row, space-between, flex-start, rem(16));
-		padding: rem(20);
-		border-radius: rem(16);
-		background: linear-gradient(120deg, #f7f8fc 0%, #eef1f8 100%);
-	}
-
-	&__title {
-		font-size: rem(24);
-		font-weight: 700;
-	}
-
-	&__subtitle {
-		margin-top: rem(6);
-		color: #6b7280;
-	}
-
-	&__period {
-		padding: rem(8) rem(12);
-		border-radius: rem(10);
-		background: #ffffff;
-		font-size: rem(13);
-		color: #374151;
-		box-shadow: 0 rem(6) rem(20) rgba(15, 23, 42, 0.08);
-	}
-
-	&__grid {
-		display: grid;
-		grid-template-columns: repeat(2, minmax(260px, 1fr));
-		gap: rem(20);
-	}
-}
-
-.card {
-	padding: rem(18);
-	background: #ffffff;
-	border-radius: rem(16);
-	box-shadow: 0 rem(10) rem(30) rgba(15, 23, 42, 0.08);
-
-	&__title {
-		margin-bottom: rem(16);
-		font-size: rem(16);
-		font-weight: 600;
-	}
-
-	&--wide {
-		grid-column: span 2;
-	}
-}
-
-.skeleton-block {
-	min-height: rem(160);
-	background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
-	background-size: 200% 100%;
-	animation: shimmer 1.5s infinite;
-}
-
-@keyframes shimmer {
-	0% { background-position: 200% 0; }
-	100% { background-position: -200% 0; }
-}
-
-.kpi-list {
+.summary {
 	display: grid;
-	grid-template-columns: repeat(4, minmax(160px, 1fr));
-	gap: rem(14);
-}
+	grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+	gap: var(--s-5);
+	margin: 0 0 var(--s-6);
+	padding-bottom: var(--s-5);
+	border-bottom: 1px solid var(--border);
 
-.kpi {
-	padding: rem(14);
-	border-radius: rem(12);
-	background: #f9fafb;
-	border: rem(1) solid #eef2f7;
-	display: grid;
-	gap: rem(6);
-
-	&--skeleton {
-		min-height: rem(80);
-		background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
-		background-size: 200% 100%;
-		animation: shimmer 1.5s infinite;
-	}
-
-	&__title {
-		color: #6b7280;
-		font-size: rem(13);
+	&__label {
+		@include label;
 	}
 
 	&__value {
-		font-size: rem(22);
-		font-weight: 700;
+		margin: var(--s-2) 0 0;
+		@include numeric;
+		font-size: var(--t-3xl);
+		font-weight: 500;
+		line-height: 1;
+		letter-spacing: var(--tracking-tight);
 	}
 
-	&__delta {
-		font-size: rem(13);
-		color: #059669;
-		font-weight: 600;
+	&__placeholder {
+		display: inline-block;
+		width: 2ch;
+		height: 1em;
+		border-radius: var(--r-sm);
+		background-color: var(--skeleton-base);
 	}
 }
 
-.trend {
+.columns {
 	display: grid;
-	gap: rem(12);
+	grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+	gap: var(--s-6);
+}
 
-	&__row {
-		display: grid;
-		grid-template-columns: 1fr 1fr 48px;
-		align-items: center;
-		gap: rem(10);
+.block {
+	min-width: 0;
+
+	&__head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: var(--s-4);
+		margin-bottom: var(--s-3);
 	}
 
-	&__day {
-		color: #6b7280;
-		font-size: rem(13);
-		white-space: nowrap;
+	&__title {
+		@include h4;
+	}
+
+	&__link {
+		color: var(--accent-text);
+		font-size: var(--t-sm);
+		text-underline-offset: 3px;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+
+	&__empty {
+		padding: var(--s-5) 0;
+		color: var(--text-3);
+	}
+
+	&__loading {
+		display: flex;
+		justify-content: center;
+		padding: var(--s-6);
+	}
+}
+
+.people {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	&__item {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-items: center;
+		gap: var(--s-1) var(--s-4);
+		padding: var(--s-3) 0;
+		border-top: 1px solid var(--border);
+	}
+
+	&__name {
+		font-weight: 500;
+		text-underline-offset: 3px;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+
+	&__meta {
+		grid-column: 1;
+		color: var(--text-3);
+		font-size: var(--t-sm);
 		overflow: hidden;
 		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+}
+
+.bars {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	&__item {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(4rem, 6rem) auto;
+		align-items: center;
+		gap: var(--s-3);
+		padding: var(--s-3) 0;
+		border-top: 1px solid var(--border);
 	}
 
-	&__bar {
-		height: rem(10);
-		border-radius: rem(999);
-		background: #eef2f7;
+	&__name {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	&__track {
+		height: 6px;
+		border-radius: var(--r-full);
+		background-color: var(--surface-sunken);
 		overflow: hidden;
 	}
 
 	&__fill {
+		display: block;
 		height: 100%;
 		border-radius: inherit;
-		background: linear-gradient(90deg, #6366f1 0%, #38bdf8 100%);
-		transition: width 0.4s ease;
+		background-color: var(--accent);
 	}
 
 	&__value {
-		font-weight: 600;
-		color: #111827;
-		text-align: right;
+		@include numeric;
+		color: var(--text-2);
+		font-size: var(--t-sm);
 	}
-}
-
-.dept-list {
-	display: grid;
-	gap: rem(12);
-}
-
-.dept {
-	padding: rem(12) rem(14);
-	border-radius: rem(12);
-	background: #f3f4f6;
-	display: flex;
-	justify-content: space-between;
-	font-size: rem(14);
-
-	&__name {
-		color: #374151;
-	}
-
-	&__value {
-		font-weight: 600;
-		color: #111827;
-	}
-}
-
-.recent {
-	display: grid;
-	grid-template-columns: repeat(3, minmax(200px, 1fr));
-	gap: rem(14);
-
-	&__item {
-		padding: rem(14);
-		border-radius: rem(12);
-		background: #f9fafb;
-		border: rem(1) solid #eef2f7;
-		display: flex;
-		flex-direction: column;
-		gap: rem(10);
-		justify-content: space-between;
-	}
-
-	&__name {
-		font-weight: 600;
-		font-size: rem(14);
-		color: #111827;
-	}
-
-	&__meta {
-		font-size: rem(12);
-		color: #6b7280;
-		margin-top: rem(4);
-	}
-
-	&__badge {
-		display: inline-block;
-		padding: rem(3) rem(10);
-		border-radius: rem(999);
-		font-size: rem(12);
-		font-weight: 600;
-		width: fit-content;
-
-		&.active {
-			background: #d1fae5;
-			color: #059669;
-		}
-
-		&.inactive {
-			background: #fee2e2;
-			color: #dc2626;
-		}
-
-		&.invited {
-			background: #e0f2fe;
-			color: #0284c7;
-		}
-	}
-}
-
-.empty {
-	color: #9ca3af;
-	font-size: rem(14);
-	padding: rem(8) 0;
 }
 
 @media (max-width: 1100px) {
-	.dashboard__grid {
-		grid-template-columns: 1fr;
-	}
-	.card--wide {
-		grid-column: span 1;
-	}
-	.kpi-list {
-		grid-template-columns: repeat(2, minmax(160px, 1fr));
-	}
-	.recent {
-		grid-template-columns: 1fr;
-	}
-}
-
-@media (max-width: 760px) {
-	.dashboard__header {
-		flex-direction: column;
-		align-items: flex-start;
-	}
-	.kpi-list {
-		grid-template-columns: 1fr;
+	.columns {
+		grid-template-columns: minmax(0, 1fr);
 	}
 }
 </style>
