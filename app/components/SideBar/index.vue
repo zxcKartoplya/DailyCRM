@@ -26,6 +26,10 @@ const sideBarLinks = [
 ]
 
 const { isDark, toggle } = useTheme()
+
+const themeLabel = computed(() =>
+	isDark.value ? 'Светлая тема' : 'Тёмная тема',
+)
 </script>
 
 <template>
@@ -40,7 +44,13 @@ const { isDark, toggle } = useTheme()
 		</nav>
 
 		<div class="sidebar__foot">
-			<button class="sidebar__theme" type="button" @click="toggle">
+			<button
+				class="sidebar__theme"
+				type="button"
+				:aria-label="themeLabel"
+				:title="themeLabel"
+				@click="toggle"
+			>
 				<ClientOnly>
 					<Icon
 						:icon="
@@ -51,14 +61,14 @@ const { isDark, toggle } = useTheme()
 						width="18"
 						height="18"
 					/>
-					<span>{{ isDark ? 'Светлая тема' : 'Тёмная тема' }}</span>
+					<span class="sidebar__theme-label">{{ themeLabel }}</span>
 					<template #fallback>
 						<Icon
 							icon="material-symbols:dark-mode-outline-rounded"
 							width="18"
 							height="18"
 						/>
-						<span>Тема</span>
+						<span class="sidebar__theme-label">Тема</span>
 					</template>
 				</ClientOnly>
 			</button>
@@ -146,19 +156,33 @@ const { isDark, toggle } = useTheme()
 		border-bottom: 1px solid var(--border);
 
 		&__logo {
+			order: 1;
 			margin-bottom: 0;
 		}
 
-		&__nav {
-			flex-direction: row;
-			flex-wrap: wrap;
-		}
-
 		&__foot {
+			order: 2;
 			margin-top: 0;
 			margin-left: auto;
 			padding-top: 0;
 			border-top: none;
+		}
+
+		&__nav {
+			order: 3;
+			width: 100%;
+			flex-direction: row;
+			flex-wrap: wrap;
+		}
+
+		&__theme {
+			width: var(--control-h);
+			justify-content: center;
+			padding: 0;
+		}
+
+		&__theme-label {
+			@include visually-hidden;
 		}
 	}
 }
