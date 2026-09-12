@@ -1,20 +1,5 @@
-export type LoginData = {
-	email: string
-	password: string
-}
+import type { Schemas } from '~/types/api'
 
-export type AuthUser = {
-	id: number
-	name: string
-	email: string
-	role: 'admin' | 'employee'
-	department_id: number | null
-	department_name: string | null
-	job_id: number | null
-	status: string
-}
-
-export type APILoginResponse = {
-	access_token: string
-	user: AuthUser
-}
+export type LoginData = Schemas['LoginRequest']
+export type AuthUser = Schemas['User']
+export type APILoginResponse = Schemas['TokenResponse']

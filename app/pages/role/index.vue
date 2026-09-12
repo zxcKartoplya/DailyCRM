@@ -55,8 +55,8 @@ onMounted(() => {
 					isEllipsis
 					@click="goRole(role.id)"
 				/>
-				<UITableColumn :text="role.reviewer_name" isEllipsis />
-				<UITableColumn :text="role.department_name" isEllipsis />
+				<UITableColumn :text="role.reviewer_name ?? '—'" isEllipsis />
+				<UITableColumn :text="role.department_name ?? '—'" isEllipsis />
 				<UITableColumn>
 					<UITableRowPopover
 						:items="[

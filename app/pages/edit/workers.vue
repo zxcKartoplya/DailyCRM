@@ -6,11 +6,14 @@ import { useWorkerStore } from '~/stores/workers'
 import type { CreateUser } from '~/types/users'
 import { Statuses } from '~/types/users'
 import { mapForSelect } from '~/utils/mappers/select'
+import { Alert } from '~/types/alert'
+import { alertMessage } from '~/utils/alertMessage'
 import { WorkerCreateSchema } from '~/utils/validation/WorkersSchema'
 
 const departamentsStore = useDepartamentsStore()
 const jobStore = useJobStore()
 const workersStore = useWorkerStore()
+const alertStore = useAlertStore()
 const { worker } = storeToRefs(workersStore)
 const route = useRoute()
 const router = useRouter()
@@ -30,9 +33,9 @@ const { handleSubmit, values } = useForm({
 	validationSchema: WorkerCreateSchema,
 	initialValues: {
 		name: worker.value?.name,
-		email: worker.value?.email,
-		department_id: worker.value?.department_id,
-		job_id: worker.value?.job_id,
+		email: worker.value?.email ?? undefined,
+		department_id: worker.value?.department_id ?? undefined,
+		job_id: worker.value?.job_id ?? undefined,
 		status: worker.value?.status,
 	},
 })
@@ -42,13 +45,17 @@ const departamentsOptions = computed(() =>
 )
 const jobOptions = computed(() => mapForSelect(jobStore.jobs ?? []))
 
-const add = handleSubmit(() => {
-	if (workerId) {
-		workersStore.updateWorker(workerId, values as Partial<CreateUser>)
-	} else {
-		workersStore.createWorker(values as CreateUser)
+const add = handleSubmit(async () => {
+	try {
+		if (workerId) {
+			await workersStore.updateWorker(workerId, values as Partial<CreateUser>)
+		} else {
+			await workersStore.createWorker(values as CreateUser)
+		}
+		router.push('/workers')
+	} catch (error) {
+		alertStore.showAlert(alertMessage(error, Alert.AddedError))
 	}
-	router.push('/workers')
 })
 
 onMounted(() => {

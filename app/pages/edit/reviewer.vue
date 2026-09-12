@@ -4,6 +4,7 @@ import { useAlertStore } from '~/stores/alert'
 import { useReviewersStore } from '~/stores/reviewers'
 import { Alert } from '~/types/alert'
 import type { APIReviewerPayload, Metric } from '~/types/reviewers'
+import { alertMessage } from '~/utils/alertMessage'
 import { reviewerSchema } from '~/utils/validation/reviewerSchema'
 
 const reviewersStore = useReviewersStore()
@@ -36,7 +37,7 @@ const add = handleSubmit(async formValues => {
 			alertStore.showAlert(Alert.Added)
 		}
 	} catch (error) {
-		alertStore.showAlert(Alert.AddedError)
+		alertStore.showAlert(alertMessage(error, Alert.AddedError))
 	}
 })
 

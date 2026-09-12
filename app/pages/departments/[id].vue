@@ -1,15 +1,21 @@
 <script lang="ts" setup>
 import { Field, useForm } from 'vee-validate'
+import { useDailiesStore } from '~/stores/dailies'
 import { useDepartamentsStore } from '~/stores/departments'
 import { putDepartamentSchema } from '~/utils/validation/putDepartamentSchema'
 
 const departamentsStore = useDepartamentsStore()
+const dailiesStore = useDailiesStore()
+const { dailies, isLoading, periodDays } = storeToRefs(dailiesStore)
 const route = useRoute()
 const router = useRouter()
 
 const id = route.params.id as string
 
+const periods = [7, 14, 30]
+
 await departamentsStore.fetchDepartament(id)
+await dailiesStore.fetchDepartmentDailies(id)
 
 const { handleSubmit, values } = useForm({
 	validationSchema: putDepartamentSchema,
@@ -44,6 +50,25 @@ const update = handleSubmit(() => {
 				</dd>
 			</div>
 		</dl>
+
+		<section class="section">
+			<div class="section__head">
+				<h2 class="section__title">Дейлики</h2>
+				<div class="periods">
+					<UIButton
+						v-for="period in periods"
+						:key="period"
+						:variant="period === periodDays ? 'primary' : 'ghost'"
+						@click="dailiesStore.setPeriod(period, id)"
+					>
+						{{ period }} дней
+					</UIButton>
+				</div>
+			</div>
+
+			<UILoading v-if="isLoading" />
+			<DailiesDepartmentGrid v-else-if="dailies" :dailies="dailies" />
+		</section>
 
 		<section class="section">
 			<h2 class="section__title">Переименовать департамент</h2>
@@ -112,6 +137,24 @@ const update = handleSubmit(() => {
 		@include h4;
 		margin-bottom: var(--s-4);
 	}
+
+	&__head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: var(--s-3);
+
+		.section__title {
+			margin-bottom: 0;
+		}
+	}
+}
+
+.periods {
+	display: flex;
+	gap: var(--s-2);
+	margin-bottom: var(--s-4);
 }
 
 .form {

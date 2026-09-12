@@ -3,10 +3,10 @@ import { Alert } from '~/types/alert'
 
 export const useAlertStore = defineStore('alert', () => {
 	const isShowAlert = ref(false)
-	const alert = ref(Alert.Unauthorized)
+	const alert = ref<Alert | string>(Alert.Unauthorized)
 	let hideTimeout: ReturnType<typeof setTimeout> | null = null
 
-	const showAlert = (typeAlert: Alert) => {
+	const showAlert = (typeAlert: Alert | string) => {
 		if (hideTimeout) {
 			clearTimeout(hideTimeout)
 			hideTimeout = null

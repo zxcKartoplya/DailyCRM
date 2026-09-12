@@ -39,7 +39,6 @@ export default defineNuxtConfig({
 	runtimeConfig: {
 		public: {
 			apiBase: process.env.API_URL || '',
-			authApiBase: process.env.AUTH_API_URL || '',
 		},
 	},
 	vite: {

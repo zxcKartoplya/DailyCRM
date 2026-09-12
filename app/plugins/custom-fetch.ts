@@ -1,3 +1,5 @@
+import { parseApiError } from '~/utils/apiError'
+
 export default defineNuxtPlugin(() => {
 	const config = useRuntimeConfig()
 	const nuxtApp = useNuxtApp()
@@ -9,32 +11,26 @@ export default defineNuxtPlugin(() => {
 			return
 		}
 
-		// token.value = null
 		await nuxtApp.runWithContext(() => navigateTo('/login'))
 	}
 
 	const $customFetch = $fetch.create({
-		baseURL: config.public.apiBase,
-		ignoreResponseError: true,
+		baseURL: `${config.public.apiBase.replace(/\/$/, '')}/api`,
 
 		onRequest({ options }) {
 			options.headers = new Headers(options.headers || {})
 			options.headers.set('Accept', 'application/json')
-			options.headers.set('withCredentials', 'true')
-			options.headers.set('credentials', 'omit')
 			if (token.value) {
 				options.headers.set('Authorization', `Bearer ${token.value}`)
 			}
 		},
 
-		async onResponse({ response }) {
+		async onResponseError({ request, response }) {
 			if (response.status === 401) {
 				await redirectToLogin()
 			}
-		},
 
-		async onRequestError() {
-			// await redirectToLogin()
+			throw parseApiError(response.status, String(request), response._data)
 		},
 	})
 	return {

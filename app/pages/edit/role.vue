@@ -4,11 +4,14 @@ import { useDepartamentsStore } from '~/stores/departments'
 import { useReviewersStore } from '~/stores/reviewers'
 import { useJobStore } from '~/stores/role'
 import { mapForSelect } from '~/utils/mappers/select'
+import { Alert } from '~/types/alert'
+import { alertMessage } from '~/utils/alertMessage'
 import { JobCreateSchema } from '~/utils/validation/JobCreateSchema'
 
 const reviewersStore = useReviewersStore()
 const departamentsStore = useDepartamentsStore()
 const jobStore = useJobStore()
+const alertStore = useAlertStore()
 const { job } = storeToRefs(jobStore)
 const route = useRoute()
 const router = useRouter()
@@ -24,7 +27,7 @@ const { handleSubmit, values } = useForm({
 		name: job.value?.name,
 		reviewer_id: job.value?.reviewer_id,
 		department_id: job.value?.department_id,
-		description: job.value?.description,
+		description: job.value?.description ?? undefined,
 	},
 })
 
@@ -35,13 +38,17 @@ const reviewersOptions = computed(() => {
 	return mapForSelect(reviewersStore.reviewers)
 })
 
-const add = handleSubmit(() => {
-	if (jobId) {
-		jobStore.putJob(jobId, values)
-	} else {
-		jobStore.addJob(values)
+const add = handleSubmit(async () => {
+	try {
+		if (jobId) {
+			await jobStore.putJob(jobId, values)
+		} else {
+			await jobStore.addJob(values)
+		}
+		router.push('/role')
+	} catch (error) {
+		alertStore.showAlert(alertMessage(error, Alert.AddedError))
 	}
-	router.push('/role')
 })
 
 onMounted(() => {
