@@ -10,6 +10,8 @@ const loginStore = useLoginStore()
 const alertStore = useAlertStore()
 const router = useRouter()
 
+const isSubmitting = ref(false)
+
 const { handleSubmit, errors } = useForm<LoginData>({
 	validationSchema: loginSchema,
 	initialValues: {
@@ -20,12 +22,15 @@ const { handleSubmit, errors } = useForm<LoginData>({
 
 const login = handleSubmit(
 	async formValues => {
+		isSubmitting.value = true
 		try {
 			await loginStore.login(formValues)
 			alertStore.showAlert(Alert.Authorized)
 			await router.push('/')
 		} catch (error) {
 			alertStore.showAlert(Alert.Unauthorized)
+		} finally {
+			isSubmitting.value = false
 		}
 	},
 	() => {
@@ -40,86 +45,103 @@ useSeoMeta({
 
 <template>
 	<div class="login">
-		<div class="login__contener">
-			<div class="login__info">
-				<div class="login__info--text">Welcome DailyCRM!</div>
+		<form class="login__form" @submit.prevent="login">
+			<div class="login__brand">
+				<IconLogo size="20" />
+				<span class="login__wordmark">DailyCRM</span>
 			</div>
-			<div class="login__form">
-				<form @submit.prevent="login" class="login__form--contener">
-					<Field
-						v-slot="{ field, errorMessage, handleChange, handleBlur }"
-						name="email"
-					>
-						<UIInput
-							label="Email Address"
-							placeholder="Enter email address"
-							:modelValue="field.value"
-							:error="errorMessage"
-							@blur="handleBlur"
-							@update:model-value="handleChange"
-						/>
-					</Field>
-					<Field
-						v-slot="{ field, errorMessage, handleChange, handleBlur }"
-						name="password"
-					>
-						<UIInput
-							label="Password"
-							placeholder="Enter the password"
-							:modelValue="field.value"
-							:error="errorMessage"
-							@blur="handleBlur"
-							@update:model-value="handleChange"
-						/>
-					</Field>
-					<UIButton
-						type="submit"
-						variant="primary"
-						size="md"
-						:is-disabled="!!errors.email || !!errors.password"
-					>
-						Login
-					</UIButton>
-				</form>
+
+			<h1 class="login__title">Вход в систему</h1>
+			<p class="login__lede">
+				Управление структурой компании и оценками сотрудников.
+			</p>
+
+			<div class="login__fields">
+				<Field
+					v-slot="{ field, errorMessage, handleChange, handleBlur }"
+					name="email"
+				>
+					<UIInput
+						label="Почта"
+						placeholder="name@company.ru"
+						type="email"
+						:model-value="field.value"
+						:error="errorMessage"
+						@blur="handleBlur"
+						@update:model-value="handleChange"
+					/>
+				</Field>
+				<Field
+					v-slot="{ field, errorMessage, handleChange, handleBlur }"
+					name="password"
+				>
+					<UIInput
+						label="Пароль"
+						placeholder="Введите пароль"
+						type="password"
+						:model-value="field.value"
+						:error="errorMessage"
+						@blur="handleBlur"
+						@update:model-value="handleChange"
+					/>
+				</Field>
 			</div>
-		</div>
+
+			<UIButton
+				type="submit"
+				is-block
+				:is-loading="isSubmitting"
+				:is-disabled="!!errors.email || !!errors.password"
+			>
+				Войти
+			</UIButton>
+		</form>
 	</div>
 </template>
 
 <style lang="scss" scoped>
 .login {
-	height: 100vh;
-	width: 100%;
-	padding: rem(72) rem(81);
-	box-sizing: border-box;
-	&__contener {
-		width: 100%;
-		height: 100%;
-		border-radius: 12px;
-		overflow: hidden;
-		@include flex(row, center, center);
-	}
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 100vh;
+	padding: var(--s-5);
+
 	&__form {
-		width: 50%;
-		height: 100%;
-		background-color: $white;
-		padding: rem(10);
-		@include flex(column, center, center);
-		&--contener {
-			max-width: rem(403);
-			width: 100%;
-			@include flex(column, center, center, rem(10));
-		}
+		display: flex;
+		flex-direction: column;
+		width: 100%;
+		max-width: 22rem;
 	}
-	&__info {
-		width: 50%;
-		height: 100%;
-		background-color: $bg-blue;
-		color: $white;
-		@include flex(column, center, center);
-		&--text {
-			@include h1;
-		}
+
+	&__brand {
+		display: flex;
+		align-items: center;
+		gap: var(--s-2);
+		margin-bottom: var(--s-6);
+		color: var(--text-1);
+	}
+
+	&__wordmark {
+		font-size: var(--t-lg);
+		font-weight: 600;
+		letter-spacing: var(--tracking-tight);
+	}
+
+	&__title {
+		@include h2;
+	}
+
+	&__lede {
+		margin-top: var(--s-2);
+		color: var(--text-2);
+	}
+
+	&__fields {
+		display: flex;
+		flex-direction: column;
+		gap: var(--s-4);
+		margin: var(--s-6) 0;
 	}
 }
 </style>
