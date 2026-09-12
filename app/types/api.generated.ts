@@ -1247,6 +1247,8 @@ export interface components {
             work_days?: number[] | null;
             /** Department Name */
             department_name?: string | null;
+            /** Job Name */
+            job_name?: string | null;
         };
         /** UserCreate */
         UserCreate: {
@@ -1299,6 +1301,8 @@ export interface components {
             work_days?: number[] | null;
             /** Department Name */
             department_name?: string | null;
+            /** Job Name */
+            job_name?: string | null;
             profile?: components["schemas"]["EmployeeProfile"] | null;
             settings?: components["schemas"]["EmployeeSettings"] | null;
         };
