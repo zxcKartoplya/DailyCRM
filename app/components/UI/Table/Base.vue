@@ -43,29 +43,35 @@ const handleWheel = event => {
 </script>
 
 <template>
-	<div class="table-wrapper" ref="scrollContainer" @wheel="handleWheel">
-		<div class="table">
-			<div class="table-head">
-				<UITableHeadItem
-					v-for="element in headList"
-					:key="element.title"
-					:title="element.title"
-					:sort-id="element.sortId"
-				/>
+	<div class="table-shell">
+		<div class="table-wrapper" ref="scrollContainer" @wheel="handleWheel">
+			<div class="table">
+				<div class="table-head">
+					<UITableHeadItem
+						v-for="element in headList"
+						:key="element.title"
+						:title="element.title"
+						:sort-id="element.sortId"
+					/>
+				</div>
+				<slot />
 			</div>
-			<slot />
-			<p v-if="isEmpty" class="table-empty">{{ emptyText }}</p>
 		</div>
+		<p v-if="isEmpty" class="table-empty">{{ emptyText }}</p>
 	</div>
 </template>
 
 <style lang="scss" scoped>
-.table-wrapper {
-	width: 100%;
-	overflow-x: auto;
+.table-shell {
 	border: 1px solid var(--border);
 	border-radius: var(--r-lg);
 	background-color: var(--surface);
+	overflow: hidden;
+}
+
+.table-wrapper {
+	width: 100%;
+	overflow-x: auto;
 }
 
 .table {
@@ -75,13 +81,9 @@ const handleWheel = event => {
 
 .table-head {
 	display: grid;
-	position: sticky;
-	top: 0;
-	z-index: 1;
 	min-width: 100%;
 	background-color: var(--surface-nav);
 	border-bottom: 1px solid var(--border);
-	border-radius: var(--r-lg) var(--r-lg) 0 0;
 	grid-template-columns: v-bind(columnTemplatesStyle);
 }
 

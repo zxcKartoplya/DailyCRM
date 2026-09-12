@@ -169,7 +169,10 @@
 			string and
 			(string.index($gap, 'g-') or string.index($gap, 'gap-') == 1)
 		{
-			$prefix-length: if(string.index($gap, 'gap-') == 1, 4, 2);
+			$prefix-length: 2;
+			@if string.index($gap, 'gap-') == 1 {
+				$prefix-length: 4;
+			}
 			$gap-value: string.slice($gap, $prefix-length + 1);
 			$has-unit: string.index($gap-value, '%') or
 				string.index($gap-value, 'px') or

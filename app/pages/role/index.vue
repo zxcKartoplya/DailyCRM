@@ -40,7 +40,7 @@ onMounted(() => {
 		<UITableBase
 			:headList="table.heads"
 			:columnTemplates="table.gridColumns"
-			:is-empty="!jobStore.jobs.length"
+			:is-empty="!jobStore.jobs?.length"
 			empty-text="Ролей пока нет. Роль связывает должность с оценщиком."
 		>
 			<UITableRow

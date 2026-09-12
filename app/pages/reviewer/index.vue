@@ -36,7 +36,7 @@ onMounted(async () => {
 		<UITableBase
 			:headList="table.heads"
 			:columnTemplates="table.gridColumns"
-			:is-empty="!reviewers.length"
+			:is-empty="!reviewers?.length"
 			empty-text="Оценщиков пока нет. Оценщик — это набор метрик для должности."
 		>
 			<UITableRow

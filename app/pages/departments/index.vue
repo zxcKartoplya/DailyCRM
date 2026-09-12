@@ -40,7 +40,7 @@ onMounted(() => {
 		<UITableBase
 			:headList="table.heads"
 			:columnTemplates="table.gridColumns"
-			:is-empty="!departamentsStore.departaments.length"
+			:is-empty="!departamentsStore.departaments?.length"
 			empty-text="Департаментов пока нет. С них начинается структура компании."
 		>
 			<UITableRow

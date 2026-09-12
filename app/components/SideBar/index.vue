@@ -9,7 +9,7 @@ const sideBarLinks = [
 		icon: 'material-symbols:cases-rounded',
 	},
 	{
-		name: 'Работники',
+		name: 'Сотрудники',
 		path: '/workers',
 		icon: 'material-symbols:emoji-people-rounded',
 	},
@@ -135,14 +135,30 @@ const { isDark, toggle } = useTheme()
 @media (max-width: 900px) {
 	.sidebar {
 		position: static;
+		align-self: start;
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--s-3);
 		width: 100%;
 		height: auto;
 		border-right: none;
 		border-bottom: 1px solid var(--border);
 
+		&__logo {
+			margin-bottom: 0;
+		}
+
 		&__nav {
 			flex-direction: row;
 			flex-wrap: wrap;
+		}
+
+		&__foot {
+			margin-top: 0;
+			margin-left: auto;
+			padding-top: 0;
+			border-top: none;
 		}
 	}
 }
