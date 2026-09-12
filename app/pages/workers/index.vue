@@ -8,13 +8,12 @@ const table = {
 	heads: [
 		{ title: 'ID', sortId: 'id' },
 		{ title: 'Имя', sortId: 'name' },
-		// { title: 'Роль', sortId: 'role' },
 		{ title: 'Департамент', sortId: 'department' },
 		{ title: 'Статус', sortId: 'status' },
 		{ title: '', sortId: null },
 	],
 	gridColumns:
-		'90px minmax(200px, 320px) minmax(180px, 240px) minmax(180px, 240px) minmax(120px, 160px) 60px',
+		'80px minmax(200px, 1fr) minmax(180px, 1fr) minmax(140px, 200px) 56px',
 }
 
 const goWorker = (id: number) => {
@@ -32,65 +31,66 @@ onMounted(() => {
 
 <template>
 	<section class="page">
-		<div class="page__card">
-			<div class="page__title">Сотрудники</div>
-			<UITableBase :headList="table.heads" :columnTemplates="table.gridColumns">
-				<UITableRow
-					v-for="(worker, index) in workersStore.workers"
-					:key="worker.id"
-					:columnTemplates="table.gridColumns"
-					class="border-none"
-					:style="{
-						backgroundColor: index % 2 !== 0 ? '#F6F6F6' : '#FFFFFF',
-					}"
-				>
-					<UITableColumn
-						:text="worker.id"
-						isLink
-						@click="goWorker(worker.id)"
+		<header class="page__head">
+			<h1 class="page__title">Сотрудники</h1>
+			<div class="page__actions">
+				<UIButton @click="router.push('/edit/workers')">Добавить сотрудника</UIButton>
+			</div>
+		</header>
+		<UITableBase
+			:headList="table.heads"
+			:columnTemplates="table.gridColumns"
+			:is-empty="!workersStore.workers.length"
+			empty-text="Сотрудников пока нет. Добавьте первого — и он появится в списке."
+		>
+			<UITableRow
+				v-for="worker in workersStore.workers"
+				:key="worker.id"
+				:columnTemplates="table.gridColumns"
+			>
+				<UITableColumn
+					:text="worker.id"
+					isLink
+					isNumeric
+					@click="goWorker(worker.id)"
+				/>
+				<UITableColumn
+					:text="worker.name"
+					isLink
+					isEllipsis
+					@click="goWorker(worker.id)"
+				/>
+				<UITableColumn :text="worker.department_name" isEllipsis />
+				<UITableColumn>
+					<UIStatus :status="worker.status" />
+				</UITableColumn>
+				<UITableColumn>
+					<UITableRowPopover
+						:items="[
+							{
+								title: 'Открыть профиль',
+								func: () => goWorker(worker.id),
+							},
+							{
+								title: 'Изменить',
+								func: () => editWorker(worker.id),
+							},
+							{
+								title: 'Удалить',
+								red: true,
+								func: () => workersStore.deleteWorker(worker.id),
+							},
+						]"
 					/>
-					<UITableColumn
-						:text="worker.name"
-						isLink
-						isEllipsis
-						@click="goWorker(worker.id)"
-					/>
-					<!-- <UITableColumn :text="worker.job_name" isEllipsis /> -->
-					<UITableColumn :text="worker.department_name" isEllipsis />
-					<UITableColumn :text="worker.status" isEllipsis />
-					<UITableColumn>
-						<UITableRowPopover
-							:items="[
-								{
-									title: 'Открыть профиль',
-									func: () => goWorker(worker.id),
-								},
-								{
-									title: 'Изменить',
-									func: () => editWorker(worker.id),
-								},
-								{
-									title: 'Удалить',
-									red: true,
-									func: () => workersStore.deleteWorker(worker.id),
-								},
-							]"
-						/>
-					</UITableColumn>
-				</UITableRow>
-			</UITableBase>
-		</div>
+				</UITableColumn>
+			</UITableRow>
+		</UITableBase>
 	</section>
 </template>
 
 <style lang="scss" scoped>
-.page {
-	&__card {
-		padding: rem(20);
-	}
-	&__title {
-		margin-bottom: rem(16);
-		@include h3;
-	}
+.page__actions {
+	display: flex;
+	gap: var(--s-3);
 }
 </style>

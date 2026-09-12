@@ -13,7 +13,7 @@ const table = {
 		{ title: '', sortId: null },
 	],
 	gridColumns:
-		'90px minmax(280px, 1fr) minmax(160px, 1fr) minmax(120px, 180px) 60px',
+		'80px minmax(240px, 1fr) minmax(140px, 200px) minmax(120px, 180px) 56px',
 }
 
 const goDepartmemts = (id: number) => {
@@ -31,68 +31,64 @@ onMounted(() => {
 
 <template>
 	<section class="page">
-		<div class="page__card">
-			<div class="page__title">Департаменты</div>
-			<UITableBase :headList="table.heads" :columnTemplates="table.gridColumns">
-				<UITableRow
-					v-for="(departament, index) in departamentsStore.departaments"
-					:key="departament.id"
-					:columnTemplates="table.gridColumns"
-					class="border-none"
-					:style="{
-						backgroundColor: index % 2 !== 0 ? '#F6F6F6' : '#FFFFFF',
-					}"
-				>
-					<UITableColumn
-						:text="departament.id"
-						isLink
-						@click="goDepartmemts(departament.id)"
+		<header class="page__head">
+			<h1 class="page__title">Департаменты</h1>
+			<div class="page__actions">
+				<UIButton @click="router.push('/edit/department')">Добавить департамент</UIButton>
+			</div>
+		</header>
+		<UITableBase
+			:headList="table.heads"
+			:columnTemplates="table.gridColumns"
+			:is-empty="!departamentsStore.departaments.length"
+			empty-text="Департаментов пока нет. С них начинается структура компании."
+		>
+			<UITableRow
+				v-for="departament in departamentsStore.departaments"
+				:key="departament.id"
+				:columnTemplates="table.gridColumns"
+			>
+				<UITableColumn
+					:text="departament.id"
+					isLink
+					isNumeric
+					@click="goDepartmemts(departament.id)"
+				/>
+				<UITableColumn
+					:text="departament.name"
+					isLink
+					isEllipsis
+					@click="goDepartmemts(departament.id)"
+				/>
+				<UITableColumn :text="departament.employees_count ?? 0" isNumeric />
+				<UITableColumn :text="departament.jobs_count ?? 0" isNumeric />
+				<UITableColumn>
+					<UITableRowPopover
+						:items="[
+							{
+								title: 'Открыть департамент',
+								func: () => goDepartmemts(departament.id),
+							},
+							{
+								title: 'Изменить',
+								func: () => editDepartament(departament.id),
+							},
+							{
+								title: 'Удалить',
+								red: true,
+								func: () => departamentsStore.delDepartament(departament.id),
+							},
+						]"
 					/>
-					<UITableColumn
-						:text="departament.name"
-						isLink
-						isEllipsis
-						@click="goDepartmemts(departament.id)"
-					/>
-					<UITableColumn :text="departament.employees_count" isEllipsis />
-					<UITableColumn
-						:text="departament.jobs_count"
-						isEllipsis
-						@click="goDepartmemts(departament.id)"
-					/>
-					<UITableColumn>
-						<UITableRowPopover
-							:items="[
-								{
-									title: 'Открыть департамент',
-									func: () => goDepartmemts(departament.id),
-								},
-								{
-									title: 'Изменить',
-									func: () => editDepartament(departament.id),
-								},
-								{
-									title: 'Удалить',
-									red: true,
-									func: () => departamentsStore.delDepartament(departament.id),
-								},
-							]"
-						/>
-					</UITableColumn>
-				</UITableRow>
-			</UITableBase>
-		</div>
+				</UITableColumn>
+			</UITableRow>
+		</UITableBase>
 	</section>
 </template>
 
 <style lang="scss" scoped>
-.page {
-	&__card {
-		padding: rem(20);
-	}
-	&__title {
-		margin-bottom: rem(16);
-		@include h3;
-	}
+.page__actions {
+	display: flex;
+	gap: var(--s-3);
 }
 </style>

@@ -12,7 +12,8 @@ const table = {
 		{ title: 'Департамент', sortId: 'department_name' },
 		{ title: '', sortId: null },
 	],
-	gridColumns: '90px minmax(220px, 1fr) minmax(180px, 1fr) minmax(180px, 1fr) 60px',
+	gridColumns:
+		'80px minmax(200px, 1fr) minmax(180px, 1fr) minmax(180px, 1fr) 56px',
 }
 
 const goRole = (id: number) => {
@@ -30,66 +31,65 @@ onMounted(() => {
 
 <template>
 	<section class="page">
-		<div class="page__card">
-			<div class="page__title">Роли</div>
-			<UITableBase :headList="table.heads" :columnTemplates="table.gridColumns">
-				<UITableRow
-					v-for="(role, index) in jobStore.jobs"
-					:key="role.id"
-					:columnTemplates="table.gridColumns"
-					class="border-none"
-					:style="{
-						backgroundColor: index % 2 !== 0 ? '#F6F6F6' : '#FFFFFF',
-					}"
-				>
-					<UITableColumn :text="role.id" isLink @click="goRole(role.id)" />
-					<UITableColumn
-						:text="role.name"
-						isLink
-						isEllipsis
-						@click="goRole(role.id)"
+		<header class="page__head">
+			<h1 class="page__title">Роли</h1>
+			<div class="page__actions">
+				<UIButton @click="router.push('/edit/role')">Добавить роль</UIButton>
+			</div>
+		</header>
+		<UITableBase
+			:headList="table.heads"
+			:columnTemplates="table.gridColumns"
+			:is-empty="!jobStore.jobs.length"
+			empty-text="Ролей пока нет. Роль связывает должность с оценщиком."
+		>
+			<UITableRow
+				v-for="role in jobStore.jobs"
+				:key="role.id"
+				:columnTemplates="table.gridColumns"
+			>
+				<UITableColumn :text="role.id" isLink @click="goRole(role.id)" />
+				<UITableColumn
+					:text="role.name"
+					isLink
+					isEllipsis
+					@click="goRole(role.id)"
+				/>
+				<UITableColumn :text="role.reviewer_name" isEllipsis />
+				<UITableColumn :text="role.department_name" isEllipsis />
+				<UITableColumn>
+					<UITableRowPopover
+						:items="[
+							{
+								title: 'Открыть роль',
+								func: () => {
+									goRole(role.id)
+								},
+							},
+							{
+								title: 'Изменить роль',
+								func: () => {
+									editRole(role.id)
+								},
+							},
+							{
+								title: 'Удалить',
+								red: true,
+								func: () => {
+									jobStore.delJob(role.id)
+								},
+							},
+						]"
 					/>
-					<UITableColumn :text="role.reviewer_name" isEllipsis />
-					<UITableColumn :text="role.department_name" isEllipsis />
-					<UITableColumn>
-						<UITableRowPopover
-							:items="[
-								{
-									title: 'Открыть роль',
-									func: () => {
-										goRole(role.id)
-									},
-								},
-								{
-									title: 'Изменить роль',
-									func: () => {
-										editRole(role.id)
-									},
-								},
-								{
-									title: 'Удалить',
-									red: true,
-									func: () => {
-										jobStore.delJob(role.id)
-									},
-								},
-							]"
-						/>
-					</UITableColumn>
-				</UITableRow>
-			</UITableBase>
-		</div>
+				</UITableColumn>
+			</UITableRow>
+		</UITableBase>
 	</section>
 </template>
 
 <style lang="scss" scoped>
-.page {
-	&__card {
-		padding: rem(20);
-	}
-	&__title {
-		margin-bottom: rem(16);
-		@include h3;
-	}
+.page__actions {
+	display: flex;
+	gap: var(--s-3);
 }
 </style>
