@@ -2,6 +2,7 @@ import type { Schemas } from '~/types/api'
 
 export type Reviewer = Schemas['ReviewerWithJobs']
 export type Metric = Schemas['Metric']
+export type ReviewerUsage = Schemas['ReviewerUsage']
 
 export type APIFetchReviewers = Reviewer[]
 export type APIFetchReviewer = Reviewer
