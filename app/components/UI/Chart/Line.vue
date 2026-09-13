@@ -13,6 +13,7 @@ type Props = {
 	smooth?: boolean
 	showLegend?: boolean
 	loading?: boolean
+	tooltipValue?: (dataPointIndex: number, seriesIndex: number) => string
 }
 
 const {
@@ -25,6 +26,7 @@ const {
 	smooth = false,
 	showLegend,
 	loading = false,
+	tooltipValue,
 } = defineProps<Props>()
 
 const PALETTE: ChartColorToken[] = ['accent', 'ok', 'warn', 'err']
@@ -62,7 +64,12 @@ const options = computed<ApexOptions>(() =>
 		tooltip: {
 			shared: true,
 			intersect: false,
-			y: { formatter: value => formatChartValue(value, valueSuffix) },
+			y: {
+				formatter: (value, context) =>
+					tooltipValue && context
+						? tooltipValue(context.dataPointIndex, context.seriesIndex)
+						: formatChartValue(value, valueSuffix),
+			},
 		},
 	}),
 )
