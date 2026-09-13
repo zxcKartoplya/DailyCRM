@@ -1,5 +1,5 @@
 import departamentsService from '~/services/departments.servies'
-import type { Departament } from '~/types/departaments'
+import type { APIUpdateDepartament, Departament } from '~/types/departaments'
 
 export const useDepartamentsStore = defineStore('departaments', () => {
 	const departaments = ref<Departament[]>()
@@ -26,8 +26,9 @@ export const useDepartamentsStore = defineStore('departaments', () => {
 		departament.value = await departamentsService.fetchDepartament(id)
 	}
 
-	const putDepartament = async (id: string, data: any) => {
+	const putDepartament = async (id: string, data: APIUpdateDepartament) => {
 		await departamentsService.putDepartament(id, data)
+		await fetchDepartament(id)
 	}
 
 	return {

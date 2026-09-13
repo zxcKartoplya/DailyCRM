@@ -1,11 +1,15 @@
 <script lang="ts" setup>
 import { Field, useForm } from 'vee-validate'
+import { useAlertStore } from '~/stores/alert'
 import { useDailiesStore } from '~/stores/dailies'
 import { useDepartamentsStore } from '~/stores/departments'
+import { Alert } from '~/types/alert'
+import { alertMessage } from '~/utils/alertMessage'
 import { putDepartamentSchema } from '~/utils/validation/putDepartamentSchema'
 
 const departamentsStore = useDepartamentsStore()
 const dailiesStore = useDailiesStore()
+const alertStore = useAlertStore()
 const { dailies, isLoading, periodDays } = storeToRefs(dailiesStore)
 const route = useRoute()
 const router = useRouter()
@@ -17,16 +21,25 @@ const periods = [7, 14, 30]
 await departamentsStore.fetchDepartament(id)
 await dailiesStore.fetchDepartmentDailies(id)
 
-const { handleSubmit, values } = useForm({
+const isSubmitting = ref(false)
+
+const { handleSubmit } = useForm({
 	validationSchema: putDepartamentSchema,
 	initialValues: {
 		name: departamentsStore.departament?.name,
 	},
 })
 
-const update = handleSubmit(() => {
-	departamentsStore.putDepartament(id, values)
-	router.push('/departments')
+const update = handleSubmit(async formValues => {
+	isSubmitting.value = true
+	try {
+		await departamentsStore.putDepartament(id, formValues)
+		alertStore.showAlert(Alert.Added)
+	} catch (error) {
+		alertStore.showAlert(alertMessage(error, Alert.AddedError))
+	} finally {
+		isSubmitting.value = false
+	}
 })
 </script>
 
@@ -87,7 +100,7 @@ const update = handleSubmit(() => {
 					/>
 				</Field>
 				<div class="form__actions">
-					<UIButton type="submit">Сохранить</UIButton>
+					<UIButton type="submit" :is-loading="isSubmitting">Сохранить</UIButton>
 					<UIButton variant="ghost" @click="router.push('/departments')">
 						Отмена
 					</UIButton>
