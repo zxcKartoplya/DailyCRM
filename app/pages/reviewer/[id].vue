@@ -26,7 +26,9 @@ const reviewerId = route.params.id as string
 const jobsCount = computed(() => reviewer.value?.jobs?.length ?? 0)
 const usageStatItems = computed(() => (usage.value ? reviewerUsageStatItems(usage.value) : []))
 const usageByMonth = computed(() => reviewerUsageByMonth(usage.value?.by_month ?? []))
-const avgScores = computed(() => reviewerAvgScores(usage.value?.avg_scores ?? []))
+const avgScores = computed(() =>
+	usage.value ? reviewerAvgScores(usage.value.avg_scores, usage.value.score_max) : null,
+)
 const pageError = ref('')
 const expandedMetricIndex = ref<number | null>(null)
 const draft = ref<Metric | null>(null)
@@ -293,11 +295,12 @@ const closeDeleteMetric = () => {
 					<p v-if="actionError" class="metrics__error" role="alert">{{ actionError }}</p>
 				</section>
 
-				<section v-if="usage?.avg_scores.length" class="section" aria-labelledby="reviewer-scores-title">
+				<section v-if="avgScores?.data.length" class="section" aria-labelledby="reviewer-scores-title">
 					<h2 id="reviewer-scores-title" class="section__title">Средние оценки по метрикам</h2>
 					<UIChartBars
 						:categories="avgScores.categories"
 						:data="avgScores.data"
+						:max="avgScores.max"
 						series-name="Средняя оценка"
 					/>
 				</section>
