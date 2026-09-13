@@ -5,9 +5,21 @@ export const useWorkerStore = defineStore('workers', () => {
 	const workers = ref<User[]>([])
 	const worker = ref<UserDetail>()
 	const isLoading = ref(true)
+	const isWorkersLoading = ref(true)
+	const hasWorkersError = ref(false)
 
 	const getWorkers = async () => {
-		workers.value = await workersService.fetchWorkers()
+		isWorkersLoading.value = true
+		hasWorkersError.value = false
+
+		try {
+			workers.value = await workersService.fetchWorkers()
+		} catch {
+			workers.value = []
+			hasWorkersError.value = true
+		} finally {
+			isWorkersLoading.value = false
+		}
 	}
 
 	const getWorker = async (id: string) => {
@@ -35,6 +47,8 @@ export const useWorkerStore = defineStore('workers', () => {
 		workers,
 		worker,
 		isLoading,
+		isWorkersLoading,
+		hasWorkersError,
 		getWorkers,
 		getWorker,
 		createWorker,
