@@ -17,7 +17,21 @@ const props = defineProps({
 		default: 'Пока ничего нет',
 	},
 	tableName: String,
+	sortable: {
+		type: Boolean,
+		default: false,
+	},
+	sortKey: {
+		type: String,
+		default: null,
+	},
+	sortDirection: {
+		type: String,
+		default: 'asc',
+	},
 })
+
+const emit = defineEmits(['sort'])
 
 const columnTemplatesStyle = props.columnTemplates
 
@@ -85,6 +99,10 @@ const handleWheel = event => {
 						:key="element.title"
 						:title="element.title"
 						:sort-id="element.sortId"
+						:is-sortable="sortable && Boolean(element.sortId)"
+						:is-active="sortable && Boolean(element.sortId) && element.sortId === sortKey"
+						:direction="sortDirection"
+						@sort="emit('sort', $event)"
 					/>
 				</div>
 				<slot />
