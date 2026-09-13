@@ -4,6 +4,16 @@ export type DepartmentDailies = Schemas['DepartmentDailies']
 export type DepartmentDailyEmployee = Schemas['DepartmentDailyEmployee']
 export type DepartmentDailyDay = Schemas['DepartmentDailyDay']
 export type DailyEntry = Schemas['DailyEntry']
+export type WorkerDailies = Schemas['WorkerDailies']
+export type EntryItem = Schemas['EntryItem']
+export type EntryItemStatus = Schemas['EntryItemStatus']
+
+export const ENTRY_ITEM_STATUS_LABEL: Record<EntryItemStatus, string> = {
+	in_progress: 'В работе',
+	blocked: 'Заблокировано',
+	done: 'Готово',
+	dropped: 'Брошено',
+}
 
 export enum DayState {
 	Off = 'off',
