@@ -1,24 +1,32 @@
 <script lang="ts" setup>
-import reviewersService from '~/services/reviewers.servies'
 import { useAlertStore } from '~/stores/alert'
 import { useReviewersStore } from '~/stores/reviewers'
 import { useWorkerStore } from '~/stores/workers'
 import type { Metric } from '~/types/reviewers'
 import { alertMessage } from '~/utils/alertMessage'
+import {
+	reviewerAvgScores,
+	reviewerUsageByMonth,
+	reviewerUsageStatItems,
+} from '~/utils/reviewerUsage'
+
+const USAGE_STAT_SKELETONS = 4
+const USAGE_CHART_HEIGHT = 240
 
 const route = useRoute()
 const router = useRouter()
 const reviewersStore = useReviewersStore()
 const workersStore = useWorkerStore()
 const alertStore = useAlertStore()
-const { reviewer, isLoading } = storeToRefs(reviewersStore)
+const { reviewer, isLoading, usage, isUsageLoading, hasUsageError } = storeToRefs(reviewersStore)
 const { workers, isWorkersLoading, hasWorkersError } = storeToRefs(workersStore)
 const { pluralize } = usePluralize()
 const reviewerId = route.params.id as string
 
 const jobsCount = computed(() => reviewer.value?.jobs?.length ?? 0)
-const employeesCovered = ref<number | null>(null)
-const isUsageLoading = ref(true)
+const usageStatItems = computed(() => (usage.value ? reviewerUsageStatItems(usage.value) : []))
+const usageByMonth = computed(() => reviewerUsageByMonth(usage.value?.by_month ?? []))
+const avgScores = computed(() => reviewerAvgScores(usage.value?.avg_scores ?? []))
 const pageError = ref('')
 const expandedMetricIndex = ref<number | null>(null)
 const draft = ref<Metric | null>(null)
@@ -53,12 +61,11 @@ const loadReviewer = async () => {
 	}
 }
 
+const loadUsage = () => reviewersStore.fetchReviewerUsage(reviewerId)
+
 onMounted(() => {
 	void loadReviewer()
-	void reviewersService.fetchReviewerUsage(reviewerId)
-		.then(usage => { employeesCovered.value = usage.employees_covered })
-		.catch(() => { employeesCovered.value = null })
-		.finally(() => { isUsageLoading.value = false })
+	void loadUsage()
 	void workersStore.getWorkers()
 })
 
@@ -164,9 +171,9 @@ const closeDeleteMetric = () => {
 						<p class="page__lede">
 							Закреплён за {{ jobsCount }}
 							{{ pluralize(jobsCount, ['ролью', 'ролями', 'ролями']) }}
-							<template v-if="employeesCovered !== null">
-								· охватывает {{ employeesCovered }}
-								{{ pluralize(employeesCovered, ['живого сотрудника', 'живых сотрудников', 'живых сотрудников']) }}
+							<template v-if="usage">
+								· охватывает {{ usage.employees_covered }}
+								{{ pluralize(usage.employees_covered, ['живого сотрудника', 'живых сотрудников', 'живых сотрудников']) }}
 							</template>
 							<template v-else-if="!isUsageLoading"> · охват сотрудников недоступен</template>
 						</p>
@@ -185,6 +192,49 @@ const closeDeleteMetric = () => {
 						{{ reviewer.description }}
 					</p>
 					<p v-else class="section__empty">Описание не заполнено.</p>
+				</section>
+
+				<section class="section" aria-labelledby="reviewer-usage-title">
+					<h2 id="reviewer-usage-title" class="section__title">Использование</h2>
+
+					<div v-if="isUsageLoading" class="usage" aria-hidden="true">
+						<div class="usage__bones">
+							<div v-for="index in USAGE_STAT_SKELETONS" :key="index" class="usage__bone">
+								<Skeleton class="usage__bone-value" preserveAspectRatio="none">
+									<rect x="0" y="0" width="100%" height="100%" rx="4" ry="4" />
+								</Skeleton>
+								<Skeleton class="usage__bone-label" preserveAspectRatio="none">
+									<rect x="0" y="0" width="100%" height="100%" rx="4" ry="4" />
+								</Skeleton>
+							</div>
+						</div>
+						<UIChartSkeleton class="usage__chart" :height="USAGE_CHART_HEIGHT" />
+					</div>
+
+					<div v-else-if="hasUsageError || !usage" class="state" role="alert">
+						<p class="state__text">Данные использования не загрузились</p>
+						<UIButton variant="outline" @click="loadUsage">Повторить</UIButton>
+					</div>
+
+					<p v-else-if="usage.assessments_count === 0" class="section__empty">
+						Оценок по этому оценщику ещё не было
+					</p>
+
+					<div v-else class="usage">
+						<UIStatRow :items="usageStatItems" />
+						<div class="usage__chart">
+							<h3 class="usage__subtitle">Оценок по месяцам</h3>
+							<UIChartBars
+								v-if="usageByMonth.categories.length"
+								:categories="usageByMonth.categories"
+								:data="usageByMonth.data"
+								:horizontal="false"
+								:height="USAGE_CHART_HEIGHT"
+								series-name="Оценок"
+							/>
+							<p v-else class="section__empty">Помесячной разбивки в ответе нет.</p>
+						</div>
+					</div>
 				</section>
 
 				<section class="section">
@@ -241,6 +291,15 @@ const closeDeleteMetric = () => {
 						Добавить метрику
 					</UIButton>
 					<p v-if="actionError" class="metrics__error" role="alert">{{ actionError }}</p>
+				</section>
+
+				<section v-if="usage?.avg_scores.length" class="section" aria-labelledby="reviewer-scores-title">
+					<h2 id="reviewer-scores-title" class="section__title">Средние оценки по метрикам</h2>
+					<UIChartBars
+						:categories="avgScores.categories"
+						:data="avgScores.data"
+						series-name="Средняя оценка"
+					/>
 				</section>
 
 				<section class="section">
@@ -314,6 +373,62 @@ const closeDeleteMetric = () => {
 
 	&__empty {
 		color: var(--text-3);
+	}
+}
+
+.state {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--s-3);
+	padding: var(--s-4) var(--s-5);
+	border: 1px solid var(--border);
+	border-radius: var(--r-lg);
+	background-color: var(--surface);
+
+	&__text {
+		color: var(--err);
+	}
+}
+
+.usage {
+	padding: var(--s-4) var(--s-5);
+	border: 1px solid var(--border);
+	border-radius: var(--r-lg);
+	background-color: var(--surface);
+
+	&__bones {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--s-3) var(--s-5);
+	}
+
+	&__bone {
+		display: flex;
+		flex-direction: column;
+		gap: var(--s-1);
+	}
+
+	&__bone-value {
+		width: 4.5rem;
+		height: 1.75rem;
+	}
+
+	&__bone-label {
+		width: 6rem;
+		height: 0.875rem;
+	}
+
+	&__chart {
+		margin-top: var(--s-5);
+	}
+
+	&__subtitle {
+		margin-bottom: var(--s-2);
+		color: var(--text-2);
+		font-size: var(--t-sm);
+		font-weight: 500;
 	}
 }
 
