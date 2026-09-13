@@ -1,10 +1,13 @@
 <script lang="ts" setup>
 import { useAlertStore } from '~/stores/alert'
+import { useAnalyticsStore } from '~/stores/analytics'
 import { useDailiesStore } from '~/stores/dailies'
 import { useDepartamentsStore } from '~/stores/departments'
 import { Alert } from '~/types/alert'
 import { DayState } from '~/types/dailies'
 import { alertMessage } from '~/utils/alertMessage'
+import type { ChartSeries } from '~/utils/chart'
+import { completionTimeseries } from '~/utils/completionTimeseries'
 import { formatRate, hasSchedule, toIsoDate } from '~/utils/dailyStats'
 import {
 	departmentCompletion,
@@ -19,7 +22,10 @@ type SortDirection = 'asc' | 'desc'
 const departamentsStore = useDepartamentsStore()
 const dailiesStore = useDailiesStore()
 const alertStore = useAlertStore()
+const analyticsStore = useAnalyticsStore()
 const { dailies, isLoading, hasDailiesError, periodDays } = storeToRefs(dailiesStore)
+const { departmentTrend, isDepartmentTrendLoading, hasDepartmentTrendError } =
+	storeToRefs(analyticsStore)
 const route = useRoute()
 const router = useRouter()
 
@@ -32,6 +38,7 @@ const GRID_SKELETON_ROWS = 3
 const SPARK_WIDTH = 96
 const SPARK_HEIGHT = 24
 const STATS_COLUMNS = 5
+const TREND_HEIGHT = 240
 const TODAY_ORDER: DayState[] = [
 	DayState.Submitted,
 	DayState.Draft,
@@ -41,7 +48,10 @@ const TODAY_ORDER: DayState[] = [
 ]
 
 await departamentsStore.fetchDepartament(id)
-await dailiesStore.fetchDepartmentDailies(id)
+await Promise.all([
+	dailiesStore.fetchDepartmentDailies(id),
+	analyticsStore.fetchDepartmentTrend(id, periodDays.value),
+])
 
 const isRenaming = ref(false)
 const renameError = ref('')
@@ -162,6 +172,22 @@ const toggleSort = (key: SortKey) => {
 
 const reloadDailies = () => dailiesStore.fetchDepartmentDailies(id)
 
+const selectPeriod = (days: number) =>
+	Promise.all([
+		dailiesStore.setPeriod(days, id),
+		analyticsStore.fetchDepartmentTrend(id, days),
+	])
+
+const trendChart = computed(() => completionTimeseries(departmentTrend.value))
+
+const trendSeries = computed<ChartSeries[]>(() => [
+	{ name: 'Сдача', data: trendChart.value.values, color: 'ok' },
+])
+
+const trendTooltip = (index: number) => trendChart.value.tooltips[index] ?? ''
+
+const reloadTrend = () => analyticsStore.fetchDepartmentTrend(id, periodDays.value)
+
 const goWorker = (userId: number) => {
 	router.push(`/workers/${userId}`)
 }
@@ -196,7 +222,7 @@ const editWorker = (userId: number) => {
 					v-for="period in periods"
 					:key="period"
 					:variant="period === periodDays ? 'primary' : 'ghost'"
-					@click="dailiesStore.setPeriod(period, id)"
+					@click="selectPeriod(period)"
 				>
 					{{ period }} дней
 				</UIButton>
@@ -250,6 +276,37 @@ const editWorker = (userId: number) => {
 				</dd>
 			</div>
 		</dl>
+
+		<section class="section">
+			<h2 class="section__title">Тренд за {{ periodDays }} дней</h2>
+
+			<UIChartSkeleton v-if="isDepartmentTrendLoading" :height="TREND_HEIGHT" />
+
+			<div v-else-if="hasDepartmentTrendError" class="state">
+				<p class="state__text">
+					Тренд сдачи за период не загрузился. Попробуйте ещё раз или выберите
+					другой период.
+				</p>
+				<UIButton variant="outline" @click="reloadTrend">Повторить</UIButton>
+			</div>
+
+			<p v-else-if="!trendChart.hasData" class="section__empty">
+				Нет данных за период: ни у кого из сотрудников не было рабочих дней по
+				графику.
+			</p>
+
+			<UIChartLine
+				v-else
+				:series="trendSeries"
+				:categories="trendChart.categories"
+				:height="TREND_HEIGHT"
+				:min="0"
+				:max="100"
+				value-suffix="%"
+				:show-legend="false"
+				:tooltip-value="trendTooltip"
+			/>
+		</section>
 
 		<section class="section">
 			<h2 class="section__title">Сотрудники</h2>
@@ -495,6 +552,12 @@ const editWorker = (userId: number) => {
 	&__title {
 		@include h4;
 		margin-bottom: var(--s-4);
+	}
+
+	&__empty {
+		padding: var(--s-4) 0;
+		color: var(--text-3);
+		font-size: var(--t-sm);
 	}
 }
 

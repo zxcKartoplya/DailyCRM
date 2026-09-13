@@ -5,6 +5,8 @@ import { useDailiesStore } from '~/stores/dailies'
 import { useWorkerStore } from '~/stores/workers'
 import { DAY_STATE_LABEL, DayState } from '~/types/dailies'
 import { Statuses } from '~/types/users'
+import type { ChartSeries } from '~/utils/chart'
+import { completionTimeseries } from '~/utils/completionTimeseries'
 import {
 	buildDays,
 	dayStats,
@@ -22,6 +24,7 @@ const TOP_DEPARTMENTS = 6
 const RECENT_WORKERS = 6
 const SKELETON_ROWS = 4
 const DONUT_HEIGHT = 220
+const TREND_HEIGHT = 240
 
 const DONUT_STATES = [
 	DayState.Submitted,
@@ -44,6 +47,9 @@ const {
 	departments: departmentAnalytics,
 	isLoading: isDepartmentAnalyticsLoading,
 	hasError: hasDepartmentAnalyticsError,
+	teamTrend,
+	isTeamTrendLoading,
+	hasTeamTrendError,
 } = storeToRefs(analyticsStore)
 const { workers, isWorkersLoading, hasWorkersError } = storeToRefs(workersStore)
 const { entries, entriesRange, isEntriesLoading, hasEntriesError } =
@@ -120,6 +126,16 @@ const summary = computed(() => {
 	return facts
 })
 
+const trendChart = computed(() => completionTimeseries(teamTrend.value))
+
+const trendSeries = computed<ChartSeries[]>(() => [
+	{ name: 'Сдача', data: trendChart.value.values, color: 'ok' },
+])
+
+const trendTooltip = (index: number) => trendChart.value.tooltips[index] ?? ''
+
+const reloadTrend = () => analyticsStore.fetchTeamTrend(PERIOD_DAYS)
+
 const workersByDepartment = computed(() => groupWorkersByDepartment(workers.value))
 
 const departmentRows = computed(() =>
@@ -193,6 +209,7 @@ const selectSegment = (index: number) => {
 onMounted(() => {
 	analyticsStore.fetchOverview()
 	analyticsStore.fetchDepartments()
+	analyticsStore.fetchTeamTrend(PERIOD_DAYS)
 	workersStore.getWorkers()
 	dailiesStore.fetchEntries(PERIOD_DAYS)
 })
@@ -275,6 +292,36 @@ useSeoMeta({
 							</li>
 						</ul>
 					</div>
+				</section>
+
+				<section class="block">
+					<header class="block__head">
+						<h2 class="block__title">Тренд за {{ PERIOD_DAYS }} дней</h2>
+					</header>
+
+					<UIChartSkeleton v-if="isTeamTrendLoading" :height="TREND_HEIGHT" />
+
+					<div v-else-if="hasTeamTrendError" class="block__error">
+						<p class="block__empty">Тренд сдачи за {{ PERIOD_DAYS }} дней не загрузился.</p>
+						<UIButton variant="outline" @click="reloadTrend">Повторить</UIButton>
+					</div>
+
+					<p v-else-if="!trendChart.hasData" class="block__empty">
+						Нет данных за период: за {{ PERIOD_DAYS }} дней ни у кого не было рабочих
+						дней по графику.
+					</p>
+
+					<UIChartLine
+						v-else
+						:series="trendSeries"
+						:categories="trendChart.categories"
+						:height="TREND_HEIGHT"
+						:min="0"
+						:max="100"
+						value-suffix="%"
+						:show-legend="false"
+						:tooltip-value="trendTooltip"
+					/>
 				</section>
 
 				<section class="block">
@@ -492,6 +539,14 @@ useSeoMeta({
 		padding: var(--s-4) 0;
 		color: var(--text-3);
 		font-size: var(--t-sm);
+	}
+
+	&__error {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--s-3);
 	}
 }
 
