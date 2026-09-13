@@ -167,16 +167,18 @@ useSeoMeta({
 						class="bars__item"
 						:style="{ '--delay': `${index * 40}ms` }"
 					>
-						<span class="bars__name" :title="dept.name">{{ dept.name }}</span>
-						<span class="bars__track">
-							<span
-								class="bars__fill"
-								:style="{
-									inlineSize: `${((dept.employees_count ?? 0) / maxEmployees) * 100}%`,
-								}"
-							/>
-						</span>
-						<span class="bars__value">{{ dept.employees_count ?? 0 }}</span>
+						<NuxtLink class="bars__link" :to="`/departments/${dept.id}`">
+							<span class="bars__name" :title="dept.name">{{ dept.name }}</span>
+							<span class="bars__track">
+								<span
+									class="bars__fill"
+									:style="{
+										inlineSize: `${((dept.employees_count ?? 0) / maxEmployees) * 100}%`,
+									}"
+								/>
+							</span>
+							<span class="bars__value">{{ dept.employees_count ?? 0 }}</span>
+						</NuxtLink>
 					</li>
 				</ul>
 				<p v-else-if="!isLoading" class="block__empty">
@@ -305,18 +307,29 @@ useSeoMeta({
 	list-style: none;
 
 	&__item {
+		border-top: 1px solid var(--border);
+	}
+
+	&__link {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) minmax(4rem, 6rem) auto;
 		align-items: center;
 		gap: var(--s-3);
 		padding: var(--s-3) 0;
-		border-top: 1px solid var(--border);
+
+		&:hover,
+		&:focus-visible {
+			.bars__name {
+				text-decoration: underline;
+			}
+		}
 	}
 
 	&__name {
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+		text-underline-offset: 3px;
 	}
 
 	&__track {
