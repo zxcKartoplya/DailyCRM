@@ -1,6 +1,5 @@
 import dailiesService from '~/services/dailies.servies'
-import type { DailyEntry, DepartmentDailies } from '~/types/dailies'
-import type { PeriodRange } from '~/utils/dailyStats'
+import type { DepartmentDailies } from '~/types/dailies'
 import { periodRange } from '~/utils/dailyStats'
 
 export const useDailiesStore = defineStore('dailies', () => {
@@ -8,11 +7,6 @@ export const useDailiesStore = defineStore('dailies', () => {
 	const isLoading = ref(false)
 	const hasDailiesError = ref(false)
 	const periodDays = ref(7)
-
-	const entries = ref<DailyEntry[]>([])
-	const entriesRange = ref<PeriodRange | null>(null)
-	const isEntriesLoading = ref(true)
-	const hasEntriesError = ref(false)
 
 	const range = computed(() => periodRange(periodDays.value))
 
@@ -46,24 +40,6 @@ export const useDailiesStore = defineStore('dailies', () => {
 		await fetchDepartmentDailies(departmentId)
 	}
 
-	const fetchEntries = async (days: number) => {
-		const nextRange = periodRange(days)
-
-		isEntriesLoading.value = true
-		hasEntriesError.value = false
-
-		try {
-			entries.value = await dailiesService.fetchEntries(nextRange.from, nextRange.to)
-			entriesRange.value = nextRange
-		} catch {
-			entries.value = []
-			entriesRange.value = null
-			hasEntriesError.value = true
-		} finally {
-			isEntriesLoading.value = false
-		}
-	}
-
 	return {
 		dailies,
 		isLoading,
@@ -72,10 +48,5 @@ export const useDailiesStore = defineStore('dailies', () => {
 		range,
 		fetchDepartmentDailies,
 		setPeriod,
-		entries,
-		entriesRange,
-		isEntriesLoading,
-		hasEntriesError,
-		fetchEntries,
 	}
 })
