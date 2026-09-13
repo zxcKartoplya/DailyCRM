@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { useAlertStore } from '~/stores/alert'
+import { useAnalyticsStore } from '~/stores/analytics'
 import { useDailiesStore } from '~/stores/dailies'
 import { useWorkerStore } from '~/stores/workers'
 import { Alert } from '~/types/alert'
@@ -9,11 +10,9 @@ import { alertMessage } from '~/utils/alertMessage'
 import {
 	buildDays,
 	completionTrend,
-	currentDayState,
 	eachDate,
 	groupEntriesByUser,
 	periodStats,
-	toIsoDate,
 } from '~/utils/dailyStats'
 
 const PERIOD_DAYS = 30
@@ -23,11 +22,13 @@ const router = useRouter()
 const route = useRoute()
 const workersStore = useWorkerStore()
 const dailiesStore = useDailiesStore()
+const analyticsStore = useAnalyticsStore()
 const alertStore = useAlertStore()
 
 const { workers, isWorkersLoading, hasWorkersError } = storeToRefs(workersStore)
 const { entries, entriesRange, isEntriesLoading, hasEntriesError } =
 	storeToRefs(dailiesStore)
+const { todayByUser, isTodayLoading, hasTodayError } = storeToRefs(analyticsStore)
 
 const table = {
 	heads: [
@@ -41,8 +42,6 @@ const table = {
 	gridColumns:
 		'80px minmax(220px, 1fr) minmax(160px, 1fr) minmax(150px, 190px) minmax(180px, 220px) 56px',
 }
-
-const today = computed(() => toIsoDate(new Date()))
 
 const periodDates = computed(() =>
 	entriesRange.value ? eachDate(entriesRange.value) : [],
@@ -61,10 +60,7 @@ const rows = computed(() =>
 		return {
 			worker,
 			accessMark: worker.status === Statuses.ACTIVE ? null : worker.status,
-			state: currentDayState(
-				days.find(day => day.date === today.value),
-				worker,
-			),
+			state: todayByUser.value.get(worker.id)?.state ?? null,
 			rate: periodStats(days).rate,
 			trend: completionTrend(periodDates.value, [days]),
 		}
@@ -82,14 +78,19 @@ const stateFilterLabel = computed(() =>
 	stateFilter.value ? DAY_STATE_LABEL[stateFilter.value] : '',
 )
 
-const visibleRows = computed(() =>
-	stateFilter.value
-		? rows.value.filter(row => row.state === stateFilter.value)
-		: rows.value,
+const hasStateFilterError = computed(
+	() => Boolean(stateFilter.value) && hasTodayError.value,
 )
 
+const visibleRows = computed(() => {
+	if (!stateFilter.value) return rows.value
+	if (hasTodayError.value) return []
+
+	return rows.value.filter(row => row.state === stateFilter.value)
+})
+
 const isRowsLoading = computed(
-	() => isWorkersLoading.value || (Boolean(stateFilter.value) && isEntriesLoading.value),
+	() => isWorkersLoading.value || (Boolean(stateFilter.value) && isTodayLoading.value),
 )
 
 const emptyText = computed(() =>
@@ -139,6 +140,7 @@ const confirmDeleteWorker = async () => {
 onMounted(() => {
 	workersStore.getWorkers()
 	dailiesStore.fetchEntries(PERIOD_DAYS)
+	analyticsStore.fetchToday()
 })
 </script>
 
@@ -163,10 +165,17 @@ onMounted(() => {
 			</button>
 		</div>
 
+		<p v-if="hasStateFilterError" class="page__error">
+			Состояние дня не загрузилось, поэтому фильтр «{{ stateFilterLabel }}» не
+			применить. Обновите страницу.
+		</p>
+
 		<UITableBase
 			:headList="table.heads"
 			:columnTemplates="table.gridColumns"
-			:is-empty="!isRowsLoading && !hasWorkersError && !visibleRows.length"
+			:is-empty="
+				!isRowsLoading && !hasWorkersError && !hasStateFilterError && !visibleRows.length
+			"
 			:empty-text="emptyText"
 		>
 			<template v-if="isRowsLoading">
@@ -212,9 +221,9 @@ onMounted(() => {
 				<UITableColumn>
 					<UIDayStateCell
 						:state="row.state"
-						:loading="isEntriesLoading"
-						:error="hasEntriesError"
-						empty-hint="У сотрудника не задан график работы"
+						:loading="isTodayLoading"
+						:error="hasTodayError"
+						empty-hint="Сервер не вернул состояние дня по этому сотруднику"
 					/>
 				</UITableColumn>
 				<UITableColumn>

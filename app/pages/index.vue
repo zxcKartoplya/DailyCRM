@@ -9,15 +9,13 @@ import type { ChartSeries } from '~/utils/chart'
 import { completionTimeseries } from '~/utils/completionTimeseries'
 import {
 	buildDays,
-	dayStats,
 	eachDate,
 	formatRate,
 	groupEntriesByUser,
 	groupWorkersByDepartment,
 	periodStats,
-	stateOnDate,
-	toIsoDate,
 } from '~/utils/dailyStats'
+import { summarizeToday, todayLede } from '~/utils/todayState'
 
 const PERIOD_DAYS = 30
 const TOP_DEPARTMENTS = 6
@@ -50,6 +48,10 @@ const {
 	teamTrend,
 	isTeamTrendLoading,
 	hasTeamTrendError,
+	today: todayStates,
+	todayByUser,
+	isTodayLoading,
+	hasTodayError,
 } = storeToRefs(analyticsStore)
 const { workers, isWorkersLoading, hasWorkersError } = storeToRefs(workersStore)
 const { entries, entriesRange, isEntriesLoading, hasEntriesError } =
@@ -62,25 +64,21 @@ const dateFormat = new Intl.DateTimeFormat('ru-RU', {
 	month: 'long',
 })
 
-const today = computed(() => toIsoDate(new Date()))
-
 const periodDates = computed(() =>
 	entriesRange.value ? eachDate(entriesRange.value) : [],
 )
 
 const entriesByUser = computed(() => groupEntriesByUser(entries.value))
 
-const isDayLoading = computed(
+const isPeriodLoading = computed(
 	() => isWorkersLoading.value || isEntriesLoading.value,
 )
 
-const hasDayError = computed(
+const hasPeriodError = computed(
 	() => hasWorkersError.value || hasEntriesError.value,
 )
 
-const todayStats = computed(() =>
-	dayStats(today.value, workers.value, entriesByUser.value),
-)
+const todayStats = computed(() => summarizeToday(todayStates.value))
 
 const daySegments = computed(() =>
 	DONUT_STATES.map(state => ({
@@ -94,18 +92,9 @@ const donutLabels = computed(() => daySegments.value.map(item => item.label))
 
 const donutData = computed(() => daySegments.value.map(item => item.value))
 
-const lede = computed(() => {
-	if (hasDayError.value) return 'Состояние дня не загрузилось'
-	if (!workers.value.length) return 'Сотрудников пока нет'
-
-	if (!todayStats.value.known) {
-		return 'Сегодня считать нечего: ни у кого не задан график работы'
-	}
-
-	if (!todayStats.value.expected) return 'Сегодня у всех отгул'
-
-	return `Сегодня сдали ${todayStats.value.counts[DayState.Submitted]} из ${todayStats.value.expected}`
-})
+const lede = computed(() =>
+	hasTodayError.value ? 'Состояние дня не загрузилось' : todayLede(todayStats.value),
+)
 
 const summary = computed(() => {
 	const data = overview.value
@@ -135,6 +124,8 @@ const trendSeries = computed<ChartSeries[]>(() => [
 const trendTooltip = (index: number) => trendChart.value.tooltips[index] ?? ''
 
 const reloadTrend = () => analyticsStore.fetchTeamTrend(PERIOD_DAYS)
+
+const reloadToday = () => analyticsStore.fetchToday()
 
 const workersByDepartment = computed(() => groupWorkersByDepartment(workers.value))
 
@@ -193,7 +184,7 @@ const recentWorkers = computed(() =>
 		.map(worker => ({
 			worker,
 			accessMark: worker.status === Statuses.ACTIVE ? null : worker.status,
-			state: stateOnDate(today.value, worker, entriesByUser.value.get(worker.id)),
+			state: todayByUser.value.get(worker.id)?.state ?? null,
 		})),
 )
 
@@ -210,6 +201,7 @@ onMounted(() => {
 	analyticsStore.fetchOverview()
 	analyticsStore.fetchDepartments()
 	analyticsStore.fetchTeamTrend(PERIOD_DAYS)
+	analyticsStore.fetchToday()
 	workersStore.getWorkers()
 	dailiesStore.fetchEntries(PERIOD_DAYS)
 })
@@ -225,7 +217,7 @@ useSeoMeta({
 			<div>
 				<h1 class="page__title">Команда</h1>
 				<p class="page__lede">
-					<Skeleton v-if="isDayLoading" class="lede-bone" preserveAspectRatio="none">
+					<Skeleton v-if="isTodayLoading" class="lede-bone" preserveAspectRatio="none">
 						<rect x="0" y="0" width="100%" height="100%" rx="4" ry="4" />
 					</Skeleton>
 					<template v-else>{{ lede }}</template>
@@ -252,19 +244,19 @@ useSeoMeta({
 						<NuxtLink class="block__link" to="/workers">Все сотрудники</NuxtLink>
 					</header>
 
-					<UIChartSkeleton v-if="isDayLoading" :height="DONUT_HEIGHT" />
+					<UIChartSkeleton v-if="isTodayLoading" :height="DONUT_HEIGHT" />
 
-					<p v-else-if="hasDayError" class="block__empty">
-						Дейлики за сегодня не загрузились. Обновите страницу.
-					</p>
+					<div v-else-if="hasTodayError" class="block__error">
+						<p class="block__empty">Состояние дня не загрузилось.</p>
+						<UIButton variant="outline" @click="reloadToday">Повторить</UIButton>
+					</div>
 
-					<p v-else-if="!workers.length" class="block__empty">
+					<p v-else-if="!todayStats.total" class="block__empty">
 						Сотрудников пока нет — состояние дня появится вместе с ними.
 					</p>
 
 					<p v-else-if="!todayStats.known" class="block__empty">
-						Ни у кого не задан график работы, поэтому рабочий день сегодня не
-						посчитан.
+						Сегодня у всех выходной по графику.
 					</p>
 
 					<div v-else class="today">
@@ -364,13 +356,13 @@ useSeoMeta({
 								</span>
 								<span class="bars__value">
 									<Skeleton
-										v-if="isDayLoading"
+										v-if="isPeriodLoading"
 										class="bone bone--narrow"
 										preserveAspectRatio="none"
 									>
 										<rect x="0" y="0" width="100%" height="100%" rx="4" ry="4" />
 									</Skeleton>
-									<span v-else-if="hasDayError" class="bars__note">
+									<span v-else-if="hasPeriodError" class="bars__note">
 										не загрузилось
 									</span>
 									<span v-else-if="department.rate === null" class="bars__note">
@@ -459,9 +451,9 @@ useSeoMeta({
 							</div>
 							<UIDayStateCell
 								:state="row.state"
-								:loading="isEntriesLoading"
-								:error="hasEntriesError"
-								empty-hint="У сотрудника не задан график работы"
+								:loading="isTodayLoading"
+								:error="hasTodayError"
+								empty-hint="Сервер не вернул состояние дня по этому сотруднику"
 							/>
 							<span class="people__meta">
 								{{ row.worker.job_name ?? '—' }} ·
