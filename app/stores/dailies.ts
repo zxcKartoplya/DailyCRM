@@ -6,6 +6,7 @@ import { periodRange } from '~/utils/dailyStats'
 export const useDailiesStore = defineStore('dailies', () => {
 	const dailies = ref<DepartmentDailies>()
 	const isLoading = ref(false)
+	const hasDailiesError = ref(false)
 	const periodDays = ref(7)
 
 	const entries = ref<DailyEntry[]>([])
@@ -15,16 +16,28 @@ export const useDailiesStore = defineStore('dailies', () => {
 
 	const range = computed(() => periodRange(periodDays.value))
 
+	let dailiesRequest = 0
+
 	const fetchDepartmentDailies = async (departmentId: string) => {
+		const request = ++dailiesRequest
+
 		isLoading.value = true
+		hasDailiesError.value = false
+
 		try {
-			dailies.value = await dailiesService.fetchDepartmentDailies(
+			const result = await dailiesService.fetchDepartmentDailies(
 				departmentId,
 				range.value.from,
 				range.value.to
 			)
+			if (request === dailiesRequest) dailies.value = result
+		} catch {
+			if (request === dailiesRequest) {
+				dailies.value = undefined
+				hasDailiesError.value = true
+			}
 		} finally {
-			isLoading.value = false
+			if (request === dailiesRequest) isLoading.value = false
 		}
 	}
 
@@ -54,6 +67,7 @@ export const useDailiesStore = defineStore('dailies', () => {
 	return {
 		dailies,
 		isLoading,
+		hasDailiesError,
 		periodDays,
 		range,
 		fetchDepartmentDailies,
