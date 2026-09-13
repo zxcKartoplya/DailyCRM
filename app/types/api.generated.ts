@@ -1508,6 +1508,8 @@ export interface components {
             last_assessment_at?: string | null;
             /** Reviewer Id */
             reviewer_id: number;
+            /** Score Max */
+            score_max: number;
             /** Workers Evaluated */
             workers_evaluated: number;
         };

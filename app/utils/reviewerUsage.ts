@@ -74,7 +74,17 @@ export const reviewerUsageByMonth = (byMonth: UsageMonth[]): ReviewerUsageBars =
 	return { categories, data }
 }
 
-export const reviewerAvgScores = (avgScores: UsageScore[]): ReviewerUsageBars => {
+export type ReviewerScoreBars = ReviewerUsageBars & {
+	max: number | undefined
+}
+
+const scoreScaleMax = (scoreMax: number): number | undefined =>
+	Number.isFinite(scoreMax) && scoreMax > 0 ? scoreMax : undefined
+
+export const reviewerAvgScores = (
+	avgScores: UsageScore[],
+	scoreMax: ReviewerUsage['score_max'],
+): ReviewerScoreBars => {
 	const { pluralize } = usePluralize()
 
 	return {
@@ -82,6 +92,7 @@ export const reviewerAvgScores = (avgScores: UsageScore[]): ReviewerUsageBars =>
 			`${score.display_name} · ${score.samples} ${pluralize(score.samples, ['оценка', 'оценки', 'оценок'])}`,
 		),
 		data: avgScores.map(score => score.avg_score),
+		max: scoreScaleMax(scoreMax),
 	}
 }
 
