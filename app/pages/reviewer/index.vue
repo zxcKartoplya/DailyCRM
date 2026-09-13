@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { useAlertStore } from '~/stores/alert'
 import { useReviewersStore } from '~/stores/reviewers'
+import { Alert } from '~/types/alert'
 import type { Reviewer } from '~/types/reviewers'
 import { alertMessage } from '~/utils/alertMessage'
 
@@ -44,7 +45,7 @@ const confirmDeleteReviewer = async () => {
 		await reviewersStore.delReviewer(reviewer.id)
 		if (reviewerToDelete.value?.id === reviewer.id) reviewerToDelete.value = null
 	} catch (error) {
-		alertStore.showAlert(alertMessage(error, 'Не удалось удалить оценщика'))
+		alertStore.showAlert(alertMessage(error, Alert.DeletedError))
 	} finally {
 		isDeleting.value = false
 	}

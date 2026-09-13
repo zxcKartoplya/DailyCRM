@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { useAlertStore } from '~/stores/alert'
 import { useWorkerStore } from '~/stores/workers'
+import { Alert } from '~/types/alert'
 import type { User } from '~/types/users'
 import { alertMessage } from '~/utils/alertMessage'
 
@@ -48,7 +49,7 @@ const confirmDeleteWorker = async () => {
 		await workersStore.deleteWorker(worker.id)
 		if (workerToDelete.value?.id === worker.id) workerToDelete.value = null
 	} catch (error) {
-		alertStore.showAlert(alertMessage(error, 'Не удалось удалить сотрудника'))
+		alertStore.showAlert(alertMessage(error, Alert.DeletedError))
 	} finally {
 		isDeleting.value = false
 	}

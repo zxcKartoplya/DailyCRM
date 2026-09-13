@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { useAlertStore } from '~/stores/alert'
 import { useJobStore } from '~/stores/role'
+import { Alert } from '~/types/alert'
 import type { Role } from '~/types/role'
 import { alertMessage } from '~/utils/alertMessage'
 
@@ -48,7 +49,7 @@ const confirmDeleteRole = async () => {
 		await jobStore.delJob(role.id)
 		if (roleToDelete.value?.id === role.id) roleToDelete.value = null
 	} catch (error) {
-		alertStore.showAlert(alertMessage(error, 'Не удалось удалить роль'))
+		alertStore.showAlert(alertMessage(error, Alert.DeletedError))
 	} finally {
 		isDeleting.value = false
 	}

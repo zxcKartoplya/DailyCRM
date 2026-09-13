@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { useAlertStore } from '~/stores/alert'
 import { useDepartamentsStore } from '~/stores/departments'
+import { Alert } from '~/types/alert'
 import type { Departament } from '~/types/departaments'
 import { alertMessage } from '~/utils/alertMessage'
 
@@ -49,7 +50,7 @@ const confirmDeleteDepartament = async () => {
 		if (departamentToDelete.value?.id === departament.id)
 			departamentToDelete.value = null
 	} catch (error) {
-		alertStore.showAlert(alertMessage(error, 'Не удалось удалить департамент'))
+		alertStore.showAlert(alertMessage(error, Alert.DeletedError))
 	} finally {
 		isDeleting.value = false
 	}
