@@ -3,6 +3,7 @@ import { useAlertStore } from '~/stores/alert'
 import { useDailiesStore } from '~/stores/dailies'
 import { useWorkerStore } from '~/stores/workers'
 import { Alert } from '~/types/alert'
+import { DAY_STATE_LABEL, DayState } from '~/types/dailies'
 import { Statuses, type User } from '~/types/users'
 import { alertMessage } from '~/utils/alertMessage'
 import {
@@ -19,6 +20,7 @@ const PERIOD_DAYS = 30
 const SKELETON_ROWS = 5
 
 const router = useRouter()
+const route = useRoute()
 const workersStore = useWorkerStore()
 const dailiesStore = useDailiesStore()
 const alertStore = useAlertStore()
@@ -68,6 +70,37 @@ const rows = computed(() =>
 		}
 	}),
 )
+
+const stateFilter = computed(() => {
+	const value = route.query.state
+	const state = Array.isArray(value) ? value[0] : value
+
+	return Object.values(DayState).find(item => item === state) ?? null
+})
+
+const stateFilterLabel = computed(() =>
+	stateFilter.value ? DAY_STATE_LABEL[stateFilter.value] : '',
+)
+
+const visibleRows = computed(() =>
+	stateFilter.value
+		? rows.value.filter(row => row.state === stateFilter.value)
+		: rows.value,
+)
+
+const isRowsLoading = computed(
+	() => isWorkersLoading.value || (Boolean(stateFilter.value) && isEntriesLoading.value),
+)
+
+const emptyText = computed(() =>
+	stateFilter.value
+		? `Сегодня никто не подходит под состояние «${stateFilterLabel.value}».`
+		: 'Сотрудников пока нет. Добавьте первого — и он появится в списке.',
+)
+
+const clearStateFilter = () => {
+	router.push({ path: '/workers' })
+}
 
 const goWorker = (id: number) => {
 	router.push(`/workers/${id}`)
@@ -122,13 +155,21 @@ onMounted(() => {
 			Список сотрудников не загрузился. Обновите страницу.
 		</p>
 
+		<div v-if="stateFilter" class="filter">
+			<span class="filter__label">Сегодня:</span>
+			<UIDayState :state="stateFilter" />
+			<button class="filter__reset" type="button" @click="clearStateFilter">
+				Сбросить
+			</button>
+		</div>
+
 		<UITableBase
 			:headList="table.heads"
 			:columnTemplates="table.gridColumns"
-			:is-empty="!isWorkersLoading && !hasWorkersError && !rows.length"
-			empty-text="Сотрудников пока нет. Добавьте первого — и он появится в списке."
+			:is-empty="!isRowsLoading && !hasWorkersError && !visibleRows.length"
+			:empty-text="emptyText"
 		>
-			<template v-if="isWorkersLoading">
+			<template v-if="isRowsLoading">
 				<UITableRow
 					v-for="index in SKELETON_ROWS"
 					:key="`skeleton-${index}`"
@@ -143,7 +184,7 @@ onMounted(() => {
 			</template>
 
 			<UITableRow
-				v-for="row in isWorkersLoading ? [] : rows"
+				v-for="row in isRowsLoading ? [] : visibleRows"
 				:key="row.worker.id"
 				:columnTemplates="table.gridColumns"
 			>
@@ -228,6 +269,32 @@ onMounted(() => {
 	margin-bottom: var(--s-3);
 	color: var(--err);
 	font-size: var(--t-sm);
+}
+
+.filter {
+	display: flex;
+	align-items: center;
+	gap: var(--s-2);
+	margin-bottom: var(--s-3);
+
+	&__label {
+		color: var(--text-3);
+		font-size: var(--t-sm);
+	}
+
+	&__reset {
+		border: 0;
+		padding: 0;
+		background: none;
+		color: var(--accent-text);
+		font-size: var(--t-sm);
+		cursor: pointer;
+		text-underline-offset: 3px;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
 }
 
 .person {
