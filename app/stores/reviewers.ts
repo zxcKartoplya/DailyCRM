@@ -1,10 +1,14 @@
 import reviewersService from '~/services/reviewers.servies'
-import type { APIReviewerPayload, Reviewer } from '~/types/reviewers'
+import type { APIReviewerPayload, Reviewer, ReviewerUsage } from '~/types/reviewers'
 
 export const useReviewersStore = defineStore('reviewers', () => {
 	const reviewers = ref<Reviewer[]>()
 	const reviewer = ref<Reviewer>()
 	const isLoading = ref(false)
+	const usage = ref<ReviewerUsage>()
+	const isUsageLoading = ref(true)
+	const hasUsageError = ref(false)
+	let usageRequest = 0
 
 	const fetchReviewers = async () => {
 		reviewers.value = await reviewersService.fetchReviewers()
@@ -33,6 +37,21 @@ export const useReviewersStore = defineStore('reviewers', () => {
 		}
 	}
 
+	const fetchReviewerUsage = async (id: string) => {
+		const request = ++usageRequest
+		isUsageLoading.value = true
+		hasUsageError.value = false
+		usage.value = undefined
+		try {
+			const result = await reviewersService.fetchReviewerUsage(id)
+			if (request === usageRequest) usage.value = result
+		} catch {
+			if (request === usageRequest) hasUsageError.value = true
+		} finally {
+			if (request === usageRequest) isUsageLoading.value = false
+		}
+	}
+
 	const putReviewer = async (id: string, data: APIReviewerPayload) => {
 		await reviewersService.putReviewer(id, data)
 	}
@@ -54,5 +73,9 @@ export const useReviewersStore = defineStore('reviewers', () => {
 		delReviewer,
 		fetchReviewer,
 		putReviewer,
+		usage,
+		isUsageLoading,
+		hasUsageError,
+		fetchReviewerUsage,
 	}
 })
