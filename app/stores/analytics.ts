@@ -4,6 +4,7 @@ import type {
 	AnalyticsTimeseriesPoint,
 	DepartmentAnalytics,
 	TodayState,
+	WorkerCompletion,
 } from '~/types/analytics'
 import { periodRange } from '~/utils/dailyStats'
 import { todayStatesByUser } from '~/utils/todayState'
@@ -54,13 +55,22 @@ export const useAnalyticsStore = defineStore('analytics', () => {
 	const isTodayLoading = ref(true)
 	const hasTodayError = ref(false)
 
+	const workersCompletion = ref<WorkerCompletion[]>([])
+	const isWorkersCompletionLoading = ref(true)
+	const hasWorkersCompletionError = ref(false)
+
 	let lastTodayRequest = 0
+	let lastWorkersCompletionRequest = 0
 
 	const departmentsById = computed(
 		() => new Map(departments.value.map(item => [item.department_id, item])),
 	)
 
 	const todayByUser = computed(() => todayStatesByUser(today.value))
+
+	const workersCompletionByUser = computed(
+		() => new Map(workersCompletion.value.map(item => [item.user_id, item])),
+	)
 
 	const fetchDepartments = async () => {
 		isLoading.value = true
@@ -109,6 +119,28 @@ export const useAnalyticsStore = defineStore('analytics', () => {
 		}
 	}
 
+	const fetchWorkersCompletion = async (days: number) => {
+		const request = ++lastWorkersCompletionRequest
+		const { from, to } = periodRange(days)
+
+		isWorkersCompletionLoading.value = true
+		hasWorkersCompletionError.value = false
+
+		try {
+			const result = await analyticsService.fetchWorkersCompletion(from, to)
+			if (request === lastWorkersCompletionRequest) workersCompletion.value = result
+		} catch {
+			if (request === lastWorkersCompletionRequest) {
+				workersCompletion.value = []
+				hasWorkersCompletionError.value = true
+			}
+		} finally {
+			if (request === lastWorkersCompletionRequest) {
+				isWorkersCompletionLoading.value = false
+			}
+		}
+	}
+
 	const fetchTeamTrend = (days: number) => teamTimeseries.fetch(days)
 
 	const fetchDepartmentTrend = (departmentId: string, days: number) =>
@@ -129,6 +161,11 @@ export const useAnalyticsStore = defineStore('analytics', () => {
 		isTodayLoading,
 		hasTodayError,
 		fetchToday,
+		workersCompletion,
+		workersCompletionByUser,
+		isWorkersCompletionLoading,
+		hasWorkersCompletionError,
+		fetchWorkersCompletion,
 		teamTrend: teamTimeseries.points,
 		isTeamTrendLoading: teamTimeseries.isLoading,
 		hasTeamTrendError: teamTimeseries.hasError,

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { CompletionPoint } from '~/utils/dailyStats'
+import type { CompletionPoint } from '~/utils/completionTrend'
 import { formatRate } from '~/utils/dailyStats'
 
 const {

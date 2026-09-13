@@ -3,6 +3,7 @@ import type {
 	AnalyticsTimeseriesPoint,
 	DepartmentAnalytics,
 	TodayState,
+	WorkerCompletion,
 } from '~/types/analytics'
 import Service from './services'
 
@@ -24,6 +25,11 @@ class AnalyticsService extends Service {
 		const department = departmentId ? `?department_id=${departmentId}` : ''
 
 		return await this.get<TodayState[]>(`admin/analytics/today${department}`)
+	}
+	async fetchWorkersCompletion(dateFrom: string, dateTo: string) {
+		return await this.get<WorkerCompletion[]>(
+			`admin/analytics/workers?date_from=${dateFrom}&date_to=${dateTo}`
+		)
 	}
 }
 

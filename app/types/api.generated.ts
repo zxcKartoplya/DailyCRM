@@ -72,6 +72,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/analytics/workers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Workers Completion */
+        get: operations["get_workers_completion_api_admin_analytics_workers_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/assessments/{assessment_id}": {
         parameters: {
             query?: never;
@@ -996,6 +1013,25 @@ export interface components {
             date: string;
             status: components["schemas"]["EntryItemStatus"];
         };
+        /** CompletionTrendPoint */
+        CompletionTrendPoint: {
+            /** Completion Rate */
+            completion_rate?: number | null;
+            /**
+             * Date From
+             * Format: date
+             */
+            date_from: string;
+            /**
+             * Date To
+             * Format: date
+             */
+            date_to: string;
+            /** Submitted */
+            submitted: number;
+            /** Working Days */
+            working_days: number;
+        };
         /** DailyEntry */
         DailyEntry: {
             /**
@@ -1091,6 +1127,8 @@ export interface components {
         DepartmentAnalytics: {
             /** Blocked Items Count */
             blocked_items_count: number;
+            /** Completion Rate */
+            completion_rate?: number | null;
             /** Department Id */
             department_id: number;
             /** Department Name */
@@ -1101,6 +1139,12 @@ export interface components {
             entries_count: number;
             /** Open Chains Count */
             open_chains_count: number;
+            /** Submitted */
+            submitted: number;
+            /** Trend */
+            trend: components["schemas"]["CompletionTrendPoint"][];
+            /** Working Days */
+            working_days: number;
         };
         /** DepartmentCreate */
         DepartmentCreate: {
@@ -1850,6 +1894,19 @@ export interface components {
             /** Worker Name */
             worker_name: string;
         };
+        /** WorkerCompletion */
+        WorkerCompletion: {
+            /** Completion Rate */
+            completion_rate?: number | null;
+            /** Submitted */
+            submitted: number;
+            /** Trend */
+            trend: components["schemas"]["CompletionTrendPoint"][];
+            /** User Id */
+            user_id: number;
+            /** Working Days */
+            working_days: number;
+        };
         /** WorkerCreate */
         WorkerCreate: {
             /** Department Id */
@@ -2002,7 +2059,10 @@ export type $defs = Record<string, never>;
 export interface operations {
     get_department_analytics_api_admin_analytics_departments_get: {
         parameters: {
-            query?: never;
+            query?: {
+                date_from?: string | null;
+                date_to?: string | null;
+            };
             header?: {
                 Authorization?: string | null;
             };
@@ -2117,6 +2177,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TodayState"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_workers_completion_api_admin_analytics_workers_get: {
+        parameters: {
+            query?: {
+                date_from?: string | null;
+                date_to?: string | null;
+            };
+            header?: {
+                Authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkerCompletion"][];
                 };
             };
             /** @description Validation Error */

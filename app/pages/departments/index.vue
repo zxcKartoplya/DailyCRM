@@ -1,29 +1,17 @@
 <script lang="ts" setup>
 import { useAlertStore } from '~/stores/alert'
 import { useAnalyticsStore } from '~/stores/analytics'
-import { useDailiesStore } from '~/stores/dailies'
 import { useDepartamentsStore } from '~/stores/departments'
-import { useWorkerStore } from '~/stores/workers'
 import { Alert } from '~/types/alert'
 import type { Departament } from '~/types/departaments'
 import { alertMessage } from '~/utils/alertMessage'
-import {
-	buildDays,
-	completionTrend,
-	eachDate,
-	groupEntriesByUser,
-	groupWorkersByDepartment,
-	periodStats,
-} from '~/utils/dailyStats'
+import { completionRate, completionTrendPoints } from '~/utils/completionTrend'
 
-const PERIOD_DAYS = 30
 const SKELETON_ROWS = 4
 
 const router = useRouter()
 const departamentsStore = useDepartamentsStore()
 const analyticsStore = useAnalyticsStore()
-const dailiesStore = useDailiesStore()
-const workersStore = useWorkerStore()
 const alertStore = useAlertStore()
 
 const { departaments, isDepartamentsLoading, hasDepartamentsError } =
@@ -33,9 +21,6 @@ const {
 	isLoading: isAnalyticsLoading,
 	hasError: hasAnalyticsError,
 } = storeToRefs(analyticsStore)
-const { workers, isWorkersLoading, hasWorkersError } = storeToRefs(workersStore)
-const { entries, entriesRange, isEntriesLoading, hasEntriesError } =
-	storeToRefs(dailiesStore)
 
 const table = {
 	heads: [
@@ -51,34 +36,15 @@ const table = {
 		'80px minmax(220px, 1fr) minmax(120px, 160px) minmax(100px, 140px) minmax(180px, 220px) minmax(110px, 150px) 56px',
 }
 
-const isCompletionLoading = computed(
-	() => isEntriesLoading.value || isWorkersLoading.value,
-)
-
-const hasCompletionError = computed(
-	() => hasEntriesError.value || hasWorkersError.value,
-)
-
-const periodDates = computed(() =>
-	entriesRange.value ? eachDate(entriesRange.value) : [],
-)
-
-const entriesByUser = computed(() => groupEntriesByUser(entries.value))
-
-const workersByDepartment = computed(() => groupWorkersByDepartment(workers.value))
-
 const rows = computed(() =>
 	(departaments.value ?? []).map(departament => {
-		const staff = workersByDepartment.value.get(departament.id) ?? []
-		const days = staff.map(worker =>
-			buildDays(periodDates.value, worker, entriesByUser.value.get(worker.id)),
-		)
+		const analytics = departmentsById.value.get(departament.id)
 
 		return {
 			departament,
-			rate: periodStats(days.flat()).rate,
-			trend: completionTrend(periodDates.value, days),
-			blockers: departmentsById.value.get(departament.id)?.blocked_items_count ?? null,
+			rate: completionRate(analytics),
+			trend: completionTrendPoints(analytics?.trend),
+			blockers: analytics?.blocked_items_count ?? null,
 		}
 	}),
 )
@@ -121,8 +87,6 @@ const confirmDeleteDepartament = async () => {
 onMounted(() => {
 	departamentsStore.fetchDepartaments()
 	analyticsStore.fetchDepartments()
-	workersStore.getWorkers()
-	dailiesStore.fetchEntries(PERIOD_DAYS)
 })
 </script>
 
@@ -182,8 +146,8 @@ onMounted(() => {
 					<UICompletion
 						:rate="row.rate"
 						:trend="row.trend"
-						:loading="isCompletionLoading"
-						:error="hasCompletionError"
+						:loading="isAnalyticsLoading"
+						:error="hasAnalyticsError"
 					/>
 				</UITableColumn>
 				<UITableColumn>
