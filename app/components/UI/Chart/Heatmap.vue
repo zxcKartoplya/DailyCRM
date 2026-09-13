@@ -20,6 +20,8 @@ const {
 	loading = false,
 } = defineProps<Props>()
 
+const emit = defineEmits<{ select: [rowIndex: number, cellIndex: number] }>()
+
 const { baseOptions, chartTheme, color } = useChartTheme()
 
 const chartHeight = computed(() => height ?? Math.max(120, rows.length * 32 + 64))
@@ -40,9 +42,24 @@ const colorScaleRanges = computed(() =>
 	})),
 )
 
+const rangeLabel = (value: number) =>
+	ranges.find(range => value >= range.from && value <= range.to)?.label
+
 const options = computed<ApexOptions>(() =>
 	mergeChartOptions(baseOptions.value, {
-		chart: { type: 'heatmap' },
+		chart: {
+			type: 'heatmap',
+			events: {
+				dataPointSelection: (_event, _context, options) => {
+					const rowIndex = options?.seriesIndex
+					const cellIndex = options?.dataPointIndex
+
+					if (typeof rowIndex === 'number' && typeof cellIndex === 'number') {
+						emit('select', rowIndex, cellIndex)
+					}
+				},
+			},
+		},
 		stroke: { width: 2, colors: [chartTheme.value.surface] },
 		plotOptions: {
 			heatmap: {
@@ -57,7 +74,9 @@ const options = computed<ApexOptions>(() =>
 		legend: { show: showLegend, position: 'bottom', horizontalAlign: 'left' },
 		xaxis: { type: 'category', axisBorder: { show: false }, axisTicks: { show: false } },
 		tooltip: {
-			y: { formatter: value => formatChartValue(value, valueSuffix) },
+			y: {
+				formatter: value => rangeLabel(value) || formatChartValue(value, valueSuffix),
+			},
 		},
 	}),
 )
