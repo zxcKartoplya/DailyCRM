@@ -1,9 +1,14 @@
 <script lang="ts" setup>
+import { useAlertStore } from '~/stores/alert'
 import { useReviewersStore } from '~/stores/reviewers'
+import { Alert } from '~/types/alert'
+import type { Reviewer } from '~/types/reviewers'
+import { alertMessage } from '~/utils/alertMessage'
 
 const router = useRouter()
 const reviewersStore = useReviewersStore()
 const { reviewers } = storeToRefs(reviewersStore)
+const alertStore = useAlertStore()
 
 const table = {
 	heads: [
@@ -18,6 +23,32 @@ const table = {
 
 const goReviewer = (id: number) => {
 	router.push(`/reviewer/${id}`)
+}
+
+const reviewerToDelete = ref<Reviewer | null>(null)
+const isDeleting = ref(false)
+
+const askDeleteReviewer = (reviewer: Reviewer) => {
+	reviewerToDelete.value = reviewer
+}
+
+const cancelDeleteReviewer = () => {
+	reviewerToDelete.value = null
+}
+
+const confirmDeleteReviewer = async () => {
+	const reviewer = reviewerToDelete.value
+	if (!reviewer || isDeleting.value) return
+
+	isDeleting.value = true
+	try {
+		await reviewersStore.delReviewer(reviewer.id)
+		if (reviewerToDelete.value?.id === reviewer.id) reviewerToDelete.value = null
+	} catch (error) {
+		alertStore.showAlert(alertMessage(error, Alert.DeletedError))
+	} finally {
+		isDeleting.value = false
+	}
 }
 
 onMounted(async () => {
@@ -68,8 +99,9 @@ onMounted(async () => {
 							},
 							{
 								title: 'Удалить',
+								red: true,
 								func: () => {
-									reviewersStore.delReviewer(reviewer.id)
+									askDeleteReviewer(reviewer)
 								},
 							},
 						]"
@@ -77,6 +109,15 @@ onMounted(async () => {
 				</UITableColumn>
 			</UITableRow>
 		</UITableBase>
+		<Transition name="fade">
+			<ModalConfirm
+				v-if="reviewerToDelete"
+				title="Удалить оценщика?"
+				:text="`Оценщик «${reviewerToDelete.name}» будет удалён без возможности восстановления.`"
+				@confirm="confirmDeleteReviewer"
+				@close="cancelDeleteReviewer"
+			/>
+		</Transition>
 	</section>
 </template>
 

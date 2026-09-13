@@ -151,6 +151,32 @@ html {
 	transform: translateY(4px);
 }
 
+.modal.fade-enter-active,
+.modal.fade-enter-active .modal__inner {
+	transition:
+		opacity var(--dur) var(--ease),
+		transform var(--dur) var(--ease);
+}
+
+.modal.fade-leave-active,
+.modal.fade-leave-active .modal__inner {
+	transition:
+		opacity var(--dur-fast) var(--ease),
+		transform var(--dur-fast) var(--ease);
+}
+
+.modal.fade-enter-from,
+.modal.fade-leave-to {
+	opacity: 0;
+	transform: none;
+}
+
+.modal.fade-enter-from .modal__inner,
+.modal.fade-leave-to .modal__inner {
+	opacity: 0;
+	transform: translateY(8px);
+}
+
 @media (prefers-reduced-motion: reduce) {
 	*,
 	*::before,
@@ -159,5 +185,10 @@ html {
 		animation-iteration-count: 1 !important;
 		transition-duration: 0.01ms !important;
 		scroll-behavior: auto !important;
+	}
+
+	.modal.fade-enter-from .modal__inner,
+	.modal.fade-leave-to .modal__inner {
+		transform: none;
 	}
 }

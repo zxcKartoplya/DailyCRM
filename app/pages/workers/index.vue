@@ -1,8 +1,13 @@
 <script lang="ts" setup>
+import { useAlertStore } from '~/stores/alert'
 import { useWorkerStore } from '~/stores/workers'
+import { Alert } from '~/types/alert'
+import type { User } from '~/types/users'
+import { alertMessage } from '~/utils/alertMessage'
 
 const router = useRouter()
 const workersStore = useWorkerStore()
+const alertStore = useAlertStore()
 
 const table = {
 	heads: [
@@ -22,6 +27,32 @@ const goWorker = (id: number) => {
 
 const editWorker = (id: number) => {
 	router.push(`/edit/workers?id=${id}`)
+}
+
+const workerToDelete = ref<User | null>(null)
+const isDeleting = ref(false)
+
+const askDeleteWorker = (worker: User) => {
+	workerToDelete.value = worker
+}
+
+const cancelDeleteWorker = () => {
+	workerToDelete.value = null
+}
+
+const confirmDeleteWorker = async () => {
+	const worker = workerToDelete.value
+	if (!worker || isDeleting.value) return
+
+	isDeleting.value = true
+	try {
+		await workersStore.deleteWorker(worker.id)
+		if (workerToDelete.value?.id === worker.id) workerToDelete.value = null
+	} catch (error) {
+		alertStore.showAlert(alertMessage(error, Alert.DeletedError))
+	} finally {
+		isDeleting.value = false
+	}
 }
 
 onMounted(() => {
@@ -78,13 +109,22 @@ onMounted(() => {
 							{
 								title: 'Удалить',
 								red: true,
-								func: () => workersStore.deleteWorker(worker.id),
+								func: () => askDeleteWorker(worker),
 							},
 						]"
 					/>
 				</UITableColumn>
 			</UITableRow>
 		</UITableBase>
+		<Transition name="fade">
+			<ModalConfirm
+				v-if="workerToDelete"
+				title="Удалить сотрудника?"
+				:text="`Сотрудник «${workerToDelete.name}» будет удалён без возможности восстановления.`"
+				@confirm="confirmDeleteWorker"
+				@close="cancelDeleteWorker"
+			/>
+		</Transition>
 	</section>
 </template>
 
