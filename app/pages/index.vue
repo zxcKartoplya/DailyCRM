@@ -1,71 +1,177 @@
 <script lang="ts" setup>
-import workersService from '~/services/workers.servies'
-import departamentsService from '~/services/departments.servies'
-import reviewersService from '~/services/reviewers.servies'
+import type { ChartColorToken } from '~/composables/useChartTheme'
+import { useAnalyticsStore } from '~/stores/analytics'
+import { useDailiesStore } from '~/stores/dailies'
+import { useWorkerStore } from '~/stores/workers'
+import { DAY_STATE_LABEL, DayState } from '~/types/dailies'
 import { Statuses } from '~/types/users'
-import type { User } from '~/types/users'
-import type { Departament } from '~/types/departaments'
-import type { Reviewer } from '~/types/reviewers'
+import type { ChartSeries } from '~/utils/chart'
+import { completionTimeseries } from '~/utils/completionTimeseries'
+import {
+	buildDays,
+	eachDate,
+	formatRate,
+	groupEntriesByUser,
+	groupWorkersByDepartment,
+	periodStats,
+} from '~/utils/dailyStats'
+import { summarizeToday, todayLede } from '~/utils/todayState'
+
+const PERIOD_DAYS = 30
+const TOP_DEPARTMENTS = 6
+const RECENT_WORKERS = 6
+const SKELETON_ROWS = 4
+const DONUT_HEIGHT = 220
+const TREND_HEIGHT = 240
+
+const DONUT_STATES = [
+	DayState.Submitted,
+	DayState.Draft,
+	DayState.Missing,
+	DayState.Off,
+]
+
+const DONUT_COLORS: ChartColorToken[] = ['ok', 'warn', 'err', 'muted']
 
 const router = useRouter()
+const analyticsStore = useAnalyticsStore()
+const workersStore = useWorkerStore()
+const dailiesStore = useDailiesStore()
 
-const isLoading = ref(true)
-const workers = ref<User[]>([])
-const departments = ref<Departament[]>([])
-const reviewers = ref<Reviewer[]>([])
-
-const byStatus = (status: Statuses) =>
-	computed(() => workers.value.filter(w => w.status === status).length)
-
-const activeCount = byStatus(Statuses.ACTIVE)
-const invitedCount = byStatus(Statuses.INVITED)
-const inactiveCount = byStatus(Statuses.INACTIVE)
+const {
+	overview,
+	isOverviewLoading,
+	hasOverviewError,
+	departments: departmentAnalytics,
+	isLoading: isDepartmentAnalyticsLoading,
+	hasError: hasDepartmentAnalyticsError,
+	teamTrend,
+	isTeamTrendLoading,
+	hasTeamTrendError,
+	today: todayStates,
+	todayByUser,
+	isTodayLoading,
+	hasTodayError,
+} = storeToRefs(analyticsStore)
+const { workers, isWorkersLoading, hasWorkersError } = storeToRefs(workersStore)
+const { entries, entriesRange, isEntriesLoading, hasEntriesError } =
+	storeToRefs(dailiesStore)
 
 const { pluralize } = usePluralize()
 
-const summary = computed(() => [
-	{
-		value: workers.value.length,
-		word: pluralize(workers.value.length, [
-			'сотрудник',
-			'сотрудника',
-			'сотрудников',
-		]),
-	},
-	{
-		value: activeCount.value,
-		word: pluralize(activeCount.value, ['активен', 'активны', 'активны']),
-	},
-	{
-		value: invitedCount.value,
-		word: pluralize(invitedCount.value, ['приглашён', 'приглашены', 'приглашены']),
-	},
-	{
-		value: departments.value.length,
-		word: pluralize(departments.value.length, [
-			'департамент',
-			'департамента',
-			'департаментов',
-		]),
-	},
-	{
-		value: reviewers.value.length,
-		word: pluralize(reviewers.value.length, [
-			'оценщик',
-			'оценщика',
-			'оценщиков',
-		]),
-	},
-])
+const dateFormat = new Intl.DateTimeFormat('ru-RU', {
+	day: 'numeric',
+	month: 'long',
+})
 
-const topDepartments = computed(() =>
-	[...departments.value]
-		.sort((a, b) => (b.employees_count ?? 0) - (a.employees_count ?? 0))
-		.slice(0, 6),
+const periodDates = computed(() =>
+	entriesRange.value ? eachDate(entriesRange.value) : [],
 )
 
-const maxEmployees = computed(() =>
-	Math.max(...topDepartments.value.map(d => d.employees_count ?? 0), 1),
+const entriesByUser = computed(() => groupEntriesByUser(entries.value))
+
+const isPeriodLoading = computed(
+	() => isWorkersLoading.value || isEntriesLoading.value,
+)
+
+const hasPeriodError = computed(
+	() => hasWorkersError.value || hasEntriesError.value,
+)
+
+const todayStats = computed(() => summarizeToday(todayStates.value))
+
+const daySegments = computed(() =>
+	DONUT_STATES.map(state => ({
+		state,
+		label: DAY_STATE_LABEL[state],
+		value: todayStats.value.counts[state],
+	})),
+)
+
+const donutLabels = computed(() => daySegments.value.map(item => item.label))
+
+const donutData = computed(() => daySegments.value.map(item => item.value))
+
+const lede = computed(() =>
+	hasTodayError.value ? 'Состояние дня не загрузилось' : todayLede(todayStats.value),
+)
+
+const summary = computed(() => {
+	const data = overview.value
+	if (!data) return []
+
+	const facts = [
+		`${data.employees_count} ${pluralize(data.employees_count, ['сотрудник', 'сотрудника', 'сотрудников'])}`,
+		`${data.departments_count} ${pluralize(data.departments_count, ['департамент', 'департамента', 'департаментов'])}`,
+		`${data.entries_count} ${pluralize(data.entries_count, ['дейлик', 'дейлика', 'дейликов'])} всего`,
+	]
+
+	if (data.last_entry_at) {
+		facts.push(
+			`последний — ${dateFormat.format(new Date(data.last_entry_at))}`,
+		)
+	}
+
+	return facts
+})
+
+const trendChart = computed(() => completionTimeseries(teamTrend.value))
+
+const trendSeries = computed<ChartSeries[]>(() => [
+	{ name: 'Сдача', data: trendChart.value.values, color: 'ok' },
+])
+
+const trendTooltip = (index: number) => trendChart.value.tooltips[index] ?? ''
+
+const reloadTrend = () => analyticsStore.fetchTeamTrend(PERIOD_DAYS)
+
+const reloadToday = () => analyticsStore.fetchToday()
+
+const workersByDepartment = computed(() => groupWorkersByDepartment(workers.value))
+
+const departmentRows = computed(() =>
+	departmentAnalytics.value
+		.map(item => {
+			const staff = workersByDepartment.value.get(item.department_id) ?? []
+			const days = staff.flatMap(worker =>
+				buildDays(periodDates.value, worker, entriesByUser.value.get(worker.id)),
+			)
+
+			return {
+				id: item.department_id,
+				name: item.department_name,
+				employees: item.employees_count,
+				rate: periodStats(days).rate,
+			}
+		})
+		.sort((a, b) => (b.rate ?? -1) - (a.rate ?? -1))
+		.slice(0, TOP_DEPARTMENTS),
+)
+
+const attention = computed(() => {
+	const data = overview.value
+	if (!data) return []
+
+	return [
+		{
+			key: 'blockers',
+			value: data.blocked_items_last_30_days,
+			label: `${pluralize(data.blocked_items_last_30_days, ['блокер', 'блокера', 'блокеров'])} за 30 дней`,
+			to: '/departments',
+			linkText: 'Департаменты',
+		},
+		{
+			key: 'chains',
+			value: data.open_chains_count,
+			label: `${pluralize(data.open_chains_count, ['зависшая цепочка', 'зависшие цепочки', 'зависших цепочек'])}`,
+			to: '/departments',
+			linkText: 'Департаменты',
+		},
+	].filter(item => item.value > 0)
+})
+
+const isAttentionVisible = computed(
+	() => isOverviewLoading.value || hasOverviewError.value || attention.value.length > 0,
 )
 
 const recentWorkers = computed(() =>
@@ -74,24 +180,30 @@ const recentWorkers = computed(() =>
 			(a, b) =>
 				new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
 		)
-		.slice(0, 6),
+		.slice(0, RECENT_WORKERS)
+		.map(worker => ({
+			worker,
+			accessMark: worker.status === Statuses.ACTIVE ? null : worker.status,
+			state: todayByUser.value.get(worker.id)?.state ?? null,
+		})),
 )
 
-const needsAttention = computed(() => invitedCount.value + inactiveCount.value)
+const goDayState = (state: DayState) => {
+	router.push({ path: '/workers', query: { state } })
+}
 
-onMounted(async () => {
-	try {
-		const [w, d, r] = await Promise.all([
-			workersService.fetchWorkers(),
-			departamentsService.fetchDepartaments(),
-			reviewersService.fetchReviewers(),
-		])
-		workers.value = w
-		departments.value = d
-		reviewers.value = r
-	} finally {
-		isLoading.value = false
-	}
+const selectSegment = (index: number) => {
+	const segment = daySegments.value[index]
+	if (segment) goDayState(segment.state)
+}
+
+onMounted(() => {
+	analyticsStore.fetchOverview()
+	analyticsStore.fetchDepartments()
+	analyticsStore.fetchTeamTrend(PERIOD_DAYS)
+	analyticsStore.fetchToday()
+	workersStore.getWorkers()
+	dailiesStore.fetchEntries(PERIOD_DAYS)
 })
 
 useSeoMeta({
@@ -105,14 +217,10 @@ useSeoMeta({
 			<div>
 				<h1 class="page__title">Команда</h1>
 				<p class="page__lede">
-					<template v-if="isLoading">Загружаем данные…</template>
-					<template v-else-if="needsAttention">
-						{{ needsAttention }} из {{ workers.length }} сотрудников не в работе
-					</template>
-					<template v-else-if="workers.length">
-						Все сотрудники активны
-					</template>
-					<template v-else>Данных пока нет</template>
+					<Skeleton v-if="isTodayLoading" class="lede-bone" preserveAspectRatio="none">
+						<rect x="0" y="0" width="100%" height="100%" rx="4" ry="4" />
+					</Skeleton>
+					<template v-else>{{ lede }}</template>
 				</p>
 			</div>
 			<UIButton @click="router.push('/edit/workers')">
@@ -121,105 +229,262 @@ useSeoMeta({
 		</header>
 
 		<p class="summary">
-			<span v-for="(item, index) in summary" :key="item.word" class="summary__fact">
-				<span class="summary__value">
-					<span v-if="isLoading" class="summary__placeholder" />
-					<template v-else>{{ item.value }}</template>
-				</span>
-				{{ item.word }}<span v-if="index < summary.length - 1" class="summary__sep">,</span>
-			</span>
+			<Skeleton v-if="isOverviewLoading" class="summary__bone" preserveAspectRatio="none">
+				<rect x="0" y="0" width="100%" height="100%" rx="4" ry="4" />
+			</Skeleton>
+			<template v-else-if="hasOverviewError">Сводка не загрузилась</template>
+			<template v-else>{{ summary.join(' · ') }}</template>
 		</p>
 
 		<div class="columns">
-			<section class="block">
-				<header class="block__head">
-					<h2 class="block__title">Последние сотрудники</h2>
-					<NuxtLink class="block__link" to="/workers">Все сотрудники</NuxtLink>
-				</header>
+			<div class="columns__side">
+				<section class="block">
+					<header class="block__head">
+						<h2 class="block__title">Сегодня</h2>
+						<NuxtLink class="block__link" to="/workers">Все сотрудники</NuxtLink>
+					</header>
 
-				<ul v-if="!isLoading && recentWorkers.length" class="people">
-					<li v-for="worker in recentWorkers" :key="worker.id" class="people__item">
-						<NuxtLink class="people__name" :to="`/workers/${worker.id}`">
-							{{ worker.name }}
-						</NuxtLink>
-						<span class="people__meta">
-							{{ worker.job_name ?? '—' }} · {{ worker.department_name ?? '—' }}
-						</span>
-						<UIStatus :status="worker.status" />
-					</li>
-				</ul>
-				<p v-else-if="!isLoading" class="block__empty">
-					Сотрудников пока нет.
-				</p>
-				<div v-else class="block__loading"><UILoading /></div>
-			</section>
+					<UIChartSkeleton v-if="isTodayLoading" :height="DONUT_HEIGHT" />
 
-			<section class="block">
-				<header class="block__head">
-					<h2 class="block__title">Департаменты</h2>
-					<NuxtLink class="block__link" to="/departments">Все</NuxtLink>
-				</header>
+					<div v-else-if="hasTodayError" class="block__error">
+						<p class="block__empty">Состояние дня не загрузилось.</p>
+						<UIButton variant="outline" @click="reloadToday">Повторить</UIButton>
+					</div>
 
-				<ul v-if="!isLoading && topDepartments.length" class="bars">
-					<li
-						v-for="(dept, index) in topDepartments"
-						:key="dept.id"
-						class="bars__item"
-						:style="{ '--delay': `${index * 40}ms` }"
-					>
-						<span class="bars__name" :title="dept.name">{{ dept.name }}</span>
-						<span class="bars__track">
-							<span
-								class="bars__fill"
-								:style="{
-									inlineSize: `${((dept.employees_count ?? 0) / maxEmployees) * 100}%`,
-								}"
+					<p v-else-if="!todayStats.total" class="block__empty">
+						Сотрудников пока нет — состояние дня появится вместе с ними.
+					</p>
+
+					<p v-else-if="!todayStats.known" class="block__empty">
+						Сегодня у всех выходной по графику.
+					</p>
+
+					<div v-else class="today">
+						<UIChartDonut
+							class="today__chart"
+							:labels="donutLabels"
+							:data="donutData"
+							:colors="DONUT_COLORS"
+							:height="DONUT_HEIGHT"
+							:show-legend="false"
+							total-label="Всего"
+							:total-value="todayStats.known"
+							@select="selectSegment"
+						/>
+
+						<ul class="today__list">
+							<li v-for="segment in daySegments" :key="segment.state">
+								<NuxtLink
+									class="today__row"
+									:to="{ path: '/workers', query: { state: segment.state } }"
+								>
+									<UIDayState :state="segment.state" />
+									<span class="today__value">{{ segment.value }}</span>
+								</NuxtLink>
+							</li>
+						</ul>
+					</div>
+				</section>
+
+				<section class="block">
+					<header class="block__head">
+						<h2 class="block__title">Тренд за {{ PERIOD_DAYS }} дней</h2>
+					</header>
+
+					<UIChartSkeleton v-if="isTeamTrendLoading" :height="TREND_HEIGHT" />
+
+					<div v-else-if="hasTeamTrendError" class="block__error">
+						<p class="block__empty">Тренд сдачи за {{ PERIOD_DAYS }} дней не загрузился.</p>
+						<UIButton variant="outline" @click="reloadTrend">Повторить</UIButton>
+					</div>
+
+					<p v-else-if="!trendChart.hasData" class="block__empty">
+						Нет данных за период: за {{ PERIOD_DAYS }} дней ни у кого не было рабочих
+						дней по графику.
+					</p>
+
+					<UIChartLine
+						v-else
+						:series="trendSeries"
+						:categories="trendChart.categories"
+						:height="TREND_HEIGHT"
+						:min="0"
+						:max="100"
+						value-suffix="%"
+						:show-legend="false"
+						:tooltip-value="trendTooltip"
+					/>
+				</section>
+
+				<section class="block">
+					<header class="block__head">
+						<h2 class="block__title">Департаменты</h2>
+						<NuxtLink class="block__link" to="/departments">Все</NuxtLink>
+					</header>
+
+					<ul v-if="isDepartmentAnalyticsLoading" class="bars">
+						<li v-for="index in SKELETON_ROWS" :key="`bar-${index}`" class="bars__item">
+							<div class="bars__row">
+								<Skeleton class="bone" preserveAspectRatio="none">
+									<rect x="0" y="0" width="100%" height="100%" rx="4" ry="4" />
+								</Skeleton>
+							</div>
+						</li>
+					</ul>
+
+					<p v-else-if="hasDepartmentAnalyticsError" class="block__empty">
+						Аналитика по департаментам не загрузилась. Обновите страницу.
+					</p>
+
+					<ul v-else-if="departmentRows.length" class="bars">
+						<li
+							v-for="(department, index) in departmentRows"
+							:key="department.id"
+							class="bars__item"
+							:style="{ '--delay': `${index * 40}ms` }"
+						>
+							<NuxtLink class="bars__link" :to="`/departments/${department.id}`">
+								<span class="bars__name" :title="department.name">
+									{{ department.name }}
+								</span>
+								<span class="bars__track">
+									<span
+										v-if="department.rate !== null"
+										class="bars__fill"
+										:style="{ inlineSize: `${department.rate * 100}%` }"
+									/>
+								</span>
+								<span class="bars__value">
+									<Skeleton
+										v-if="isPeriodLoading"
+										class="bone bone--narrow"
+										preserveAspectRatio="none"
+									>
+										<rect x="0" y="0" width="100%" height="100%" rx="4" ry="4" />
+									</Skeleton>
+									<span v-else-if="hasPeriodError" class="bars__note">
+										не загрузилось
+									</span>
+									<span v-else-if="department.rate === null" class="bars__note">
+										нет данных
+									</span>
+									<template v-else>{{ formatRate(department.rate) }}</template>
+								</span>
+								<span class="bars__meta">
+									{{ department.employees }}
+									{{
+										pluralize(department.employees, [
+											'сотрудник',
+											'сотрудника',
+											'сотрудников',
+										])
+									}}
+								</span>
+							</NuxtLink>
+						</li>
+					</ul>
+
+					<p v-else class="block__empty">Департаментов пока нет.</p>
+				</section>
+			</div>
+
+			<div class="columns__side">
+				<section v-if="isAttentionVisible" class="block">
+					<header class="block__head">
+						<h2 class="block__title">Требует внимания</h2>
+					</header>
+
+					<ul v-if="isOverviewLoading" class="attention">
+						<li v-for="index in 2" :key="`attention-${index}`" class="attention__item">
+							<Skeleton class="bone" preserveAspectRatio="none">
+								<rect x="0" y="0" width="100%" height="100%" rx="4" ry="4" />
+							</Skeleton>
+						</li>
+					</ul>
+
+					<p v-else-if="hasOverviewError" class="block__empty">
+						Блокеры и цепочки не загрузились. Обновите страницу.
+					</p>
+
+					<ul v-else class="attention">
+						<li v-for="item in attention" :key="item.key" class="attention__item">
+							<NuxtLink class="attention__link" :to="item.to">
+								<span class="attention__value">{{ item.value }}</span>
+								<span class="attention__label">{{ item.label }}</span>
+								<span class="attention__more">{{ item.linkText }}</span>
+							</NuxtLink>
+						</li>
+					</ul>
+				</section>
+
+				<section class="block">
+					<header class="block__head">
+						<h2 class="block__title">Последние сотрудники</h2>
+						<NuxtLink class="block__link" to="/workers">Все сотрудники</NuxtLink>
+					</header>
+
+					<ul v-if="isWorkersLoading" class="people">
+						<li v-for="index in SKELETON_ROWS" :key="`person-${index}`" class="people__item">
+							<Skeleton class="bone" preserveAspectRatio="none">
+								<rect x="0" y="0" width="100%" height="100%" rx="4" ry="4" />
+							</Skeleton>
+						</li>
+					</ul>
+
+					<p v-else-if="hasWorkersError" class="block__empty">
+						Список сотрудников не загрузился. Обновите страницу.
+					</p>
+
+					<ul v-else-if="recentWorkers.length" class="people">
+						<li v-for="row in recentWorkers" :key="row.worker.id" class="people__item">
+							<div class="people__person">
+								<UIAvatar :name="row.worker.name" :id="row.worker.id" size="sm" />
+								<NuxtLink class="people__name" :to="`/workers/${row.worker.id}`">
+									{{ row.worker.name }}
+								</NuxtLink>
+								<UIStatus
+									v-if="row.accessMark"
+									class="people__access"
+									:status="row.accessMark"
+									:with-subject="false"
+								/>
+							</div>
+							<UIDayStateCell
+								:state="row.state"
+								:loading="isTodayLoading"
+								:error="hasTodayError"
+								empty-hint="Сервер не вернул состояние дня по этому сотруднику"
 							/>
-						</span>
-						<span class="bars__value">{{ dept.employees_count ?? 0 }}</span>
-					</li>
-				</ul>
-				<p v-else-if="!isLoading" class="block__empty">
-					Департаментов пока нет.
-				</p>
-				<div v-else class="block__loading"><UILoading /></div>
-			</section>
+							<span class="people__meta">
+								{{ row.worker.job_name ?? '—' }} ·
+								{{ row.worker.department_name ?? '—' }}
+							</span>
+						</li>
+					</ul>
+
+					<p v-else class="block__empty">Сотрудников пока нет.</p>
+				</section>
+			</div>
 		</div>
 	</section>
 </template>
 
 <style lang="scss" scoped>
+.lede-bone {
+	width: 14rem;
+	height: 1rem;
+}
+
 .summary {
 	margin: 0 0 var(--s-6);
 	padding-bottom: var(--s-5);
 	border-bottom: 1px solid var(--border);
-	color: var(--text-2);
-	font-size: var(--t-lg);
-	line-height: 1.7;
+	color: var(--text-3);
+	font-size: var(--t-sm);
 
-	&__fact {
-		white-space: nowrap;
-		margin-right: var(--s-3);
-	}
-
-	&__value {
-		@include numeric;
-		font-size: var(--t-3xl);
-		font-weight: 500;
-		letter-spacing: var(--tracking-tight);
-		color: var(--text-1);
-	}
-
-	&__sep {
-		color: var(--text-3);
-	}
-
-	&__placeholder {
-		display: inline-block;
-		width: 1.4ch;
-		height: 0.7em;
-		border-radius: var(--r-sm);
-		background-color: var(--skeleton-base);
+	&__bone {
+		width: 22rem;
+		height: 0.875rem;
 	}
 }
 
@@ -227,6 +492,14 @@ useSeoMeta({
 	display: grid;
 	grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
 	gap: var(--s-6);
+	align-items: start;
+
+	&__side {
+		display: flex;
+		flex-direction: column;
+		gap: var(--s-6);
+		min-width: 0;
+	}
 }
 
 .block {
@@ -255,14 +528,57 @@ useSeoMeta({
 	}
 
 	&__empty {
-		padding: var(--s-5) 0;
+		padding: var(--s-4) 0;
 		color: var(--text-3);
+		font-size: var(--t-sm);
 	}
 
-	&__loading {
+	&__error {
 		display: flex;
-		justify-content: center;
-		padding: var(--s-6);
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--s-3);
+	}
+}
+
+.today {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(9rem, auto);
+	align-items: center;
+	gap: var(--s-5);
+
+	&__chart {
+		min-width: 0;
+	}
+
+	&__list {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	&__row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--s-3);
+		padding: var(--s-2) 0;
+
+		&:hover,
+		&:focus-visible {
+			.today__value {
+				text-decoration: underline;
+			}
+		}
+	}
+
+	&__value {
+		@include numeric;
+		color: var(--text-1);
+		font-size: var(--t-lg);
+		font-weight: 500;
+		text-underline-offset: 3px;
 	}
 }
 
@@ -280,13 +596,28 @@ useSeoMeta({
 		border-top: 1px solid var(--border);
 	}
 
+	&__person {
+		display: flex;
+		align-items: center;
+		gap: var(--s-3);
+		min-width: 0;
+	}
+
 	&__name {
+		min-width: 0;
 		font-weight: 500;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 		text-underline-offset: 3px;
 
 		&:hover {
 			text-decoration: underline;
 		}
+	}
+
+	&__access {
+		flex: none;
 	}
 
 	&__meta {
@@ -305,18 +636,33 @@ useSeoMeta({
 	list-style: none;
 
 	&__item {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) minmax(4rem, 6rem) auto;
-		align-items: center;
-		gap: var(--s-3);
-		padding: var(--s-3) 0;
 		border-top: 1px solid var(--border);
+	}
+
+	&__row {
+		padding: var(--s-3) 0;
+	}
+
+	&__link {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(4rem, 6rem) minmax(3rem, auto);
+		align-items: center;
+		gap: var(--s-1) var(--s-3);
+		padding: var(--s-3) 0;
+
+		&:hover,
+		&:focus-visible {
+			.bars__name {
+				text-decoration: underline;
+			}
+		}
 	}
 
 	&__name {
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+		text-underline-offset: 3px;
 	}
 
 	&__track {
@@ -338,8 +684,74 @@ useSeoMeta({
 
 	&__value {
 		@include numeric;
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
 		color: var(--text-2);
 		font-size: var(--t-sm);
+	}
+
+	&__note {
+		color: var(--text-3);
+		font-size: var(--t-xs);
+	}
+
+	&__meta {
+		grid-column: 1;
+		color: var(--text-3);
+		font-size: var(--t-xs);
+	}
+}
+
+.attention {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	&__item {
+		border-top: 1px solid var(--border);
+	}
+
+	&__link {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		align-items: baseline;
+		gap: var(--s-3);
+		padding: var(--s-3) 0;
+
+		&:hover,
+		&:focus-visible {
+			.attention__more {
+				text-decoration: underline;
+			}
+		}
+	}
+
+	&__value {
+		@include numeric;
+		color: var(--err);
+		font-size: var(--t-xl);
+		font-weight: 600;
+	}
+
+	&__label {
+		color: var(--text-2);
+		font-size: var(--t-sm);
+	}
+
+	&__more {
+		color: var(--accent-text);
+		font-size: var(--t-sm);
+		text-underline-offset: 3px;
+	}
+}
+
+.bone {
+	width: 100%;
+	height: 1rem;
+
+	&--narrow {
+		width: 2.5rem;
 	}
 }
 
@@ -351,6 +763,10 @@ useSeoMeta({
 
 @media (max-width: 1100px) {
 	.columns {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.today {
 		grid-template-columns: minmax(0, 1fr);
 	}
 }

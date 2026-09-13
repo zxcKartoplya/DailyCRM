@@ -4,6 +4,7 @@ import type {
 	APIFetchReviewer,
 	APIFetchReviewers,
 	APIReviewerPayload,
+	ReviewerUsage,
 } from '~/types/reviewers'
 import Service from './services'
 
@@ -19,6 +20,9 @@ class ReviewersService extends Service {
 	}
 	async fetchReviewer(id: string) {
 		return (await this.get(`admin/reviewers/${id}`)) as APIFetchReviewer
+	}
+	async fetchReviewerUsage(id: string) {
+		return (await this.get(`admin/reviewers/${id}/usage`)) as ReviewerUsage
 	}
 	async putReviewer(id: string, data: APIReviewerPayload) {
 		return await this.put(`admin/reviewers/${id}`, data)

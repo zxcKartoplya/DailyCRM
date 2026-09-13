@@ -4,4 +4,5 @@ export enum Alert {
 	FormError = 'Введите корректные данные',
 	AddedError = 'Ошибка добавления',
 	Added = 'Успешно добавлено!',
+	DeletedError = 'Ошибка удаления',
 }

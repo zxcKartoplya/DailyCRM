@@ -6,6 +6,11 @@ import { useWorkerStore } from '~/stores/workers'
 import type { CreateUser } from '~/types/users'
 import { Statuses } from '~/types/users'
 import { mapForSelect } from '~/utils/mappers/select'
+import {
+	hasNeverSignedIn,
+	isAccessEnabled,
+	statusFromAccess,
+} from '~/utils/workerAccess'
 import { Alert } from '~/types/alert'
 import { alertMessage } from '~/utils/alertMessage'
 import { WorkerCreateSchema } from '~/utils/validation/WorkersSchema'
@@ -23,11 +28,12 @@ if (workerId) {
 	await workersStore.getWorker(workerId)
 }
 
-const statusOptions = [
-	{ name: 'Активен', value: Statuses.ACTIVE },
-	{ name: 'Неактивен', value: Statuses.INACTIVE },
-	{ name: 'Приглашён', value: Statuses.INVITED },
-]
+const savedStatus = workerId ? worker.value?.status : undefined
+const neverSignedIn = hasNeverSignedIn(savedStatus)
+
+const accessHint = neverSignedIn
+	? 'Сотрудник ещё ни разу не входил в систему — этот признак ставит система.'
+	: 'Выключенный доступ закрывает вход в систему, данные сотрудника остаются.'
 
 const { handleSubmit, values } = useForm({
 	validationSchema: WorkerCreateSchema,
@@ -36,7 +42,7 @@ const { handleSubmit, values } = useForm({
 		email: worker.value?.email ?? undefined,
 		department_id: worker.value?.department_id ?? undefined,
 		job_id: worker.value?.job_id ?? undefined,
-		status: worker.value?.status,
+		status: savedStatus ?? Statuses.ACTIVE,
 	},
 })
 
@@ -126,14 +132,22 @@ onMounted(() => {
 			</div>
 			<div class="form__row">
 				<Field v-slot="{ field, errorMessage, handleChange }" name="status">
-					<UISelect
-						label="Статус"
-						placeholder="Выберите статус"
-						:options="statusOptions"
-						:modelValue="field.value"
-						:error="errorMessage"
-						@update:model-value="handleChange"
-					/>
+					<div class="form__access">
+						<UIToggle
+							label="Доступ в систему"
+							:modelValue="isAccessEnabled(field.value)"
+							:hint="accessHint"
+							:error="errorMessage"
+							@update:model-value="
+								value => handleChange(statusFromAccess(value, savedStatus))
+							"
+						/>
+						<UIStatus
+							v-if="neverSignedIn"
+							class="form__access-badge"
+							:status="Statuses.INVITED"
+						/>
+					</div>
 				</Field>
 				<Field
 					v-slot="{ field, errorMessage, handleChange, handleBlur }"
@@ -173,6 +187,16 @@ onMounted(() => {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
 		gap: var(--s-4);
+	}
+
+	&__access {
+		display: flex;
+		align-items: center;
+		gap: var(--s-3);
+	}
+
+	&__access-badge {
+		flex: none;
 	}
 
 	&__actions {

@@ -7,6 +7,11 @@ type Props = {
 
 const { display_name, value, description } = defineProps<Props>()
 
+const emit = defineEmits<{
+	(e: 'open'): void
+	(e: 'close'): void
+}>()
+
 const isMouse = ref(false)
 </script>
 
@@ -15,13 +20,13 @@ const isMouse = ref(false)
 		class="metric"
 		@mouseenter="isMouse = true"
 		@mouseleave="isMouse = false"
-		@click="$emit('open')"
+		@click="emit('open')"
 	>
 		<IconClose
 			v-if="isMouse"
 			class="metric-icon"
 			size="18"
-			@click.stop="$emit('close')"
+			@click.stop="emit('close')"
 		/>
 
 		<div class="metric-wrapper">

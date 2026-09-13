@@ -3,6 +3,7 @@ import type { Schemas } from '~/types/api'
 export type User = Schemas['Worker']
 export type UserDetail = Schemas['WorkerDetail']
 export type CreateUser = Schemas['WorkerCreate']
+export type WorkerStatistics = Schemas['WorkerStatistics']
 
 export enum Statuses {
 	ACTIVE = 'active',

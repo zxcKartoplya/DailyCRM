@@ -4,6 +4,16 @@ export type DepartmentDailies = Schemas['DepartmentDailies']
 export type DepartmentDailyEmployee = Schemas['DepartmentDailyEmployee']
 export type DepartmentDailyDay = Schemas['DepartmentDailyDay']
 export type DailyEntry = Schemas['DailyEntry']
+export type WorkerDailies = Schemas['WorkerDailies']
+export type EntryItem = Schemas['EntryItem']
+export type EntryItemStatus = Schemas['EntryItemStatus']
+
+export const ENTRY_ITEM_STATUS_LABEL: Record<EntryItemStatus, string> = {
+	in_progress: 'В работе',
+	blocked: 'Заблокировано',
+	done: 'Готово',
+	dropped: 'Брошено',
+}
 
 export enum DayState {
 	Off = 'off',
@@ -14,11 +24,11 @@ export enum DayState {
 }
 
 export const DAY_STATE_LABEL: Record<DayState, string> = {
-	[DayState.Off]: 'нерабочий день',
-	[DayState.Rest]: 'не по графику',
-	[DayState.Submitted]: 'отправлен',
-	[DayState.Draft]: 'черновик',
-	[DayState.Missing]: 'не заполнен',
+	[DayState.Off]: 'Отгул',
+	[DayState.Rest]: 'Выходной',
+	[DayState.Submitted]: 'Работает',
+	[DayState.Draft]: 'Заполняет',
+	[DayState.Missing]: 'Пропускает',
 }
 
 export function dayState(day: DepartmentDailyDay): DayState {
