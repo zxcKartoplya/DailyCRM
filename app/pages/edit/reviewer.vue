@@ -8,12 +8,28 @@ import { alertMessage } from '~/utils/alertMessage'
 import { reviewerSchema } from '~/utils/validation/reviewerSchema'
 
 const reviewersStore = useReviewersStore()
-const { isLoading } = storeToRefs(reviewersStore)
+const { isLoading, reviewer } = storeToRefs(reviewersStore)
 
 const alertStore = useAlertStore()
+const route = useRoute()
 const router = useRouter()
+const reviewerId = route.query.id as string
 
-const metrics = ref<Metric[]>([])
+if (reviewerId) {
+	try {
+		await reviewersStore.fetchReviewer(reviewerId)
+	} catch (error) {
+		alertStore.showAlert(
+			alertMessage(error, 'Не удалось загрузить оценщика'),
+		)
+	}
+}
+
+const editedReviewer = reviewerId ? reviewer.value : undefined
+
+const metrics = ref<Metric[]>(
+	editedReviewer?.metrics?.map(metric => ({ ...metric })) ?? [],
+)
 
 const isMetricModalOpen = ref(false)
 const currentMetric = ref<Metric | null>(null)
@@ -21,17 +37,20 @@ const currentMetric = ref<Metric | null>(null)
 const { handleSubmit, values } = useForm<APIReviewerPayload>({
 	validationSchema: reviewerSchema,
 	initialValues: {
-		name: '',
-		description: '',
+		name: editedReviewer?.name ?? '',
+		description: editedReviewer?.description ?? '',
 	},
 })
 
 const add = handleSubmit(async formValues => {
+	const payload = { ...formValues, metrics: metrics.value }
 	try {
-		const created = await reviewersStore.addReviewer({
-			...formValues,
-			metrics: metrics.value,
-		})
+		if (reviewerId) {
+			await reviewersStore.putReviewer(reviewerId, payload)
+			router.push('/reviewer')
+			return
+		}
+		const created = await reviewersStore.addReviewer(payload)
 		if (created) {
 			router.push('/reviewer')
 			alertStore.showAlert(Alert.Added)
@@ -86,7 +105,9 @@ const createMetric = (metric: Metric) => {
 <template>
 	<section class="page">
 		<header class="page__head">
-			<h1 class="page__title">Новый оценщик</h1>
+			<h1 class="page__title">
+				{{ reviewerId ? 'Редактирование оценщика' : 'Новый оценщик' }}
+			</h1>
 		</header>
 		<form class="form" @submit.prevent="add">
 			<Field
@@ -154,7 +175,9 @@ const createMetric = (metric: Metric) => {
 			</div>
 
 			<div class="form__actions">
-				<UIButton type="submit">Создать</UIButton>
+				<UIButton type="submit">
+					{{ reviewerId ? 'Сохранить' : 'Создать' }}
+				</UIButton>
 				<UIButton variant="ghost" @click="router.push('/reviewer')">
 					Отмена
 				</UIButton>
