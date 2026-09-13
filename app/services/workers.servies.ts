@@ -1,4 +1,4 @@
-import type { CreateUser, User } from '~/types/users'
+import type { CreateUser, User, UserDetail } from '~/types/users'
 import Service from './services'
 
 class WorkersService extends Service {
@@ -6,7 +6,7 @@ class WorkersService extends Service {
 		return (await this.get('admin/workers')) as User[]
 	}
 	async fetchWorker(id: string) {
-		return (await this.get(`admin/workers/${id}`)) as User
+		return (await this.get(`admin/workers/${id}`)) as UserDetail
 	}
 	async addWorker(user: CreateUser) {
 		return await this.post('admin/workers', user)
