@@ -32,7 +32,15 @@ const metrics = ref<Metric[]>(
 )
 
 const isMetricModalOpen = ref(false)
-const currentMetric = ref<Metric | null>(null)
+const expandedMetricIndex = ref<number | null>(null)
+const metricDraft = ref<Metric | null>(null)
+const metricError = ref('')
+const maximumWeight = computed(() =>
+	Math.max(1, ...metrics.value.map(metric => metric.value)),
+)
+
+const metricWidth = (metric: Metric) =>
+	`${Math.min(100, Math.max(0, (metric.value / maximumWeight.value) * 100))}%`
 
 const { handleSubmit, values } = useForm<APIReviewerPayload>({
 	validationSchema: reviewerSchema,
@@ -43,6 +51,10 @@ const { handleSubmit, values } = useForm<APIReviewerPayload>({
 })
 
 const add = handleSubmit(async formValues => {
+	if (expandedMetricIndex.value !== null) {
+		metricError.value = 'Сначала примените или отмените изменения метрики.'
+		return
+	}
 	const payload = { ...formValues, metrics: metrics.value }
 	try {
 		if (reviewerId) {
@@ -68,7 +80,6 @@ const getDescription = async () => {
 	metrics.value = response
 }
 
-const currentMetricIndex = ref<number | null>(null)
 const metricToDeleteIndex = ref<number | null>(null)
 
 const metricToDelete = computed(() =>
@@ -89,6 +100,7 @@ const deleteMetric = () => {
 	const index = metricToDeleteIndex.value
 	if (index !== null) {
 		metrics.value = metrics.value.filter((_, i) => i !== index)
+		cancelMetricEdit()
 	}
 	metricToDeleteIndex.value = null
 }
@@ -97,25 +109,47 @@ const openMetricModal = () => {
 	isMetricModalOpen.value = true
 }
 
-const openMetric = (metric: Metric, index: number) => {
-	currentMetric.value = metric
-	currentMetricIndex.value = index
-	isMetricModalOpen.value = true
+const cancelMetricEdit = () => {
+	expandedMetricIndex.value = null
+	metricDraft.value = null
+	metricError.value = ''
+}
+
+const toggleMetric = (metric: Metric, index: number) => {
+	if (expandedMetricIndex.value === index) {
+		cancelMetricEdit()
+		return
+	}
+	expandedMetricIndex.value = index
+	metricDraft.value = { ...metric }
+	metricError.value = ''
+}
+
+const applyMetric = () => {
+	const index = expandedMetricIndex.value
+	const edited = metricDraft.value
+	if (index === null || !edited) return
+	if (!edited.display_name.trim() || !edited.description.trim()) {
+		metricError.value = 'Заполните название и описание метрики.'
+		return
+	}
+	if (!Number.isInteger(edited.value) || edited.value < 1 || edited.value > 10) {
+		metricError.value = 'Укажите важность от 1 до 10.'
+		return
+	}
+	metrics.value[index] = {
+		...edited,
+		display_name: edited.display_name.trim(),
+		description: edited.description.trim(),
+	}
+	cancelMetricEdit()
 }
 
 const closeMetricModal = () => {
 	isMetricModalOpen.value = false
-	currentMetric.value = null
-	currentMetricIndex.value = null
 }
 
 const createMetric = (metric: Metric) => {
-	const index = currentMetricIndex.value
-	if (index !== null && index < metrics.value.length) {
-		metrics.value[index] = metric
-		closeMetricModal()
-		return
-	}
 	metrics.value.push(metric)
 	closeMetricModal()
 }
@@ -165,25 +199,72 @@ const createMetric = (metric: Metric) => {
 					<UIButton
 						@click="getDescription"
 						variant="secondary"
-						:is-disabled="values.name === '' || values.description === ''"
+						:is-disabled="values.name === '' || values.description === '' || expandedMetricIndex !== null"
 						>{{ metrics?.length ? 'Обновить' : 'Заполнить' }}</UIButton
 					>
 				</div>
 				<p class="metrics__hint">
 					Заполните название и описание — метрики предложит модель. Всё, что она
-					предложит, можно исправить или удалить.
+					предложит, можно исправить или удалить. Изменения метрик сохранятся
+					вместе с оценщиком по кнопке
+					{{ reviewerId ? '«Сохранить»' : '«Создать»' }} внизу страницы.
 				</p>
 				<div v-if="!isLoading" class="metrics__list">
-					<MetricItem
-						v-for="(metric, index) in metrics"
-						:key="index"
-						:display_name="metric.display_name"
-						:value="metric.value"
-						:description="metric.description"
-						@open="openMetric(metric, index)"
-						@close="askDeleteMetric(index)"
-					/>
-					<UIButton variant="secondary" is-block @click="openMetricModal">
+					<ul v-if="metrics.length" class="metrics__cards">
+						<li v-for="(metric, index) in metrics" :key="index" class="metrics__card">
+							<button
+								type="button"
+								class="metrics__toggle"
+								:aria-expanded="expandedMetricIndex === index"
+								:aria-controls="`edit-metric-panel-${index}`"
+								@click="toggleMetric(metric, index)"
+							>
+								<span class="metrics__name">{{ metric.display_name }}</span>
+								<span class="metrics__weight">{{ metric.value }}</span>
+								<span class="metrics__track" aria-hidden="true">
+									<span class="metrics__bar" :style="{ width: metricWidth(metric) }" />
+								</span>
+							</button>
+							<div
+								v-if="expandedMetricIndex === index && metricDraft"
+								:id="`edit-metric-panel-${index}`"
+								class="metrics__panel"
+							>
+								<p class="metrics__description">
+									{{ metric.description || 'Описание не заполнено.' }}
+								</p>
+								<div class="metrics__fields">
+									<UIInput
+										v-model="metricDraft.display_name"
+										label="Название"
+										required
+										@keydown.enter.stop.prevent
+									/>
+									<UITextArea v-model="metricDraft.description" label="Описание" :rows="3" />
+									<UIInput
+										:model-value="metricDraft.value"
+										label="Важность (от 1 до 10)"
+										type="number"
+										required
+										@update:model-value="metricDraft.value = Number($event)"
+										@keydown.enter.stop.prevent
+									/>
+								</div>
+								<p v-if="metricError" class="metrics__error" role="alert">{{ metricError }}</p>
+								<div class="metrics__actions">
+									<UIButton variant="secondary" size="sm" @click="applyMetric">Применить</UIButton>
+									<UIButton variant="ghost" size="sm" @click="cancelMetricEdit">Отмена</UIButton>
+									<UIButton variant="ghost" color="red" size="sm" @click="askDeleteMetric(index)">Удалить метрику</UIButton>
+								</div>
+							</div>
+						</li>
+					</ul>
+					<UIButton
+						variant="secondary"
+						is-block
+						:is-disabled="expandedMetricIndex !== null"
+						@click="openMetricModal"
+					>
 						<template #icon-left><IconAdd size="18" /></template>
 						Добавить метрику
 					</UIButton>
@@ -194,7 +275,7 @@ const createMetric = (metric: Metric) => {
 			</div>
 
 			<div class="form__actions">
-				<UIButton type="submit">
+				<UIButton type="submit" :is-disabled="expandedMetricIndex !== null">
 					{{ reviewerId ? 'Сохранить' : 'Создать' }}
 				</UIButton>
 				<UIButton variant="ghost" @click="router.push('/reviewer')">
@@ -205,7 +286,6 @@ const createMetric = (metric: Metric) => {
 		<Transition name="fade">
 			<ModalMetric
 				v-if="isMetricModalOpen"
-				:metric="currentMetric ?? undefined"
 				@close="closeMetricModal"
 				@create="createMetric"
 			/>
@@ -214,7 +294,7 @@ const createMetric = (metric: Metric) => {
 			<ModalConfirm
 				v-if="metricToDelete"
 				title="Удалить метрику?"
-				:text="`Метрика «${metricToDelete.display_name}» будет удалена из списка.`"
+				:text="`Метрика «${metricToDelete.display_name}» будет удалена из списка. Сохраните оценщика, чтобы применить изменение.`"
 				@confirm="deleteMetric"
 				@close="cancelDeleteMetric"
 			/>
@@ -273,6 +353,91 @@ const createMetric = (metric: Metric) => {
 		display: flex;
 		flex-direction: column;
 		gap: var(--s-2);
+	}
+
+	&__cards {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		border: 1px solid var(--border);
+		border-radius: var(--r-lg);
+		background-color: var(--surface);
+		overflow: hidden;
+	}
+
+	&__card + &__card {
+		border-top: 1px solid var(--border);
+	}
+
+	&__toggle {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-items: center;
+		gap: var(--s-2) var(--s-4);
+		width: 100%;
+		padding: var(--s-4);
+		border: 0;
+		background: transparent;
+		color: var(--text-1);
+		text-align: left;
+		cursor: pointer;
+
+		&:hover {
+			background-color: var(--surface-hover);
+		}
+	}
+
+	&__name {
+		font-weight: 500;
+	}
+
+	&__weight {
+		@include numeric;
+		font-size: var(--t-sm);
+	}
+
+	&__track {
+		grid-column: 1 / -1;
+		height: 4px;
+		border-radius: var(--r-full);
+		background-color: var(--surface-sunken);
+		overflow: hidden;
+	}
+
+	&__bar {
+		display: block;
+		height: 100%;
+		border-radius: inherit;
+		background-color: var(--accent);
+	}
+
+	&__panel {
+		padding: 0 var(--s-4) var(--s-4);
+	}
+
+	&__description {
+		margin-bottom: var(--s-4);
+		color: var(--text-2);
+		font-size: var(--t-sm);
+	}
+
+	&__fields {
+		display: flex;
+		flex-direction: column;
+		gap: var(--s-3);
+	}
+
+	&__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--s-2);
+		margin-top: var(--s-3);
+	}
+
+	&__error {
+		margin-top: var(--s-2);
+		color: var(--err);
+		font-size: var(--t-sm);
 	}
 
 	&__loading {

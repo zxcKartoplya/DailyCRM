@@ -4,10 +4,10 @@ import type { Metric } from '~/types/reviewers'
 import { metricSchema } from '~/utils/validation/metricSchema'
 
 type Props = {
-	metric?: Metric
+	isSaving?: boolean
 }
 
-const { metric } = defineProps<Props>()
+const { isSaving = false } = defineProps<Props>()
 
 const emit = defineEmits<{
 	(e: 'close'): void
@@ -23,9 +23,9 @@ const { transliterate } = useTransliterate()
 
 const { handleSubmit } = useForm<Metric>({
 	initialValues: {
-		value: metric?.value || 0,
-		display_name: metric?.display_name || '',
-		description: metric?.description || '',
+		value: 0,
+		display_name: '',
+		description: '',
 	},
 	validationSchema: metricSchema,
 })
@@ -39,49 +39,62 @@ const create = handleSubmit(values => {
 	}
 	emit('create', newMetric)
 })
+
+const close = () => {
+	if (!isSaving) emit('close')
+}
 </script>
 
 <template>
-	<Modal title="Редактирование метрики" @close="emit('close')">
+	<Modal title="Новая метрика" @close="close">
 		<form class="form" @submit.prevent="create">
-			<Field
-				v-slot="{ field, errorMessage, handleChange, handleBlur }"
-				name="display_name"
-			>
-				<UIInput
-					label="Название"
-					placeholder="Введите название метрики"
-					:model-value="field.value"
-					:error="errorMessage"
-					@blur="handleBlur"
-					@update:model-value="handleChange"
-				/>
-			</Field>
-			<Field v-slot="{ field, handleChange }" name="value">
-				<UISelect
-					label="Важность"
-					placeholder="Выберите важность метрики"
-					:options="options"
-					:model-value="field.value"
-					@update:model-value="handleChange"
-				/>
-			</Field>
-			<Field
-				v-slot="{ field, errorMessage, handleChange, handleBlur }"
-				name="description"
-			>
-				<UITextArea
-					label="Описание метрики"
-					placeholder="Введите короткое описание метрики"
-					:model-value="field.value"
-					:error="errorMessage"
-					@blur="handleBlur"
-					@update:model-value="handleChange"
-				/>
-			</Field>
+			<fieldset class="form__fields" :disabled="isSaving">
+				<Field
+					v-slot="{ field, errorMessage, handleChange, handleBlur }"
+					name="display_name"
+				>
+					<UIInput
+						label="Название"
+						placeholder="Введите название метрики"
+						:model-value="field.value"
+						:error="errorMessage"
+						@blur="handleBlur"
+						@update:model-value="handleChange"
+					/>
+				</Field>
+				<Field v-slot="{ field, handleChange }" name="value">
+					<UISelect
+						label="Важность"
+						placeholder="Выберите важность метрики"
+						:options="options"
+						:model-value="field.value"
+						@update:model-value="handleChange"
+					/>
+				</Field>
+				<Field
+					v-slot="{ field, errorMessage, handleChange, handleBlur }"
+					name="description"
+				>
+					<UITextArea
+						label="Описание метрики"
+						placeholder="Введите короткое описание метрики"
+						:model-value="field.value"
+						:error="errorMessage"
+						@blur="handleBlur"
+						@update:model-value="handleChange"
+					/>
+				</Field>
+			</fieldset>
 			<div class="form-buttons">
-				<UIButton is-block type="submit">Сохранить</UIButton>
-				<UIButton is-block variant="secondary" @click="emit('close')">
+				<UIButton is-block type="submit" :is-loading="isSaving">
+					Сохранить
+				</UIButton>
+				<UIButton
+					is-block
+					variant="secondary"
+					:is-disabled="isSaving"
+					@click="close"
+				>
 					Отмена
 				</UIButton>
 			</div>
@@ -94,6 +107,15 @@ const create = handleSubmit(values => {
 	display: flex;
 	flex-direction: column;
 	gap: var(--s-4);
+
+	&__fields {
+		display: flex;
+		flex-direction: column;
+		gap: var(--s-4);
+		margin: 0;
+		padding: 0;
+		border: 0;
+	}
 
 	&-buttons {
 		display: flex;
