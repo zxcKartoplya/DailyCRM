@@ -25,8 +25,12 @@ export const useReviewersStore = defineStore('reviewers', () => {
 
 	const fetchReviewer = async (id: string) => {
 		isLoading.value = true
-		reviewer.value = await reviewersService.fetchReviewer(id)
-		isLoading.value = false
+		reviewer.value = undefined
+		try {
+			reviewer.value = await reviewersService.fetchReviewer(id)
+		} finally {
+			isLoading.value = false
+		}
 	}
 
 	const putReviewer = async (id: string, data: APIReviewerPayload) => {
