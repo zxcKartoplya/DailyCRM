@@ -4,4 +4,6 @@ import type { DayState } from '~/types/dailies'
 export type DepartmentAnalytics = Schemas['DepartmentAnalytics']
 export type AnalyticsOverview = Schemas['AnalyticsOverview']
 export type AnalyticsTimeseriesPoint = Schemas['AnalyticsTimeseriesPoint']
+export type WorkerCompletion = Schemas['WorkerCompletion']
+export type CompletionTrendPoint = Schemas['CompletionTrendPoint']
 export type TodayState = Omit<Schemas['TodayState'], 'state'> & { state: DayState }
