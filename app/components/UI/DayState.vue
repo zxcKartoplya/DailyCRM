@@ -1,19 +1,9 @@
-<script lang="ts">
-import { DayState } from '~/types/dailies'
-
-export const UI_DAY_STATE_LABEL: Record<DayState, string> = {
-	[DayState.Submitted]: 'Работает',
-	[DayState.Draft]: 'Заполняет',
-	[DayState.Missing]: 'Пропускает',
-	[DayState.Off]: 'Отгул',
-	[DayState.Rest]: 'Выходной',
-}
-</script>
-
 <script lang="ts" setup>
+import { DAY_STATE_LABEL, type DayState } from '~/types/dailies'
+
 const { state } = defineProps<{ state: DayState }>()
 
-const label = computed(() => UI_DAY_STATE_LABEL[state])
+const label = computed(() => DAY_STATE_LABEL[state])
 </script>
 
 <template>

@@ -14,11 +14,11 @@ export enum DayState {
 }
 
 export const DAY_STATE_LABEL: Record<DayState, string> = {
-	[DayState.Off]: 'нерабочий день',
-	[DayState.Rest]: 'не по графику',
-	[DayState.Submitted]: 'отправлен',
-	[DayState.Draft]: 'черновик',
-	[DayState.Missing]: 'не заполнен',
+	[DayState.Off]: 'Отгул',
+	[DayState.Rest]: 'Выходной',
+	[DayState.Submitted]: 'Работает',
+	[DayState.Draft]: 'Заполняет',
+	[DayState.Missing]: 'Пропускает',
 }
 
 export function dayState(day: DepartmentDailyDay): DayState {
