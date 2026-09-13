@@ -1,18 +1,15 @@
 <script lang="ts" setup>
-import { Field, useForm } from 'vee-validate'
 import { useAlertStore } from '~/stores/alert'
 import { useDailiesStore } from '~/stores/dailies'
 import { useDepartamentsStore } from '~/stores/departments'
 import { Alert } from '~/types/alert'
 import { alertMessage } from '~/utils/alertMessage'
-import { putDepartamentSchema } from '~/utils/validation/putDepartamentSchema'
 
 const departamentsStore = useDepartamentsStore()
 const dailiesStore = useDailiesStore()
 const alertStore = useAlertStore()
 const { dailies, isLoading, periodDays } = storeToRefs(dailiesStore)
 const route = useRoute()
-const router = useRouter()
 
 const id = route.params.id as string
 
@@ -21,32 +18,46 @@ const periods = [7, 14, 30]
 await departamentsStore.fetchDepartament(id)
 await dailiesStore.fetchDepartmentDailies(id)
 
-const isSubmitting = ref(false)
+const isRenaming = ref(false)
+const renameError = ref('')
 
-const { handleSubmit } = useForm({
-	validationSchema: putDepartamentSchema,
-	initialValues: {
-		name: departamentsStore.departament?.name,
-	},
-})
+const rename = async (name: string) => {
+	isRenaming.value = true
+	renameError.value = ''
 
-const update = handleSubmit(async formValues => {
-	isSubmitting.value = true
 	try {
-		await departamentsStore.putDepartament(id, formValues)
+		await departamentsStore.putDepartament(id, { name })
 		alertStore.showAlert(Alert.Added)
 	} catch (error) {
-		alertStore.showAlert(alertMessage(error, Alert.AddedError))
+		const message = alertMessage(error, Alert.AddedError)
+		alertStore.showAlert(message)
+		renameError.value = message
 	} finally {
-		isSubmitting.value = false
+		isRenaming.value = false
 	}
-})
+}
+
+const cancelRename = () => {
+	renameError.value = ''
+}
 </script>
 
 <template>
 	<section v-if="departamentsStore.departament" class="page">
 		<header class="page__head">
-			<h1 class="page__title">{{ departamentsStore.departament.name }}</h1>
+			<h1 class="page__title">
+				<UIInlineEdit
+					:value="departamentsStore.departament.name"
+					placeholder="Введите название департамента"
+					aria-label="Название департамента"
+					edit-label="Переименовать департамент"
+					empty-text="Без названия"
+					:error="renameError"
+					:is-saving="isRenaming"
+					@save="rename"
+					@cancel="cancelRename"
+				/>
+			</h1>
 		</header>
 
 		<dl class="facts">
@@ -82,35 +93,19 @@ const update = handleSubmit(async formValues => {
 			<UILoading v-if="isLoading" />
 			<DailiesDepartmentGrid v-else-if="dailies" :dailies="dailies" />
 		</section>
-
-		<section class="section">
-			<h2 class="section__title">Переименовать департамент</h2>
-			<form class="form" @submit.prevent="update">
-				<Field
-					v-slot="{ field, errorMessage, handleChange, handleBlur }"
-					name="name"
-				>
-					<UIInput
-						label="Название"
-						placeholder="Введите название департамента"
-						:model-value="field.value"
-						:error="errorMessage"
-						@blur="handleBlur"
-						@update:model-value="handleChange"
-					/>
-				</Field>
-				<div class="form__actions">
-					<UIButton type="submit" :is-loading="isSubmitting">Сохранить</UIButton>
-					<UIButton variant="ghost" @click="router.push('/departments')">
-						Отмена
-					</UIButton>
-				</div>
-			</form>
-		</section>
 	</section>
 </template>
 
 <style lang="scss" scoped>
+.page__title {
+	min-width: 0;
+
+	:deep(.ui-inline-edit__text) {
+		font: inherit;
+		letter-spacing: inherit;
+	}
+}
+
 .facts {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
@@ -168,15 +163,5 @@ const update = handleSubmit(async formValues => {
 	display: flex;
 	gap: var(--s-2);
 	margin-bottom: var(--s-4);
-}
-
-.form {
-	max-width: 26rem;
-
-	&__actions {
-		display: flex;
-		gap: var(--s-3);
-		margin-top: var(--s-4);
-	}
 }
 </style>
