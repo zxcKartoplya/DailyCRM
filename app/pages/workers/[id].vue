@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import type { UIStatItem } from '~/components/UI/StatRow.vue'
-import workersService from '~/services/workers.servies'
 import { useWorkerStore } from '~/stores/workers'
 import { DAY_STATE_LABEL, DayState, ENTRY_ITEM_STATUS_LABEL } from '~/types/dailies'
 import { alertMessage } from '~/utils/alertMessage'
@@ -15,11 +14,13 @@ import {
 	workerFeedDays,
 	workerHeatmapRows,
 } from '~/utils/workerCard'
+import { formatAssessmentScore, workerAssessmentCards } from '~/utils/workerAssessments'
 
 const PERIODS = [7, 14, 30, 90]
 const FEED_PAGE_SIZE = 10
 const STAT_SKELETONS = 6
 const FEED_SKELETONS = 3
+const ASSESSMENT_SKELETONS = 3
 const LEGEND: DayState[] = [
 	DayState.Submitted,
 	DayState.Draft,
@@ -44,6 +45,11 @@ const {
 	workerDailies,
 	isWorkerDailiesLoading,
 	hasWorkerDailiesError,
+	workerAssessments,
+	isWorkerAssessmentsLoading,
+	hasWorkerAssessmentsError,
+	isWorkerAssessmentsMoreLoading,
+	hasWorkerAssessmentsMoreError,
 } = storeToRefs(workersStore)
 const { pluralize } = usePluralize()
 const reducedMotion = useReducedMotion()
@@ -52,10 +58,10 @@ const today = toIsoDate(new Date())
 
 const workerError = ref('')
 
-const aiFeedback = ref<string | null>(null)
-const aiFeedbackError = ref<string | null>(null)
-const isLoadingFeedback = ref(false)
+const isRequestingAssessment = ref(false)
+const assessmentRequestError = ref('')
 const assessmentSection = ref<HTMLElement | null>(null)
+const expandedAssessments = ref<string[]>([])
 
 const card = computed(() =>
 	!isLoading.value && worker.value?.id === workerNumericId ? worker.value : null,
@@ -78,6 +84,21 @@ const dailies = computed(() =>
 )
 
 const isDailiesPending = computed(() => !hasWorkerDailiesError.value && !dailies.value)
+
+const assessments = computed(() =>
+	!isWorkerAssessmentsLoading.value &&
+	workerAssessments.value?.worker_id === workerNumericId
+		? workerAssessments.value
+		: null,
+)
+
+const isAssessmentsPending = computed(
+	() => !hasWorkerAssessmentsError.value && !assessments.value,
+)
+
+const assessmentCards = computed(() =>
+	assessments.value ? workerAssessmentCards(assessments.value.items) : [],
+)
 
 const hasStatisticsData = computed(() => (statistics.value?.working_days ?? 0) > 0)
 
@@ -217,32 +238,47 @@ const reloadStatistics = () => workersStore.fetchWorkerStatistics(workerId)
 
 const reloadDailies = () => workersStore.fetchWorkerDailies(workerId)
 
+const reloadAssessments = () => workersStore.fetchWorkerAssessments(workerId)
+
+const showMoreAssessments = () => workersStore.fetchMoreWorkerAssessments(workerId)
+
 onMounted(() => {
 	void loadWorker()
 	void workersStore.fetchWorkerPeriod(workerId)
+	void reloadAssessments()
 })
 
-async function fetchAiFeedback() {
-	isLoadingFeedback.value = true
-	aiFeedback.value = null
-	aiFeedbackError.value = null
+const isAssessmentExpanded = (key: string) => expandedAssessments.value.includes(key)
+
+const toggleAssessment = (key: string) => {
+	expandedAssessments.value = isAssessmentExpanded(key)
+		? expandedAssessments.value.filter(item => item !== key)
+		: [...expandedAssessments.value, key]
+}
+
+const fetchAssessment = async () => {
+	if (isRequestingAssessment.value) return
+
+	isRequestingAssessment.value = true
+	assessmentRequestError.value = ''
+
 	try {
-		const result = await workersService.getAiFeedback(workerId)
-		if (result?.feedback) {
-			aiFeedback.value = result.feedback
-		} else {
-			aiFeedbackError.value = 'Не удалось получить оценку. Попробуйте ещё раз.'
+		const created = await workersStore.requestWorkerAssessment(workerId)
+		const [card] = workerAssessmentCards([created])
+
+		if (card && !isAssessmentExpanded(card.key)) {
+			expandedAssessments.value = [card.key, ...expandedAssessments.value]
 		}
 	} catch {
-		aiFeedbackError.value = 'Ошибка при запросе AI-оценки. Попробуйте ещё раз.'
+		assessmentRequestError.value = 'Не удалось получить оценку. Попробуйте ещё раз.'
 	} finally {
-		isLoadingFeedback.value = false
+		isRequestingAssessment.value = false
 	}
 }
 
 const requestAssessment = () => {
 	assessmentSection.value?.scrollIntoView({ behavior: scrollBehavior(), block: 'start' })
-	void fetchAiFeedback()
+	void fetchAssessment()
 }
 </script>
 
@@ -289,7 +325,7 @@ const requestAssessment = () => {
 						</UIButton>
 						<UIButton
 							variant="secondary"
-							:is-loading="isLoadingFeedback"
+							:is-loading="isRequestingAssessment"
 							@click="requestAssessment"
 						>
 							Запросить оценку
@@ -485,25 +521,133 @@ const requestAssessment = () => {
 					aria-labelledby="worker-assessment-title"
 				>
 					<div class="section__head">
-						<h2 id="worker-assessment-title" class="section__title">Оценка</h2>
+						<h2 id="worker-assessment-title" class="section__title">Оценки</h2>
+						<span v-if="assessmentCards.length" class="section__hint">
+							новые сверху, клик раскрывает полный текст
+						</span>
 					</div>
 
-					<div v-if="isLoadingFeedback" class="assessment__bones" aria-hidden="true">
-						<Skeleton class="assessment__bone" preserveAspectRatio="none">
+					<div v-if="isRequestingAssessment" class="assessment__pending" role="status">
+						<Skeleton
+							class="assessment__bone"
+							preserveAspectRatio="none"
+							aria-hidden="true"
+						>
+							<rect x="0" y="0" width="100%" height="100%" rx="8" ry="8" />
+						</Skeleton>
+						<span class="assessment__pending-text">Запрашиваем оценку…</span>
+					</div>
+
+					<div
+						v-else-if="assessmentRequestError"
+						class="state assessment__request-error"
+						role="alert"
+					>
+						<p class="state__text">{{ assessmentRequestError }}</p>
+						<UIButton variant="outline" @click="fetchAssessment">Повторить</UIButton>
+					</div>
+
+					<div v-if="isAssessmentsPending" class="feed-skeleton" aria-hidden="true">
+						<Skeleton
+							v-for="index in ASSESSMENT_SKELETONS"
+							:key="index"
+							class="assessment__bone"
+							preserveAspectRatio="none"
+						>
 							<rect x="0" y="0" width="100%" height="100%" rx="8" ry="8" />
 						</Skeleton>
 					</div>
 
-					<div v-else-if="aiFeedbackError" class="state">
-						<p class="state__text">{{ aiFeedbackError }}</p>
-						<UIButton variant="outline" @click="fetchAiFeedback">Повторить</UIButton>
+					<div v-else-if="hasWorkerAssessmentsError" class="state">
+						<p class="state__text">История оценок не загрузилась.</p>
+						<UIButton variant="outline" @click="reloadAssessments">Повторить</UIButton>
 					</div>
 
-					<p v-else-if="aiFeedback" class="assessment__text">{{ aiFeedback }}</p>
+					<template v-else-if="assessments">
+						<ul v-if="assessmentCards.length" class="feed">
+							<li
+								v-for="assessment in assessmentCards"
+								:id="assessment.key"
+								:key="assessment.key"
+								class="feed__day"
+							>
+								<button
+									type="button"
+									class="feed__toggle"
+									:aria-expanded="isAssessmentExpanded(assessment.key)"
+									:aria-controls="`${assessment.key}-text`"
+									@click="toggleAssessment(assessment.key)"
+								>
+									<span class="feed__date">
+										{{ assessment.date ?? 'дата не указана' }}
+									</span>
+									<span
+										class="assessment__reviewer"
+										:class="{ 'assessment__reviewer--empty': !assessment.reviewerName }"
+									>
+										{{ assessment.reviewerName ?? 'оценщик не указан' }}
+									</span>
+									<span v-if="assessment.period" class="assessment__period">
+										{{ assessment.period }}
+									</span>
+									<span
+										v-if="!isAssessmentExpanded(assessment.key)"
+										class="assessment__excerpt"
+									>
+										{{ assessment.excerpt }}
+									</span>
+								</button>
 
-					<p v-else class="empty">
-						Оценку ещё не запрашивали. Нажмите «Запросить оценку» в шапке карточки.
-					</p>
+								<div
+									v-if="isAssessmentExpanded(assessment.key)"
+									:id="`${assessment.key}-text`"
+									class="assessment__body"
+								>
+									<p class="assessment__text">{{ assessment.feedback }}</p>
+									<ul
+										v-if="assessment.metrics.length"
+										class="assessment__metrics"
+										aria-label="Баллы по метрикам"
+									>
+										<li
+											v-for="metric in assessment.metrics"
+											:key="metric.json_name"
+											class="assessment__metric"
+										>
+											<span>{{ metric.display_name }}</span>
+											<span class="assessment__score">
+												{{ formatAssessmentScore(metric.score) }}
+											</span>
+										</li>
+									</ul>
+								</div>
+							</li>
+						</ul>
+
+						<p
+							v-else-if="!isRequestingAssessment && !assessmentRequestError"
+							class="empty"
+						>
+							Оценок пока не было. Нажмите «Запросить оценку» в шапке карточки.
+						</p>
+
+						<div v-if="hasWorkerAssessmentsMoreError" class="assessment__more-error">
+							<p class="state__text">Следующие оценки не загрузились.</p>
+							<UIButton variant="outline" @click="showMoreAssessments">
+								Повторить
+							</UIButton>
+						</div>
+
+						<UIButton
+							v-else-if="assessments.hasMore"
+							class="feed__more"
+							variant="ghost"
+							:is-loading="isWorkerAssessmentsMoreLoading"
+							@click="showMoreAssessments"
+						>
+							Показать ещё
+						</UIButton>
+					</template>
 
 					<p class="assessment__hint">
 						Оценка собирается по метрикам должности и формулируется моделью.
@@ -948,18 +1092,90 @@ const requestAssessment = () => {
 .assessment {
 	&__bone {
 		width: 100%;
-		max-width: 68ch;
-		height: 6rem;
+		height: 4.75rem;
+	}
+
+	&__pending {
+		display: grid;
+		gap: var(--s-2);
+		margin-bottom: var(--s-3);
+	}
+
+	&__pending-text {
+		color: var(--text-3);
+		font-size: var(--t-xs);
+	}
+
+	&__request-error {
+		margin-bottom: var(--s-3);
+	}
+
+	&__reviewer {
+		color: var(--text-2);
+		font-size: var(--t-sm);
+
+		&--empty {
+			color: var(--text-3);
+		}
+	}
+
+	&__period {
+		color: var(--text-3);
+		font-size: var(--t-xs);
+	}
+
+	&__excerpt {
+		flex-basis: 100%;
+		overflow: hidden;
+		padding-left: calc(0.4rem + var(--s-3));
+		color: var(--text-2);
+		font-size: var(--t-sm);
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+
+	&__body {
+		display: grid;
+		gap: var(--s-4);
+		padding: 0 var(--s-4) var(--s-4);
 	}
 
 	&__text {
-		max-width: 68ch;
-		padding: var(--s-4);
-		border: 1px solid var(--border);
-		border-radius: var(--r-lg);
-		background-color: var(--surface);
+		max-width: 72ch;
 		line-height: var(--lh-base);
 		white-space: pre-line;
+		word-break: break-word;
+	}
+
+	&__metrics {
+		display: grid;
+		gap: var(--s-1);
+		max-width: 40rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	&__metric {
+		display: flex;
+		justify-content: space-between;
+		gap: var(--s-3);
+		padding: var(--s-1) 0;
+		border-bottom: 1px solid var(--border);
+		font-size: var(--t-sm);
+	}
+
+	&__score {
+		@include numeric;
+		font-weight: 500;
+	}
+
+	&__more-error {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--s-3);
+		margin-top: var(--s-3);
 	}
 
 	&__hint {
