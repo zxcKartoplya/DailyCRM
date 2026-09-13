@@ -14,7 +14,7 @@ const table = {
 		{ title: 'ID', sortId: 'id' },
 		{ title: 'Имя', sortId: 'name' },
 		{ title: 'Департамент', sortId: 'department' },
-		{ title: 'Статус', sortId: 'status' },
+		{ title: 'Доступ', sortId: 'status' },
 		{ title: '', sortId: null },
 	],
 	gridColumns:
@@ -93,7 +93,7 @@ onMounted(() => {
 				/>
 				<UITableColumn :text="worker.department_name ?? '—'" isEllipsis />
 				<UITableColumn>
-					<UIStatus :status="worker.status" />
+					<UIStatus :status="worker.status" :with-subject="false" />
 				</UITableColumn>
 				<UITableColumn>
 					<UITableRowPopover

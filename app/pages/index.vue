@@ -38,7 +38,11 @@ const summary = computed(() => [
 	},
 	{
 		value: invitedCount.value,
-		word: pluralize(invitedCount.value, ['приглашён', 'приглашены', 'приглашены']),
+		word: pluralize(invitedCount.value, [
+			'не заходил',
+			'не заходили',
+			'не заходили',
+		]),
 	},
 	{
 		value: departments.value.length,
