@@ -49,31 +49,50 @@ const getDescription = async () => {
 	metrics.value = response
 }
 
-const deleteMetric = (display_name: string) => {
-	metrics.value = metrics.value.filter(
-		metric => metric.display_name !== display_name,
-	)
+const currentMetricIndex = ref<number | null>(null)
+const metricToDeleteIndex = ref<number | null>(null)
+
+const metricToDelete = computed(() =>
+	metricToDeleteIndex.value === null
+		? null
+		: (metrics.value[metricToDeleteIndex.value] ?? null),
+)
+
+const askDeleteMetric = (index: number) => {
+	metricToDeleteIndex.value = index
+}
+
+const cancelDeleteMetric = () => {
+	metricToDeleteIndex.value = null
+}
+
+const deleteMetric = () => {
+	const index = metricToDeleteIndex.value
+	if (index !== null) {
+		metrics.value = metrics.value.filter((_, i) => i !== index)
+	}
+	metricToDeleteIndex.value = null
 }
 
 const openMetricModal = () => {
 	isMetricModalOpen.value = true
 }
 
-const openMetric = (metric: Metric) => {
+const openMetric = (metric: Metric, index: number) => {
 	currentMetric.value = metric
+	currentMetricIndex.value = index
 	isMetricModalOpen.value = true
 }
 
 const closeMetricModal = () => {
 	isMetricModalOpen.value = false
 	currentMetric.value = null
+	currentMetricIndex.value = null
 }
 
 const createMetric = (metric: Metric) => {
-	if (currentMetric.value) {
-		const index = metrics.value.findIndex(
-			m => m.display_name === currentMetric.value?.display_name,
-		)
+	const index = currentMetricIndex.value
+	if (index !== null && index < metrics.value.length) {
 		metrics.value[index] = metric
 		closeMetricModal()
 		return
@@ -140,8 +159,8 @@ const createMetric = (metric: Metric) => {
 						:display_name="metric.display_name"
 						:value="metric.value"
 						:description="metric.description"
-						@open="openMetric(metric)"
-						@close="deleteMetric(metric.display_name)"
+						@open="openMetric(metric, index)"
+						@close="askDeleteMetric(index)"
 					/>
 					<UIButton variant="secondary" is-block @click="openMetricModal">
 						<template #icon-left><IconAdd size="18" /></template>
@@ -166,6 +185,15 @@ const createMetric = (metric: Metric) => {
 				:metric="currentMetric ?? undefined"
 				@close="closeMetricModal"
 				@create="createMetric"
+			/>
+		</Transition>
+		<Transition name="fade">
+			<ModalConfirm
+				v-if="metricToDelete"
+				title="Удалить метрику?"
+				:text="`Метрика «${metricToDelete.display_name}» будет удалена из списка.`"
+				@confirm="deleteMetric"
+				@close="cancelDeleteMetric"
 			/>
 		</Transition>
 	</section>
