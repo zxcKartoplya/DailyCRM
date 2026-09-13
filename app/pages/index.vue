@@ -1,20 +1,13 @@
 <script lang="ts" setup>
 import type { ChartColorToken } from '~/composables/useChartTheme'
 import { useAnalyticsStore } from '~/stores/analytics'
-import { useDailiesStore } from '~/stores/dailies'
 import { useWorkerStore } from '~/stores/workers'
 import { DAY_STATE_LABEL, DayState } from '~/types/dailies'
 import { Statuses } from '~/types/users'
 import type { ChartSeries } from '~/utils/chart'
 import { completionTimeseries } from '~/utils/completionTimeseries'
-import {
-	buildDays,
-	eachDate,
-	formatRate,
-	groupEntriesByUser,
-	groupWorkersByDepartment,
-	periodStats,
-} from '~/utils/dailyStats'
+import { completionRate } from '~/utils/completionTrend'
+import { formatRate } from '~/utils/dailyStats'
 import { summarizeToday, todayLede } from '~/utils/todayState'
 
 const PERIOD_DAYS = 30
@@ -36,7 +29,6 @@ const DONUT_COLORS: ChartColorToken[] = ['ok', 'warn', 'err', 'muted']
 const router = useRouter()
 const analyticsStore = useAnalyticsStore()
 const workersStore = useWorkerStore()
-const dailiesStore = useDailiesStore()
 
 const {
 	overview,
@@ -54,8 +46,6 @@ const {
 	hasTodayError,
 } = storeToRefs(analyticsStore)
 const { workers, isWorkersLoading, hasWorkersError } = storeToRefs(workersStore)
-const { entries, entriesRange, isEntriesLoading, hasEntriesError } =
-	storeToRefs(dailiesStore)
 
 const { pluralize } = usePluralize()
 
@@ -63,20 +53,6 @@ const dateFormat = new Intl.DateTimeFormat('ru-RU', {
 	day: 'numeric',
 	month: 'long',
 })
-
-const periodDates = computed(() =>
-	entriesRange.value ? eachDate(entriesRange.value) : [],
-)
-
-const entriesByUser = computed(() => groupEntriesByUser(entries.value))
-
-const isPeriodLoading = computed(
-	() => isWorkersLoading.value || isEntriesLoading.value,
-)
-
-const hasPeriodError = computed(
-	() => hasWorkersError.value || hasEntriesError.value,
-)
 
 const todayStats = computed(() => summarizeToday(todayStates.value))
 
@@ -127,23 +103,14 @@ const reloadTrend = () => analyticsStore.fetchTeamTrend(PERIOD_DAYS)
 
 const reloadToday = () => analyticsStore.fetchToday()
 
-const workersByDepartment = computed(() => groupWorkersByDepartment(workers.value))
-
 const departmentRows = computed(() =>
 	departmentAnalytics.value
-		.map(item => {
-			const staff = workersByDepartment.value.get(item.department_id) ?? []
-			const days = staff.flatMap(worker =>
-				buildDays(periodDates.value, worker, entriesByUser.value.get(worker.id)),
-			)
-
-			return {
-				id: item.department_id,
-				name: item.department_name,
-				employees: item.employees_count,
-				rate: periodStats(days).rate,
-			}
-		})
+		.map(item => ({
+			id: item.department_id,
+			name: item.department_name,
+			employees: item.employees_count,
+			rate: completionRate(item),
+		}))
 		.sort((a, b) => (b.rate ?? -1) - (a.rate ?? -1))
 		.slice(0, TOP_DEPARTMENTS),
 )
@@ -203,7 +170,6 @@ onMounted(() => {
 	analyticsStore.fetchTeamTrend(PERIOD_DAYS)
 	analyticsStore.fetchToday()
 	workersStore.getWorkers()
-	dailiesStore.fetchEntries(PERIOD_DAYS)
 })
 
 useSeoMeta({
@@ -355,17 +321,7 @@ useSeoMeta({
 									/>
 								</span>
 								<span class="bars__value">
-									<Skeleton
-										v-if="isPeriodLoading"
-										class="bone bone--narrow"
-										preserveAspectRatio="none"
-									>
-										<rect x="0" y="0" width="100%" height="100%" rx="4" ry="4" />
-									</Skeleton>
-									<span v-else-if="hasPeriodError" class="bars__note">
-										не загрузилось
-									</span>
-									<span v-else-if="department.rate === null" class="bars__note">
+									<span v-if="department.rate === null" class="bars__note">
 										нет данных
 									</span>
 									<template v-else>{{ formatRate(department.rate) }}</template>
@@ -749,10 +705,6 @@ useSeoMeta({
 .bone {
 	width: 100%;
 	height: 1rem;
-
-	&--narrow {
-		width: 2.5rem;
-	}
 }
 
 @keyframes bar-reveal {

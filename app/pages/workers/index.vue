@@ -1,19 +1,12 @@
 <script lang="ts" setup>
 import { useAlertStore } from '~/stores/alert'
 import { useAnalyticsStore } from '~/stores/analytics'
-import { useDailiesStore } from '~/stores/dailies'
 import { useWorkerStore } from '~/stores/workers'
 import { Alert } from '~/types/alert'
 import { DAY_STATE_LABEL, DayState } from '~/types/dailies'
 import { Statuses, type User } from '~/types/users'
 import { alertMessage } from '~/utils/alertMessage'
-import {
-	buildDays,
-	completionTrend,
-	eachDate,
-	groupEntriesByUser,
-	periodStats,
-} from '~/utils/dailyStats'
+import { completionRate, completionTrendPoints } from '~/utils/completionTrend'
 
 const PERIOD_DAYS = 30
 const SKELETON_ROWS = 5
@@ -21,14 +14,18 @@ const SKELETON_ROWS = 5
 const router = useRouter()
 const route = useRoute()
 const workersStore = useWorkerStore()
-const dailiesStore = useDailiesStore()
 const analyticsStore = useAnalyticsStore()
 const alertStore = useAlertStore()
 
 const { workers, isWorkersLoading, hasWorkersError } = storeToRefs(workersStore)
-const { entries, entriesRange, isEntriesLoading, hasEntriesError } =
-	storeToRefs(dailiesStore)
-const { todayByUser, isTodayLoading, hasTodayError } = storeToRefs(analyticsStore)
+const {
+	todayByUser,
+	isTodayLoading,
+	hasTodayError,
+	workersCompletionByUser,
+	isWorkersCompletionLoading,
+	hasWorkersCompletionError,
+} = storeToRefs(analyticsStore)
 
 const table = {
 	heads: [
@@ -43,26 +40,16 @@ const table = {
 		'80px minmax(220px, 1fr) minmax(160px, 1fr) minmax(150px, 190px) minmax(180px, 220px) 56px',
 }
 
-const periodDates = computed(() =>
-	entriesRange.value ? eachDate(entriesRange.value) : [],
-)
-
-const entriesByUser = computed(() => groupEntriesByUser(entries.value))
-
 const rows = computed(() =>
 	workers.value.map(worker => {
-		const days = buildDays(
-			periodDates.value,
-			worker,
-			entriesByUser.value.get(worker.id),
-		)
+		const completion = workersCompletionByUser.value.get(worker.id)
 
 		return {
 			worker,
 			accessMark: worker.status === Statuses.ACTIVE ? null : worker.status,
 			state: todayByUser.value.get(worker.id)?.state ?? null,
-			rate: periodStats(days).rate,
-			trend: completionTrend(periodDates.value, [days]),
+			rate: completionRate(completion),
+			trend: completionTrendPoints(completion?.trend),
 		}
 	}),
 )
@@ -139,7 +126,7 @@ const confirmDeleteWorker = async () => {
 
 onMounted(() => {
 	workersStore.getWorkers()
-	dailiesStore.fetchEntries(PERIOD_DAYS)
+	analyticsStore.fetchWorkersCompletion(PERIOD_DAYS)
 	analyticsStore.fetchToday()
 })
 </script>
@@ -230,8 +217,8 @@ onMounted(() => {
 					<UICompletion
 						:rate="row.rate"
 						:trend="row.trend"
-						:loading="isEntriesLoading"
-						:error="hasEntriesError"
+						:loading="isWorkersCompletionLoading"
+						:error="hasWorkersCompletionError"
 					/>
 				</UITableColumn>
 				<UITableColumn>
