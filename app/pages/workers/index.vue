@@ -1,25 +1,73 @@
 <script lang="ts" setup>
 import { useAlertStore } from '~/stores/alert'
+import { useDailiesStore } from '~/stores/dailies'
 import { useWorkerStore } from '~/stores/workers'
 import { Alert } from '~/types/alert'
-import type { User } from '~/types/users'
+import { Statuses, type User } from '~/types/users'
 import { alertMessage } from '~/utils/alertMessage'
+import {
+	buildDays,
+	completionTrend,
+	currentDayState,
+	eachDate,
+	groupEntriesByUser,
+	periodStats,
+	toIsoDate,
+} from '~/utils/dailyStats'
+
+const PERIOD_DAYS = 30
+const SKELETON_ROWS = 5
 
 const router = useRouter()
 const workersStore = useWorkerStore()
+const dailiesStore = useDailiesStore()
 const alertStore = useAlertStore()
+
+const { workers, isWorkersLoading, hasWorkersError } = storeToRefs(workersStore)
+const { entries, entriesRange, isEntriesLoading, hasEntriesError } =
+	storeToRefs(dailiesStore)
 
 const table = {
 	heads: [
 		{ title: 'ID', sortId: 'id' },
-		{ title: 'Имя', sortId: 'name' },
+		{ title: 'Сотрудник', sortId: 'name' },
 		{ title: 'Департамент', sortId: 'department' },
-		{ title: 'Доступ', sortId: 'status' },
+		{ title: 'Сегодня', sortId: null },
+		{ title: 'Сдача за 30 дней', sortId: null },
 		{ title: '', sortId: null },
 	],
 	gridColumns:
-		'80px minmax(200px, 1fr) minmax(180px, 1fr) minmax(140px, 200px) 56px',
+		'80px minmax(220px, 1fr) minmax(160px, 1fr) minmax(150px, 190px) minmax(180px, 220px) 56px',
 }
+
+const today = computed(() => toIsoDate(new Date()))
+
+const periodDates = computed(() =>
+	entriesRange.value ? eachDate(entriesRange.value) : [],
+)
+
+const entriesByUser = computed(() => groupEntriesByUser(entries.value))
+
+const rows = computed(() =>
+	workers.value.map(worker => {
+		const days = buildDays(
+			periodDates.value,
+			worker,
+			entriesByUser.value.get(worker.id),
+		)
+
+		return {
+			worker,
+			accessMark: worker.status === Statuses.ACTIVE ? null : worker.status,
+			state: currentDayState(
+				days.find(day => day.date === today.value),
+				worker,
+			),
+			rate: periodStats(days).rate,
+			trend: completionTrend(periodDates.value, [days]),
+		}
+	}),
+)
 
 const goWorker = (id: number) => {
 	router.push(`/workers/${id}`)
@@ -57,6 +105,7 @@ const confirmDeleteWorker = async () => {
 
 onMounted(() => {
 	workersStore.getWorkers()
+	dailiesStore.fetchEntries(PERIOD_DAYS)
 })
 </script>
 
@@ -68,54 +117,95 @@ onMounted(() => {
 				<UIButton @click="router.push('/edit/workers')">Добавить сотрудника</UIButton>
 			</div>
 		</header>
+
+		<p v-if="hasWorkersError" class="page__error">
+			Список сотрудников не загрузился. Обновите страницу.
+		</p>
+
 		<UITableBase
 			:headList="table.heads"
 			:columnTemplates="table.gridColumns"
-			:is-empty="!workersStore.workers.length"
+			:is-empty="!isWorkersLoading && !hasWorkersError && !rows.length"
 			empty-text="Сотрудников пока нет. Добавьте первого — и он появится в списке."
 		>
+			<template v-if="isWorkersLoading">
+				<UITableRow
+					v-for="index in SKELETON_ROWS"
+					:key="`skeleton-${index}`"
+					:columnTemplates="table.gridColumns"
+				>
+					<UITableColumn v-for="column in table.heads.length" :key="column">
+						<Skeleton class="bone" preserveAspectRatio="none">
+							<rect x="0" y="0" width="100%" height="100%" rx="4" ry="4" />
+						</Skeleton>
+					</UITableColumn>
+				</UITableRow>
+			</template>
+
 			<UITableRow
-				v-for="worker in workersStore.workers"
-				:key="worker.id"
+				v-for="row in isWorkersLoading ? [] : rows"
+				:key="row.worker.id"
 				:columnTemplates="table.gridColumns"
 			>
 				<UITableColumn
-					:text="worker.id"
+					:text="row.worker.id"
 					isLink
 					isNumeric
-					@click="goWorker(worker.id)"
+					@click="goWorker(row.worker.id)"
 				/>
-				<UITableColumn
-					:text="worker.name"
-					isLink
-					isEllipsis
-					@click="goWorker(worker.id)"
-				/>
-				<UITableColumn :text="worker.department_name ?? '—'" isEllipsis />
 				<UITableColumn>
-					<UIStatus :status="worker.status" :with-subject="false" />
+					<div class="person">
+						<UIAvatar :name="row.worker.name" :id="row.worker.id" size="sm" />
+						<NuxtLink class="person__name" :to="`/workers/${row.worker.id}`">
+							{{ row.worker.name }}
+						</NuxtLink>
+						<UIStatus
+							v-if="row.accessMark"
+							class="person__access"
+							:status="row.accessMark"
+							:with-subject="false"
+						/>
+					</div>
+				</UITableColumn>
+				<UITableColumn :text="row.worker.department_name ?? '—'" isEllipsis />
+				<UITableColumn>
+					<UIDayStateCell
+						:state="row.state"
+						:loading="isEntriesLoading"
+						:error="hasEntriesError"
+						empty-hint="У сотрудника не задан график работы"
+					/>
+				</UITableColumn>
+				<UITableColumn>
+					<UICompletion
+						:rate="row.rate"
+						:trend="row.trend"
+						:loading="isEntriesLoading"
+						:error="hasEntriesError"
+					/>
 				</UITableColumn>
 				<UITableColumn>
 					<UITableRowPopover
 						:items="[
 							{
 								title: 'Открыть профиль',
-								func: () => goWorker(worker.id),
+								func: () => goWorker(row.worker.id),
 							},
 							{
 								title: 'Изменить',
-								func: () => editWorker(worker.id),
+								func: () => editWorker(row.worker.id),
 							},
 							{
 								title: 'Удалить',
 								red: true,
-								func: () => askDeleteWorker(worker),
+								func: () => askDeleteWorker(row.worker),
 							},
 						]"
 					/>
 				</UITableColumn>
 			</UITableRow>
 		</UITableBase>
+
 		<Transition name="fade">
 			<ModalConfirm
 				v-if="workerToDelete"
@@ -132,5 +222,41 @@ onMounted(() => {
 .page__actions {
 	display: flex;
 	gap: var(--s-3);
+}
+
+.page__error {
+	margin-bottom: var(--s-3);
+	color: var(--err);
+	font-size: var(--t-sm);
+}
+
+.person {
+	display: flex;
+	align-items: center;
+	gap: var(--s-3);
+	min-width: 0;
+
+	&__name {
+		min-width: 0;
+		color: var(--accent-text);
+		font-size: var(--t-md);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		text-underline-offset: 3px;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+
+	&__access {
+		flex: none;
+	}
+}
+
+.bone {
+	width: 100%;
+	height: 1rem;
 }
 </style>
