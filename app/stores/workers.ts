@@ -1,9 +1,9 @@
 import workersService from '~/services/workers.servies'
-import type { CreateUser, User } from '~/types/users'
+import type { CreateUser, User, UserDetail } from '~/types/users'
 
 export const useWorkerStore = defineStore('workers', () => {
 	const workers = ref<User[]>([])
-	const worker = ref<User>()
+	const worker = ref<UserDetail>()
 	const isLoading = ref(true)
 
 	const getWorkers = async () => {
