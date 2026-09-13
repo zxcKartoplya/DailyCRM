@@ -1,8 +1,12 @@
 <script lang="ts" setup>
+import { useAlertStore } from '~/stores/alert'
 import { useJobStore } from '~/stores/role'
+import type { Role } from '~/types/role'
+import { alertMessage } from '~/utils/alertMessage'
 
 const router = useRouter()
 const jobStore = useJobStore()
+const alertStore = useAlertStore()
 
 const table = {
 	heads: [
@@ -22,6 +26,32 @@ const goRole = (id: number) => {
 
 const editRole = (id: number) => {
 	router.push(`/edit/role?id=${id}`)
+}
+
+const roleToDelete = ref<Role | null>(null)
+const isDeleting = ref(false)
+
+const askDeleteRole = (role: Role) => {
+	roleToDelete.value = role
+}
+
+const cancelDeleteRole = () => {
+	roleToDelete.value = null
+}
+
+const confirmDeleteRole = async () => {
+	const role = roleToDelete.value
+	if (!role || isDeleting.value) return
+
+	isDeleting.value = true
+	try {
+		await jobStore.delJob(role.id)
+		if (roleToDelete.value?.id === role.id) roleToDelete.value = null
+	} catch (error) {
+		alertStore.showAlert(alertMessage(error, 'Не удалось удалить роль'))
+	} finally {
+		isDeleting.value = false
+	}
 }
 
 onMounted(() => {
@@ -76,7 +106,7 @@ onMounted(() => {
 								title: 'Удалить',
 								red: true,
 								func: () => {
-									jobStore.delJob(role.id)
+									askDeleteRole(role)
 								},
 							},
 						]"
@@ -84,6 +114,15 @@ onMounted(() => {
 				</UITableColumn>
 			</UITableRow>
 		</UITableBase>
+		<Transition name="fade">
+			<ModalConfirm
+				v-if="roleToDelete"
+				title="Удалить роль?"
+				:text="`Роль «${roleToDelete.name}» будет удалена без возможности восстановления.`"
+				@confirm="confirmDeleteRole"
+				@close="cancelDeleteRole"
+			/>
+		</Transition>
 	</section>
 </template>
 

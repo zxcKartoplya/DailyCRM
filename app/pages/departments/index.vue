@@ -1,8 +1,12 @@
 <script lang="ts" setup>
+import { useAlertStore } from '~/stores/alert'
 import { useDepartamentsStore } from '~/stores/departments'
+import type { Departament } from '~/types/departaments'
+import { alertMessage } from '~/utils/alertMessage'
 
 const router = useRouter()
 const departamentsStore = useDepartamentsStore()
+const alertStore = useAlertStore()
 
 const table = {
 	heads: [
@@ -22,6 +26,33 @@ const goDepartmemts = (id: number) => {
 
 const editDepartament = (id: number) => {
 	router.push(`/edit/department?id=${id}`)
+}
+
+const departamentToDelete = ref<Departament | null>(null)
+const isDeleting = ref(false)
+
+const askDeleteDepartament = (departament: Departament) => {
+	departamentToDelete.value = departament
+}
+
+const cancelDeleteDepartament = () => {
+	departamentToDelete.value = null
+}
+
+const confirmDeleteDepartament = async () => {
+	const departament = departamentToDelete.value
+	if (!departament || isDeleting.value) return
+
+	isDeleting.value = true
+	try {
+		await departamentsStore.delDepartament(departament.id)
+		if (departamentToDelete.value?.id === departament.id)
+			departamentToDelete.value = null
+	} catch (error) {
+		alertStore.showAlert(alertMessage(error, 'Не удалось удалить департамент'))
+	} finally {
+		isDeleting.value = false
+	}
 }
 
 onMounted(() => {
@@ -76,13 +107,22 @@ onMounted(() => {
 							{
 								title: 'Удалить',
 								red: true,
-								func: () => departamentsStore.delDepartament(departament.id),
+								func: () => askDeleteDepartament(departament),
 							},
 						]"
 					/>
 				</UITableColumn>
 			</UITableRow>
 		</UITableBase>
+		<Transition name="fade">
+			<ModalConfirm
+				v-if="departamentToDelete"
+				title="Удалить департамент?"
+				:text="`Департамент «${departamentToDelete.name}» будет удалён без возможности восстановления.`"
+				@confirm="confirmDeleteDepartament"
+				@close="cancelDeleteDepartament"
+			/>
+		</Transition>
 	</section>
 </template>
 
