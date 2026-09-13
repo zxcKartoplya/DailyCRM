@@ -26,6 +26,14 @@ export type CompletionPoint = {
 	value: number | null
 }
 
+export type DayStateCounts = Record<DayState, number>
+
+export type TodayStats = {
+	counts: DayStateCounts
+	expected: number
+	known: number
+}
+
 const WEEKLY_SCHEDULE: Schemas['ScheduleType'] = 'weekly'
 const SUNDAY_ISO = 7
 const TREND_BUCKET_DAYS = 7
@@ -116,6 +124,50 @@ export const currentDayState = (
 	if (!day.entry) return null
 
 	return dayState({ ...day, is_working_day: true })
+}
+
+export const stateOnDate = (
+	date: string,
+	schedule?: WorkSchedule | null,
+	entries?: Map<string, DailyEntry>,
+): DayState | null =>
+	currentDayState(buildDays([date], schedule, entries)[0], schedule)
+
+export const countDayStates = (states: (DayState | null)[]): DayStateCounts => {
+	const counts: DayStateCounts = {
+		[DayState.Submitted]: 0,
+		[DayState.Draft]: 0,
+		[DayState.Missing]: 0,
+		[DayState.Off]: 0,
+		[DayState.Rest]: 0,
+	}
+
+	for (const state of states) {
+		if (state) counts[state] += 1
+	}
+
+	return counts
+}
+
+export const dayStats = <T extends WorkSchedule & { id: number }>(
+	date: string,
+	people: T[],
+	entriesByUser: Map<number, Map<string, DailyEntry>>,
+): TodayStats => {
+	const counts = countDayStates(
+		people.map(person =>
+			stateOnDate(date, person, entriesByUser.get(person.id)),
+		),
+	)
+
+	const expected =
+		counts[DayState.Submitted] + counts[DayState.Draft] + counts[DayState.Missing]
+
+	return {
+		counts,
+		expected,
+		known: expected + counts[DayState.Off],
+	}
 }
 
 export const periodStats = (days: DepartmentDailyDay[]): PeriodStats => {

@@ -28,6 +28,8 @@ const {
 	loading = false,
 } = defineProps<Props>()
 
+const emit = defineEmits<{ select: [index: number] }>()
+
 const PALETTE: ChartColorToken[] = ['accent', 'ok', 'warn', 'err', 'neutral']
 
 const { baseOptions, chartTheme, color } = useChartTheme()
@@ -51,7 +53,16 @@ const total = computed(() =>
 
 const options = computed<ApexOptions>(() =>
 	mergeChartOptions(baseOptions.value, {
-		chart: { type: 'donut' },
+		chart: {
+			type: 'donut',
+			events: {
+				dataPointSelection: (_event, _context, options) => {
+					const index = options?.dataPointIndex
+
+					if (typeof index === 'number') emit('select', index)
+				},
+			},
+		},
 		labels: [...labels],
 		colors: sliceColors.value,
 		stroke: { width: 2, colors: [chartTheme.value.surface] },
