@@ -4,10 +4,12 @@ import { useAlertStore } from '~/stores/alert'
 import { useLoginStore } from '~/stores/login'
 import { Alert } from '~/types/alert'
 import type { LoginData } from '~/types/login'
+import { safeRedirect } from '~/utils/authRedirect'
 import { loginSchema } from '~/utils/validation/loginSchema'
 
 const loginStore = useLoginStore()
 const alertStore = useAlertStore()
+const route = useRoute()
 const router = useRouter()
 
 const isSubmitting = ref(false)
@@ -26,7 +28,7 @@ const login = handleSubmit(
 		try {
 			await loginStore.login(formValues)
 			alertStore.showAlert(Alert.Authorized)
-			await router.push('/')
+			await router.replace(safeRedirect(route.query.redirect))
 		} catch (error) {
 			alertStore.showAlert(Alert.Unauthorized)
 		} finally {
