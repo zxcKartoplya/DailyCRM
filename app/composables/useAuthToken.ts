@@ -1,7 +1,14 @@
-export const useAuthToken = () => {
-	const token = useCookie<string | null>('access_token', {
+const createTokenCookie = () =>
+	useCookie<string | null>('access_token', {
 		expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365),
 	})
+
+let clientToken: ReturnType<typeof createTokenCookie> | undefined
+
+export const useAuthToken = () => {
+	const token = import.meta.server
+		? createTokenCookie()
+		: (clientToken ??= createTokenCookie())
 
 	const setToken = (newToken: string | null) => {
 		token.value = newToken
